@@ -2,6 +2,8 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+#include "debug.h"
+
 int localRand();
 int localRand(int limit);
 int localRand(int low, int high);
@@ -85,4 +87,22 @@ extern const char * version;
 bool endsWith(const char *str, const char *suffix);
 
 void strip_end(char *str, int n);
+
+//////////////////////////////////////////////////////
+/////// File save and load
+//////////////////////////////////////////////////////
+
+#if defined(ARDUINO_ARCH_ESP8266)
+#include "LittleFS.h"
+#endif
+#include "LittleFS.h"
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include "FS.h"
+#endif
+
+void saveToFile(char * path, char * src);
+
+bool loadFromFile(char * path, char * dest, int length);
+
 

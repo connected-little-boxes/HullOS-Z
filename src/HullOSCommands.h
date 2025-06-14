@@ -16,7 +16,7 @@
 
 extern unsigned charprogram_source [PROGRAM_SIZE] ;
 
-unsigned char readByteFromProgram();
+unsigned char readByteFromHullOScode();
 
 enum ProgramState
 {

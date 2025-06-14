@@ -22,18 +22,18 @@
 #include "otaupdate.h"
 #include "version.h"
 
-unsigned char program_source[HULLOS_PROGRAM_SIZE];
+unsigned char HullOScode[HULLOS_PROGRAM_SIZE];
 
-unsigned char readByteFromProgram(int pos)
+unsigned char readByteFromHullOScode(int pos)
 {
-    return program_source[pos];
+    return HullOScode[pos];
 }
 
-bool storeByteIntoProgram(uint8_t byte, int pos)
+bool writeByteIntoHullOScode(uint8_t byte, int pos)
 {
     if (pos > HULLOS_PROGRAM_SIZE)
         return false;
-    program_source[pos] = byte;
+    HullOScode[pos] = byte;
 
     return true;
 }
@@ -90,7 +90,7 @@ void dumpProgramFromEEPROM()
     unsigned char byte;
     while (true)
     {
-        byte = readByteFromProgram(EEPromPos++);
+        byte = readByteFromHullOScode(EEPromPos++);
 
         if (byte == STATEMENT_TERMINATOR)
             Serial.println();
@@ -208,12 +208,12 @@ void resetLineStorageState()
 
 void storeProgramByte(byte b)
 {
-    storeByteIntoProgram(b, programWriteBase++);
+    writeByteIntoHullOScode(b, programWriteBase++);
 }
 
 void clearStoredProgram()
 {
-    storeByteIntoProgram(PROGRAM_TERMINATOR, 0);
+    writeByteIntoHullOScode(PROGRAM_TERMINATOR, 0);
 }
 
 // Called to start the download of program code
@@ -1732,7 +1732,7 @@ int findNextStatement(int programPosition)
 
     while (true)
     {
-        char ch = readByteFromProgram(programPosition);
+        char ch = readByteFromHullOScode(programPosition);
 
         if (ch == PROGRAM_TERMINATOR | programPosition == PROGRAM_SIZE)
             return -1;
@@ -1770,7 +1770,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         int statementStart = programPosition;
 
-        char programByte = readByteFromProgram(programPosition++);
+        char programByte = readByteFromHullOScode(programPosition++);
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
         Serial.print("Statement at: ");
@@ -1807,7 +1807,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         // If we get here we have found a C
 
-        programByte = readByteFromProgram(programPosition++);
+        programByte = readByteFromHullOScode(programPosition++);
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
 
@@ -1848,7 +1848,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         while (*labelTest != STATEMENT_TERMINATOR & programPosition < PROGRAM_SIZE)
         {
-            programByte = readByteFromProgram(programPosition);
+            programByte = readByteFromHullOScode(programPosition);
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
             Serial.print("Destination byte: ");
@@ -1880,7 +1880,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         // Get the byte at the end of the destination statement
 
-        programByte = readByteFromProgram(programPosition);
+        programByte = readByteFromHullOScode(programPosition);
 
         if (*labelTest == programByte)
         {
@@ -3053,7 +3053,7 @@ bool exeuteProgramStatement()
 
     while (true)
     {
-        programByte = readByteFromProgram(programCounter++);
+        programByte = readByteFromHullOScode(programCounter++);
 
         if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
         {

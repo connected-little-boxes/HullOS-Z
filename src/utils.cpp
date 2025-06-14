@@ -231,3 +231,49 @@ void strip_end(char *str, int n) {
         *p = '\0';
     }
 }
+
+File file;
+
+void saveToFile(char * path, char * src){
+
+	TRACELOG("Saving to a file:");
+	TRACELOGLN(path);
+
+    file = LittleFS.open(path, "w");
+    file.printf("%s",src);
+    file.close();
+}
+
+bool loadFromFile(char * path, char * dest, int length){
+
+	TRACELOG("Loading from a file:");
+	TRACELOGLN(path);
+
+	file = LittleFS.open(path, "r");
+
+	if (!file || file.isDirectory())
+	{
+		TRACELOGLN("  failed to open the file");
+		return false;
+	}
+
+    int pos = 0;
+
+	while (file.available())
+	{
+        char ch = file.read();
+        if(pos>=length){
+            TRACELOGLN("  file larger than input buffer");
+        	file.close();
+            return false;
+        }
+        dest[pos]=(char)ch;
+        pos++;
+	}
+
+	file.close();
+	TRACELOGLN("Settings loaded successfully");
+
+    return true;
+}
+

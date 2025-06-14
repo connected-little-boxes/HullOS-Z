@@ -25,8 +25,7 @@
 #include "console.h"
 #include "pixels.h"
 #include "settings.h"
-
-#define codeEditor_MESSAGE_BUFFER_SIZE 256
+#include "HullOS.h"
 
 struct CodeEditorSettings codeEditorSettings;
 
@@ -103,6 +102,20 @@ void handleNotFound()
     server.send(404, "text/plain", message);
 }
 
+//////////////////////////////////////////////////////////////////
+/////// Program storage
+//////////////////////////////////////////////////////////////////
+
+char codeEditSource[CODE_EDIT_PROGRAM_SIZE];
+
+void saveCode(){
+    saveToFile(CODE_EDIT_PROGRAM_FILE_NAME,codeEditSource);
+}
+
+bool loadCodeFromFile(){
+    return loadFromFile(CODE_EDIT_PROGRAM_FILE_NAME, codeEditSource,CODE_EDIT_PROGRAM_SIZE);
+}
+
 void sendByteToRobot(byte b)
 {
 #ifdef COMMAND_DEBUG
@@ -111,26 +124,21 @@ void sendByteToRobot(byte b)
 #endif
 }
 
-void sendStringToRobot(String str)
+bool sendStringToCodeBuffer(String str)
 {
-    for (int i = 0; i < str.length(); i++)
-    {
-        sendByteToRobot(str[i]);
+    int codeLength = str.length();
+
+    if( codeLength > (CODE_EDIT_PROGRAM_SIZE-1)){
+        return false;
     }
+
+    for (int i = 0; i < codeLength; i++)
+    {
+        codeEditSource[i]=str[i];
+    }
+    return true;
 }
 
-void sendNewLineToRobot()
-{
-    sendByteToRobot('\n');
-    sendByteToRobot('\r');
-}
-
-void sendLineToRobot(String str)
-{
-    sendNewLineToRobot();
-    sendStringToRobot(str);
-    sendNewLineToRobot();
-}
 
 void setupCodeEditorServer()
 {
@@ -147,22 +155,23 @@ void setupCodeEditorServer()
     server.on("/run", []()
               {
   alwaysDisplayMessage("Got a run request");
-  sendLineToRobot("*RS");
+//  sendLineToRobot("*RS");
   handleRoot(); });
 
     server.on("/stop", []()
               {
 //    Serial.println("Got a stop request");
-    sendLineToRobot("*RH");
+//    sendLineToRobot("*RH");
     handleRoot(); });
 
     server.on("/save", []()
               {
     // code is the only argument
     String robotCode = server.arg(0); 
-    sendLineToRobot("begin");
-    sendStringToRobot(robotCode);
-    sendLineToRobot("end");
+    sendStringToCodeBuffer(robotCode);
+    Serial.printf("Source code: %s\n", codeEditSource);
+
+    saveCode();
     handleRoot(); });
 
     server.onNotFound(handleNotFound);
@@ -185,12 +194,12 @@ void codeEditorMessagesOn()
 
 void sendcodeEditorMessageToServer(char *messageText)
 {
-    char messageBuffer[codeEditor_MESSAGE_BUFFER_SIZE];
+    char messageBuffer[HULLOS_PROGRAM_SIZE];
     char deviceNameBuffer[DEVICE_NAME_LENGTH];
 
     PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
 
-    snprintf(messageBuffer, codeEditor_MESSAGE_BUFFER_SIZE,
+    snprintf(messageBuffer, HULLOS_PROGRAM_SIZE,
              "{\"name\":\"%s\",\"from\":\"codeEditor\",\"message\":\"%s\"}",
              deviceNameBuffer,
              messageText);
@@ -279,11 +288,20 @@ unsigned long codeEditormillisAtLastScroll;
 
 void initcodeEditorProcess()
 {
+    // Empty the edit file
+    codeEditSource[0] = 0;
     // all the setup is performed in start
 }
 
+unsigned long millisOfLastCodeEditorUpdate;
+
 void startcodeEditorProcess()
 {
+    loadCodeFromFile();
+
+    Serial.printf("Source code: %s\n", codeEditSource);
+
+    millisOfLastCodeEditorUpdate = millis();
 
     if (codeEditorSettings.codeEditorEnabled)
     {
@@ -295,8 +313,21 @@ void startcodeEditorProcess()
     }
 }
 
+#define MILLIS_BETWEEN_CODE_EDIT_UPDATES 20
+
 void updatecodeEditorProcess()
 {
+
+	unsigned long currentMillis = millis();
+	unsigned long millisSinceLastUpdate = ulongDiff(currentMillis, millisOfLastCodeEditorUpdate);
+
+	if (millisSinceLastUpdate < MILLIS_BETWEEN_CODE_EDIT_UPDATES)
+	{
+        return;
+	}
+
+	millisOfLastCodeEditorUpdate = currentMillis;
+
     switch (codeEditorProcess.status)
     {
     case CODE_EDITOR_CONNECTED:

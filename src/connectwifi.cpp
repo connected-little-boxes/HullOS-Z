@@ -427,6 +427,9 @@ void stopWiFi()
 	delay(500);
 }
 
+
+unsigned long millisOfLastWiFiUpdate;
+
 void initWifi()
 {
 	WiFiProcessDescriptor.status = WIFI_TURNED_OFF;
@@ -434,6 +437,8 @@ void initWifi()
 
 void startWifi()
 {
+	millisOfLastWiFiUpdate = millis();
+
 	if (wifiConnectionSettings.wiFiOn)
 	{
 		beginWiFiScanning();
@@ -488,8 +493,22 @@ void wifiStatusMessage(char *buffer, int bufferLength)
 	}
 }
 
+#define MILLIS_BETWEEN_WIFI_UPDATES 20
+
+
 void updateWifi()
 {
+
+	unsigned long currentMillis = millis();
+	unsigned long millisSinceLastUpdate = ulongDiff(currentMillis, millisOfLastWiFiUpdate);
+
+	if (millisSinceLastUpdate < MILLIS_BETWEEN_WIFI_UPDATES)
+	{
+        return;
+	}
+
+	millisOfLastWiFiUpdate = currentMillis;
+
 	switch (WiFiProcessDescriptor.status)
 	{
 	case WIFI_OK:
