@@ -3,6 +3,7 @@
 #include "Utils.h"
 #include "HullOSScript.h"
 #include "PythonIsh.h"
+#include "console.h"
 
 #include <Arduino.h>
 
@@ -1484,8 +1485,17 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 	return result;
 }
 
-int decodeScriptLine(char *input)
+int pythonIshdecodeScriptLine(char * input)
 {
+
+	Serial.printf("PythonIsh got line to decode: %s\n", input);
+
+
+	if (strcasecmp(input, "Exit") == 0){
+		Serial.println("PythonIsh session ended");
+		selectConsoleInput();
+		return ERROR_OK;
+	}
 
 	// Set the shared buffer pointer to point to the statement being decoded
 	bufferPos = input;
@@ -1497,6 +1507,13 @@ int decodeScriptLine(char *input)
 	// Lines that start with a # are comments
 	if (*bufferPos == '#')
 	{
+		return ERROR_OK;
+	}
+
+	// Lines that start with a ! are console commands
+	if (*bufferPos == '!')
+	{
+		actOnConsoleCommandText(input+1);
 		return ERROR_OK;
 	}
 
@@ -1590,29 +1607,6 @@ int decodeScriptLine(char *input)
 	endCommand();
 
 	return result;
-}
-
-int pythonIshdecodeScriptChar(char b)
-{
-	// convert linefeeds into carriage return
-
-	if (b == '\n')
-		b = STATEMENT_TERMINATOR;
-
-	if (scriptInputBufferPos == SCRIPT_INPUT_BUFFER_LENGTH)
-		return ERROR_SCRIPT_INPUT_BUFFER_OVERFLOW;
-
-	if (b == STATEMENT_TERMINATOR)
-	{
-		scriptInputBuffer[scriptInputBufferPos] = 0;
-		int result = decodeScriptLine(scriptInputBuffer);
-		scriptLineNumber++; // move on to the next line
-		resetScriptLine();
-		return result;
-	}
-
-	scriptInputBuffer[scriptInputBufferPos++] = b;
-	return ERROR_OK;
 }
 
 void testScript()

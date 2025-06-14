@@ -22,7 +22,10 @@ extern struct SettingItemCollection hullosSettingItems;
 
 extern struct process hullosProcess;
 
-void HullOSStartPythonIsh(char *commandLine);
-void HullOSStartRockstar(char *commandLine);
+void HullOSStartPythonIshImmediate(char *commandLine);
+void HullOSStartPythonIshCompile(char *commandLine);
+
+void HullOSStartRockstarImmediate(char *commandLine);
+void HullOSStartRockstarCompile(char *commandLine);
 
 void sendMessageToHullOS(char *programText);

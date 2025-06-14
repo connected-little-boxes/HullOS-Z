@@ -1217,7 +1217,7 @@ void flickeringColouredLights(byte r, byte g, byte b,int steps){
 
 void setFlickerUpdateSpeed(int speed)
 {
-
+	frame->setSpriteSpeed(speed/10);
 }
 
 void transitionToColor(byte speed, byte r, byte g, byte b)
@@ -1232,6 +1232,7 @@ void setLightColor(byte r, byte g, byte b)
 
 void randomiseLights()
 {
+	frame->fadeSpritesToTwinkle(10);
 
 }
 

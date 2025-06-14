@@ -135,6 +135,7 @@ void Frame::fadeToColour(Colour target, int noOfSteps)
 	}
 }
 
+
 void Frame::setColour(Colour target)
 {
 	for (int i = 0; i < MAX_NO_OF_SPRITES; i++)
@@ -364,3 +365,32 @@ void Frame::fadeSpritesToTwinkle(int steps)
 		sprites[i]->fadeToColour(newColour->col, steps);
 	}
 }
+
+void Frame::setSpriteSpeed(float inSpeed)
+{
+	int noOfSprites = getNumberOfActiveSprites();
+
+	float minSpeed = inSpeed - 0.005;
+	float maxSpeed = inSpeed + 0.015;
+	float speedStep = (maxSpeed - minSpeed) / (noOfSprites * 2);
+	float speed = minSpeed;
+
+	for (int i = 0; i < noOfSprites; i++)
+	{
+		Sprite *s = sprites[i];
+
+		if(random(0,2)==1)
+			s->xSpeed = speed;
+		else
+			s->xSpeed = -speed;
+		speed = speed + speedStep;
+		if(random(0,2)==1)
+			s->ySpeed = speed;
+		else
+			s->ySpeed = -speed;
+		speed = speed + speedStep;
+	}
+}
+
+
+

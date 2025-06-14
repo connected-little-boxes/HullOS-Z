@@ -1,6 +1,6 @@
 
 //#define SCRIPT_DEBUG
 
-int pythonIshdecodeScriptChar(char b);
+int pythonIshdecodeScriptLine(char * b);
 
 

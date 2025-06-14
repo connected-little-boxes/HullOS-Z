@@ -89,32 +89,52 @@ void sendMessageToHullOS(char *programText)
 
 }
 
-void HullOSStartPythonIsh(char *commandLine)
+void HullOSStartPythonIsh()
 {
-    Serial.printf("Starting PythonIsh: %s\n", commandLine);
+    Serial.printf("Starting PythonIsh\n");
 
-    setProgramOutputFunction(interpretSerialByte);
     //   setProgramOutputFunction(storeReceivedByte);
 
-    setProgramDecodeFunction(pythonIshdecodeScriptChar);
+}
 
-    consoleProcessDescriptor.status = CONSOLE_OFF;
+void HullOSStartPythonIshImmediate(char *commandLine)
+{
+    Serial.printf("Starting PythonIsh Immediate\n");
     programState = EXECUTE_IMMEDIATELY;
+    setProgramOutputFunction(interpretSerialByte);
+    setConsoleInputLineHandler(pythonIshdecodeScriptLine);
     resetCommand();
     resetSerialBuffer();
 }
 
-void HullOSStartRockstar(char *commandLine)
+void HullOSStartPythonIshCompile(char *commandLine)
 {
-    Serial.printf("Starting Rockstar: %s\n", commandLine);
+    Serial.printf("Starting PythonIsh Immediate\n");
+    programState = EXECUTE_IMMEDIATELY;
+    setProgramOutputFunction(storeReceivedByte);
+    setConsoleInputLineHandler(pythonIshdecodeScriptLine);
+    resetCommand();
+    resetSerialBuffer();
 }
 
-void sendChars(){
-    while (CharsAvailable())
-    {
-        byte b = GetRawCh();
-        HullOSProgramInputFunction(b);
-    }
+void HullOSStartRockstarImmediate(char *commandLine)
+{
+    Serial.printf("Starting Rockstar Immediate\n");
+    programState = EXECUTE_IMMEDIATELY;
+    setProgramOutputFunction(interpretSerialByte);
+    setConsoleInputLineHandler(rockstarProcessScriptLine);
+    resetCommand();
+    resetSerialBuffer();
+}
+
+void HullOSStartRockstarCompile(char *commandLine)
+{
+    Serial.printf("Starting Rockstar Compile\n");
+    programState = EXECUTE_IMMEDIATELY;
+    setProgramOutputFunction(storeReceivedByte);
+    setConsoleInputLineHandler(rockstarProcessScriptLine);
+    resetCommand();
+    resetSerialBuffer();
 }
 
 void updateHullOS()
@@ -132,10 +152,8 @@ void updateHullOS()
     switch (programState)
     {
 	case EXECUTE_IMMEDIATELY:
-        sendChars();
         break;
 	case STORE_PROGRAM:
-        sendChars();
         break;
     case PROGRAM_STOPPED:
     case PROGRAM_PAUSED:
@@ -158,7 +176,7 @@ void updateHullOS()
     }
 }
 
-void stophullos()
+void stopHullOS()
 {
     hullosProcess.status = HULLOS_STOPPED;
 }
@@ -259,7 +277,7 @@ struct process hullosProcess = {
     initHullOS,
     startHullOS,
     updateHullOS,
-    stophullos,
+    stopHullOS,
     hullosStatusOK,
     hullosStatusMessage,
     false,

@@ -37,6 +37,8 @@
 #include "outpin.h"
 #include "RFID.h"
 #include "Motors.h"
+#include "distance.h"
+#include "codeEditorProcess.h"
 
 void setup1()
 {
@@ -97,6 +99,9 @@ void populateProcessList()
 #if defined(PROCESS_MOTOR)
   addProcessToAllProcessList(&motorProcessDescriptor);
 #endif
+#if defined(PROCESS_CODE_EDITOR)
+  addProcessToAllProcessList(&codeEditorProcess);
+#endif
 }
 
 void populateSensorList()
@@ -129,6 +134,11 @@ void populateSensorList()
   addSensorToAllSensorsList(&rotarySensor);
   addSensorToActiveSensorsList(&rotarySensor);
 #endif
+#ifdef SENSOR_DISTANCE
+  addSensorToAllSensorsList(&Distance);
+  addSensorToActiveSensorsList(&Distance);
+#endif
+
 }
 
 void displayControlMessage(int messageNumber, ledFlashBehaviour severity, char *messageText)

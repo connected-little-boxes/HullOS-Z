@@ -48,7 +48,6 @@
 #define COMMAND_DANCE 41
 #define COMMON_VARIABLE 42
 
-#define SCRIPT_INPUT_BUFFER_LENGTH 80
 #define COMMAND_NAME_TERMINATOR '#'
 #define COMMAND_ALIAS_SEPARATOR ','
 #define STATEMENT_TERMINATOR 0x0D
@@ -118,27 +117,15 @@
 #define ERROR_EMPTY_TOKEN 63
 #define ERROR_MISSING_VARIABLE_IN_SIMPLE_ASSIGNMENT 64
 
-
 #define COMMAND_SYSTEM_COMMAND 100
 #define COMMAND_EMPTY_LINE 101
 
-void printError(int code);
+// Allow us to redirect the compiled output to the program storage buffer or immediate execution
 
 void setProgramOutputFunction(void (*output)(unsigned char));
-void setProgramDecodeFunction(int (*input)(char));
-
 extern void (*HullOSProgramoutputFunction)(unsigned char);
 
-extern int (*HullOSProgramInputFunction)(char);
-
-
-extern char scriptInputBuffer[SCRIPT_INPUT_BUFFER_LENGTH];
-
-extern int scriptInputBufferPos;
-
-extern char scriptInputBuffer[SCRIPT_INPUT_BUFFER_LENGTH];
-
-extern int scriptInputBufferPos;
+void printError(int code);
 
 // The line number in the script
 // Used when reporting errors

@@ -18,6 +18,8 @@
 
 struct ConsoleSettings consoleSettings;
 
+int (*consoleInputLineHandler)(char *);
+
 // set to true during startup to force a console to override any serial settings
 
 bool forceConsole = false;
@@ -606,13 +608,21 @@ void doFirmwareUpgradeReset(char *commandLine)
 #endif
 
 #ifdef PROCESS_HULLOS
-void doStartPythonIsh(char *commandLine){
-	HullOSStartPythonIsh(commandLine);
 
+void doStartPythonIshImmediate(char *commandLine){
+	HullOSStartPythonIshImmediate(commandLine);
 }
 
-void doStartRockstar(char *commandLine){
-	HullOSStartRockstar(commandLine);
+void doStartPythonIshCompile(char *commandLine){
+	HullOSStartPythonIshCompile(commandLine);
+}
+
+void doStartRockstarImmediate(char *commandLine){
+	HullOSStartRockstarImmediate(commandLine);
+}
+
+void doStartRockstarCompile(char *commandLine){
+	HullOSStartRockstarCompile(commandLine);
 }
 #endif
 
@@ -648,7 +658,8 @@ struct consoleCommand userCommands[] =
 		{"pottest", "test the pot sensor", doTestPotSensor},
 #endif
 #ifdef PROCESS_HULLOS
-		{"pythonish", "open the PythonIsh programming interface", doStartPythonIsh},
+		{"pythonishc", "open the PythonIsh programming interface to compile", doStartPythonIshCompile},
+		{"pythonishi", "open the PythonIsh programming interface for immediate", doStartPythonIshImmediate},
 #endif
 
 #ifdef SENSOR_RFID
@@ -656,7 +667,8 @@ struct consoleCommand userCommands[] =
 #endif
 
 #ifdef PROCESS_HULLOS
-		{"rockstar", "open the rockstar programming interface", doStartRockstar},
+		{"rockstarc", "open the rockstar programming interface", doStartRockstarCompile},
+		{"rockstari", "open the rockstar programming interface", doStartRockstarImmediate},
 #endif
 
 #ifdef SENSOR_ROTARY
@@ -744,7 +756,7 @@ struct consoleCommand *findCommand(char *commandLine, consoleCommand *commands, 
 	return NULL;
 }
 
-boolean performCommand(char *commandLine, consoleCommand *commands, int noOfCommands)
+int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands)
 {
 	alwaysDisplayMessage("Got command: %s\n", commandLine);
 
@@ -752,7 +764,7 @@ boolean performCommand(char *commandLine, consoleCommand *commands, int noOfComm
 	{
 		// treat the command as JSON
 		performRemoteCommand(commandLine);
-		return true;
+		return WORKED_OK;
 	}
 
 	// Look for a command with that name
@@ -762,7 +774,7 @@ boolean performCommand(char *commandLine, consoleCommand *commands, int noOfComm
 	if (comm != NULL)
 	{
 		comm->actOnCommand(commandLine);
-		return true;
+		return WORKED_OK;
 	}
 
 	// Look for a setting with that name
@@ -782,16 +794,16 @@ boolean performCommand(char *commandLine, consoleCommand *commands, int noOfComm
 		{
 			saveSettings();
 		}
-		return true;
+		return WORKED_OK;
 	case settingNotFound:
 		alwaysDisplayMessage("setting not found");
-		return false;
+		return COMMAND_SETTING_NOT_FOUND;
 	case settingValueInvalid:
 		alwaysDisplayMessage("setting value invalid");
-		return false;
+		return COMMAND_SETTING_VALUE_INVALID;
 	}
 
-	return false;
+	return COMMAND_NO_COMMAND_FOUND;
 }
 
 void showHelp()
@@ -810,9 +822,9 @@ void reset_serial_buffer()
 	serialReceiveBufferPos = 0;
 }
 
-void actOnSerialCommand(char * buffer)
+int actOnConsoleCommandText(char * buffer)
 {
-	performCommand(buffer, userCommands, sizeof(userCommands) / sizeof(struct consoleCommand));
+	return performCommand(buffer, userCommands, sizeof(userCommands) / sizeof(struct consoleCommand));
 }
 
 #define BACKSPACE_CHAR 0x08
@@ -840,7 +852,7 @@ void bufferSerialChar(char ch)
 		{
 			serialReceiveBuffer[serialReceiveBufferPos] = 0;
 			alwaysDisplayMessage("\n\r");
-			actOnSerialCommand(serialReceiveBuffer);
+			consoleInputLineHandler(serialReceiveBuffer);
 			reset_serial_buffer();
 		}
 		return;
@@ -857,21 +869,25 @@ void checkSerialBuffer()
 {
 	// console is disabled when the robot is connected
 
-#ifdef ROBOT
-	if(robotProcess.status == ROBOT_CONNECTED){
-		return;
-	}
-#endif
-
 	while (Serial.available())
 	{
 		bufferSerialChar(Serial.read());
 	}
 }
 
+void setConsoleInputLineHandler(int (*handler)(char *)){
+	consoleInputLineHandler = handler;
+}
+
+void selectConsoleInput()
+{
+	setConsoleInputLineHandler(actOnConsoleCommandText);
+}
+
 void initConsole()
 {
 	consoleProcessDescriptor.status = CONSOLE_OFF;
+	selectConsoleInput();
 }
 
 void startConsole()

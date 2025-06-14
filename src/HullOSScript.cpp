@@ -4,15 +4,8 @@
 
 void (*HullOSProgramoutputFunction)(unsigned char);
 
-int (*HullOSProgramInputFunction)(char);
-
-
 void setProgramOutputFunction(void (*output)(unsigned char)){
 	HullOSProgramoutputFunction = output;
-}
-
-void setProgramDecodeFunction(int (*input)(char)){
-	HullOSProgramInputFunction = input;
 }
 
 const char* getErrorMessage(int code) {
@@ -92,8 +85,6 @@ void printError(int code) {
     Serial.print(": ");
     Serial.println(getErrorMessage(code));
 }
-
-char scriptInputBuffer[SCRIPT_INPUT_BUFFER_LENGTH];
 
 int scriptInputBufferPos;
 

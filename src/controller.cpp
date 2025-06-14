@@ -1143,7 +1143,7 @@ void do_Json_command(const char *rawCommandText, JsonObject &root, void (*delive
 	TRACELOGLN("Done JSON command");
 }
 
-StaticJsonBuffer<1000> jsonBuffer;
+StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
 
 void act_onJson_message(const char *json, void (*deliverResult)(char *resultText))
 {

@@ -263,7 +263,7 @@ void startDistance()
 		Distance.activeReading = new DistanceReading();
 	}
 
-	if (!DistanceSettings.DistanceFitted)
+	if (!distanceSettings.DistanceFitted)
 	{
 		Distance.status = DISTANCE_NOT_FITTED;
 	}
@@ -329,21 +329,21 @@ void DistanceStatusMessage(char *buffer, int bufferLength)
 }
 
 struct sensor Distance = {
-	"PIR",
+	"Distance",
 	0, // millis at last reading
 	0, // reading number
 	0, // last transmitted reading number
 	startDistance,
 	stopDistance,
 	updateDistanceReading,
-	startDistanceReading,
+	startDistanceSensorReading,
 	addDistanceReading,
 	DistanceStatusMessage,
 	-1,	   // status
 	false, // being updated
 	NULL,  // active reading - set in setup
 	0,	   // active time
-	(unsigned char *)&DistanceSettings,
+	(unsigned char *)&distanceSettings,
 	sizeof(struct DistanceSettings),
 	&DistanceSettingItems,
 	NULL, // next active sensor

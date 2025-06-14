@@ -66,16 +66,6 @@ int CharsAvailable()
 
 int (*decodeScriptChar)(char b);
 
-unsigned char GetRawCh()
-{
-    int ch;
-    do
-    {
-        ch = Serial.read();
-    } while (ch < 0);
-
-    return (unsigned char)ch;
-}
 
 // Current position in the EEPROM of the execution
 int programCounter;

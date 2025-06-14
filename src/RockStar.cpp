@@ -318,23 +318,7 @@ int rockstarProcessScriptLine(char *input, void (*output)(byte))
     return ERROR_OK;
 }
 
-int rockstarProcessScriptChar(char b, void (*output)(byte))
+int rockstarProcessScriptLine(char *b)
 {
-    Serial.printf("Rockstar got a %c %d\n", b, b);
-
-    if (b == '\n')
-        b = STATEMENT_TERMINATOR;
-
-    if (scriptInputBufferPos == SCRIPT_INPUT_BUFFER_LENGTH)
-        return ERROR_SCRIPT_INPUT_BUFFER_OVERFLOW;
-
-    if (b != STATEMENT_TERMINATOR)
-    {
-        scriptInputBuffer[scriptInputBufferPos++] = b;
-        return ERROR_OK;
-    }
-
-    scriptInputBuffer[scriptInputBufferPos] = 0;
-
-    return rockstarProcessScriptLine(scriptInputBuffer, output);
+    return ERROR_OK;
 }

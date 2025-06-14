@@ -47,7 +47,7 @@ void directDistanceReadTest();
 
 void testDistanceSensor();
 
-extern struct DistanceSettings DistanceSettings;
+extern struct DistanceSettings distanceSettings;
 
 extern struct SettingItemCollection DistanceSettingItems;
 

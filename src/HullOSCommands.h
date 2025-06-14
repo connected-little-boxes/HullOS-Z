@@ -64,7 +64,6 @@ extern char *remoteLimit;
 /// Serial comms
 ///////////////////////////////////////////////////////////
 int CharsAvailable();
-uint8_t GetRawCh();
 
 void dumpProgramFromEEPROM(int EEPromStart);
 void startProgramExecution();

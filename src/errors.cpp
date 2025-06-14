@@ -154,8 +154,17 @@ void decodeError(int errorNo, char *buffer, int bufferLength)
     case JSON_MESSAGE_OUTPIN_NOT_AVAILABLE:
         message =  F("Output pin not available");
         break;
-    case JSON_MESSAGE_ROBOT_NOT_ENABLED:
-        message =  F("Robot not enabled");
+    case JSON_MESSAGE_CODE_EDITOR_NOT_ENABLED:
+        message =  F("Code editor not enabled");
+        break;
+    case COMMAND_SETTING_NOT_FOUND:
+        message =  F("Command setting not found");
+        break;
+    case COMMAND_SETTING_VALUE_INVALID:
+        message = F("Commmand setting invalid value");
+        break;
+    case COMMAND_NO_COMMAND_FOUND:
+        message = F("No command found");
         break;
     }
 

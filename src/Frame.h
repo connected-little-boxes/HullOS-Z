@@ -58,6 +58,6 @@ public:
 	void fadeSpritesToWalkingColours(char * colours,int steps);
 	void fadeSpritesToTwinkle(int steps);
 	int getNumberOfActiveSprites();
-
+	void setSpriteSpeed(float speed);
 };
 
