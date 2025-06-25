@@ -5,6 +5,7 @@
 
 struct MessagesSettings {
 	bool messagesEnabled;
+	bool speedMessagesEnabled;
 };
 
 void displayMessage(const char *format, ...);

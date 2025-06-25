@@ -169,7 +169,7 @@ void setupCodeEditorServer()
     // code is the only argument
     String robotCode = server.arg(0); 
     sendStringToCodeBuffer(robotCode);
-    Serial.printf("Source code: %s\n", codeEditSource);
+    Serial.printf("Source code received from web page: %s\n", codeEditSource);
 
     saveCode();
     handleRoot(); });

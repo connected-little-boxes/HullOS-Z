@@ -21,9 +21,21 @@ struct SettingItem messagesEnabled = {
     setTrue,
     validateYesNo};
 
-struct SettingItem *messagesSettingItemPointers[] =
+struct SettingItem speedMessagesEnabled = {
+    "Speed messages enabled",
+    "speedmessagesactive",
+    &messagesSettings.speedMessagesEnabled,
+    ONOFF_INPUT_LENGTH,
+    yesNo,
+    setTrue,
+    validateYesNo};
+
+
+    struct SettingItem *messagesSettingItemPointers[] =
     {
-        &messagesEnabled};
+        &messagesEnabled,
+        &speedMessagesEnabled
+    };
 
 struct SettingItemCollection messagesSettingItems = {
     "messages",

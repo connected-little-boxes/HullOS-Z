@@ -12,6 +12,12 @@
 #define FIRST_SHUTDOWN_PROCESS 16
 #define SECOND_SHUTDOWN_PROCESS 32
 
+// If a process takes longer than this to complete an update
+// a "slow" message will be displayed. Set to display a message if the 
+// time exceeds a millisecond.
+
+#define SLOW_PROCESS_TIME_MICROS 1000	
+
 // not used at the moment - will allow us to add behaviours to processes
 
 struct processMessageListener{

@@ -1,12 +1,7 @@
 #include <Arduino.h>
 #include "HullOSScript.h"
+#include "HullOSCommands.h"
 #include "HullOSVariables.h"
-
-void (*HullOSProgramoutputFunction)(unsigned char);
-
-void setProgramOutputFunction(void (*output)(unsigned char)){
-	HullOSProgramoutputFunction = output;
-}
 
 const char* getErrorMessage(int code) {
     switch (code) {

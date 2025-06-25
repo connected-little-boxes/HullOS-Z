@@ -159,6 +159,7 @@ void initialiseAllProcesses()
 	while (procPtr != NULL)
 	{
 		// messageLogf("   initilising: %s\n", procPtr->processName);
+		procPtr->totalTime=0;
 		procPtr->initProcess();
 		DISPLAY_MEMORY_MONITOR(procPtr->processName);
 		procPtr = procPtr->nextAllProcesses;
@@ -191,8 +192,14 @@ void updateProcesses()
 	{
 		unsigned long startMicros = micros();
 		procPtr->udpateProcess();
-		procPtr->activeTime = ulongDiff(micros(), startMicros);
-		procPtr->totalTime = procPtr->totalTime + procPtr->activeTime/1000;
+		unsigned long runTime = ulongDiff(micros(), startMicros);
+		if(messagesSettings.speedMessagesEnabled) {
+			if(runTime>SLOW_PROCESS_TIME_MICROS){
+				Serial.printf("  %s running slow: %ul\n", procPtr->processName,runTime);
+			}
+		}
+		procPtr->activeTime = runTime;
+		procPtr->totalTime = procPtr->totalTime + runTime;
 		DISPLAY_MEMORY_MONITOR(procPtr->processName);
 		procPtr = procPtr->nextActiveProcess;
 	}
@@ -213,7 +220,7 @@ void dumpProcessStatus()
 			alwaysDisplayMessage("%s Active time(microsecs): ", processStatusBuffer);
 			alwaysDisplayMessage("%lu",procPtr->activeTime);
 			alwaysDisplayMessage(" Total time(millisecs): ");
-			alwaysDisplayMessage("%lu\n",procPtr->totalTime);
+			alwaysDisplayMessage("%lu\n",procPtr->totalTime/1000);
 		}
 		procPtr = procPtr->nextActiveProcess;
 	}

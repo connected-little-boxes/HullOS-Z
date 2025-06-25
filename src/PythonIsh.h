@@ -1,6 +1,7 @@
 
 //#define SCRIPT_DEBUG
+#pragma once
 
-int pythonIshdecodeScriptLine(char * b);
-
+#include "HullOS.h"
+extern struct LanguageHandler PythonIshLanguage;
 

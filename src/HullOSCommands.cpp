@@ -20,22 +20,41 @@
 #include "RockStar.h"
 #include "PythonIsh.h"
 #include "otaupdate.h"
+#include "utils.h"
 #include "version.h"
 
-unsigned char HullOScode[HULLOS_PROGRAM_SIZE];
+char HullOScodeRunningCode[HULLOS_PROGRAM_SIZE];
+char *commandPos;
+char *commandLimit;
+char *bufferLimit;
+char *decodePos;
+char *decodeLimit;
 
-unsigned char readByteFromHullOScode(int pos)
-{
-    return HullOScode[pos];
+char HullOScodeCompileOutput[HULLOS_PROGRAM_SIZE];
+char * compiledPos;
+char * compiledLimit;
+
+char HullOSRemoteCommand[COMMAND_BUFFER_SIZE];
+char *remotePos;
+char *remoteLimit;
+
+bool loadRunningProgramFromFile(){
+
+    return false;
 }
 
-bool writeByteIntoHullOScode(uint8_t byte, int pos)
+bool writeByteIntoHullOScodeCompileOutput(uint8_t byte, int pos)
 {
     if (pos > HULLOS_PROGRAM_SIZE)
         return false;
-    HullOScode[pos] = byte;
+    HullOScodeCompileOutput[pos] = byte;
 
     return true;
+}
+
+void HullOSProgramoutputFunction(char ch){
+    Serial.printf("Writing a %c %d\n", ch, ch);
+    
 }
 
 ProgramState programState = PROGRAM_STOPPED;
@@ -44,16 +63,6 @@ unsigned char diagnosticsOutputLevel = 0;
 
 unsigned long delayEndTime;
 
-char programCommand[COMMAND_BUFFER_SIZE];
-char *commandPos;
-char *commandLimit;
-char *bufferLimit;
-char *decodePos;
-char *decodeLimit;
-
-char remoteCommand[COMMAND_BUFFER_SIZE];
-char *remotePos;
-char *remoteLimit;
 
 ///////////////////////////////////////////////////////////
 /// Serial comms
@@ -66,12 +75,8 @@ int CharsAvailable()
 
 int (*decodeScriptChar)(char b);
 
-
-// Current position in the EEPROM of the execution
+// Current position in the program of the execution
 int programCounter;
-
-// Start position of the code as stored in the EEPROM
-int programBase;
 
 // Write position when downloading and storing program code
 int programWriteBase;
@@ -79,18 +84,18 @@ int programWriteBase;
 // Write position for any incoming program code
 int bufferWritePosition;
 
-// Dumps the program as stored in the EEPROM
+// Dumps the running program
 
-void dumpProgramFromEEPROM()
+void dumpRunningProgram()
 {
-    int EEPromPos = 0;
+    int progPos = 0;
 
     Serial.println(F("Program: "));
 
     unsigned char byte;
     while (true)
     {
-        byte = readByteFromHullOScode(EEPromPos++);
+        byte = HullOScodeRunningCode[progPos++];
 
         if (byte == STATEMENT_TERMINATOR)
             Serial.println();
@@ -100,13 +105,13 @@ void dumpProgramFromEEPROM()
         if (byte == PROGRAM_TERMINATOR)
         {
             Serial.print(F("Program size: "));
-            Serial.println(EEPromPos);
+            Serial.println(progPos);
             break;
         }
 
-        if (EEPromPos >= PROGRAM_SIZE)
+        if (progPos >= PROGRAM_SIZE)
         {
-            Serial.println(F("Eeprom end"));
+            Serial.println(F("Program end"));
             break;
         }
     }
@@ -125,7 +130,6 @@ void startProgramExecution()
     clearVariables();
     setAllLightsOff();
     programCounter = 0;
-    programBase = 0;
     programState = PROGRAM_ACTIVE;
 }
 
@@ -208,12 +212,12 @@ void resetLineStorageState()
 
 void storeProgramByte(byte b)
 {
-    writeByteIntoHullOScode(b, programWriteBase++);
+    writeByteIntoHullOScodeCompileOutput(b, programWriteBase++);
 }
 
 void clearStoredProgram()
 {
-    writeByteIntoHullOScode(PROGRAM_TERMINATOR, 0);
+    writeByteIntoHullOScodeCompileOutput(PROGRAM_TERMINATOR, 0);
 }
 
 // Called to start the download of program code
@@ -232,8 +236,6 @@ void startDownloadingCode()
     // partially stored programs never get executed on power up
 
     clearStoredProgram();
-
-    programState = STORE_PROGRAM;
 
     programWriteBase = 0;
 
@@ -389,7 +391,7 @@ void resetCommand()
 #ifdef COMMAND_DEBUG
     Serial.println(".**resetCommand");
 #endif
-    commandPos = programCommand;
+    commandPos = HullOScodeRunningCode;
     bufferLimit = commandPos + COMMAND_BUFFER_SIZE;
 }
 
@@ -1732,7 +1734,7 @@ int findNextStatement(int programPosition)
 
     while (true)
     {
-        char ch = readByteFromHullOScode(programPosition);
+        char ch = HullOScodeRunningCode[programPosition];
 
         if (ch == PROGRAM_TERMINATOR | programPosition == PROGRAM_SIZE)
             return -1;
@@ -1770,7 +1772,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         int statementStart = programPosition;
 
-        char programByte = readByteFromHullOScode(programPosition++);
+        char programByte = HullOScodeRunningCode[programPosition++];
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
         Serial.print("Statement at: ");
@@ -1807,7 +1809,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         // If we get here we have found a C
 
-        programByte = readByteFromHullOScode(programPosition++);
+        programByte = HullOScodeRunningCode[programPosition++];
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
 
@@ -1848,7 +1850,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         while (*labelTest != STATEMENT_TERMINATOR & programPosition < PROGRAM_SIZE)
         {
-            programByte = readByteFromHullOScode(programPosition);
+            programByte = HullOScodeRunningCode[programPosition];
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
             Serial.print("Destination byte: ");
@@ -1880,7 +1882,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         // Get the byte at the end of the destination statement
 
-        programByte = readByteFromHullOScode(programPosition);
+        programByte = HullOScodeRunningCode[programPosition];
 
         if (*labelTest == programByte)
         {
@@ -1931,7 +1933,7 @@ void jumpToLabel()
     char *labelPos = decodePos;
     char *labelSearch = decodePos;
 
-    int labelStatementPos = findLabelInProgram(decodePos, programBase);
+    int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef JUMP_TO_LABEL_DEBUG
     Serial.print("Label statement pos: ");
@@ -1983,7 +1985,7 @@ void jumpToLabelCoinToss()
         char *labelPos = decodePos;
     char *labelSearch = decodePos;
 
-    int labelStatementPos = findLabelInProgram(decodePos, programBase);
+    int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef JUMP_TO_LABEL_COIN_DEBUG
     Serial.print("  Label statement pos: ");
@@ -2107,7 +2109,7 @@ void measureDistanceAndJump()
         return;
     }
 
-    int labelStatementPos = findLabelInProgram(decodePos, programBase);
+    int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef COMMAND_MEASURE_DEBUG
     Serial.print("Label statement pos: ");
@@ -2210,7 +2212,7 @@ void compareAndJump(bool jumpIfTrue)
         return;
     }
 
-    int labelStatementPos = findLabelInProgram(decodePos, programBase);
+    int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef COMPARE_CONDITION_DEBUG
     Serial.print("Label statement pos: ");
@@ -2286,7 +2288,7 @@ void jumpWhenMotorsInactive()
         return;
     }
 
-    int labelStatementPos = findLabelInProgram(decodePos, programBase);
+    int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef JUMP_MOTORS_INACTIVE_DEBUG
     Serial.print("Label statement pos: ");
@@ -2408,14 +2410,6 @@ void remoteDownload()
 #ifdef REMOTE_DOWNLOAD_DEBUG
     Serial.println(F(".**remote download"));
 #endif
-
-    if (programState != EXECUTE_IMMEDIATELY)
-    {
-#ifdef DIAGNOSTICS_ACTIVE
-        Serial.println(F("RMFAIL: not accepting commands"));
-#endif
-        return;
-    }
 
     startDownloadingCode();
 }
@@ -2583,7 +2577,7 @@ void setMessaging()
 
 void printProgram()
 {
-    dumpProgramFromEEPROM();
+    dumpRunningProgram();
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
@@ -2989,7 +2983,7 @@ void processCommandByte(byte b)
 #ifdef COMMAND_DEBUG
         Serial.println(F(".  Command end"));
 #endif
-        actOnCommand(programCommand, commandPos);
+        actOnCommand(HullOScodeRunningCode, commandPos);
         resetCommand();
         return;
     }
@@ -2997,8 +2991,8 @@ void processCommandByte(byte b)
 
 void resetSerialBuffer()
 {
-    remotePos = remoteCommand;
-    remoteLimit = remoteCommand + COMMAND_BUFFER_SIZE;
+    remotePos = HullOSRemoteCommand;
+    remoteLimit = HullOSRemoteCommand + COMMAND_BUFFER_SIZE;
 }
 
 void interpretSerialByte(byte b)
@@ -3017,7 +3011,7 @@ void interpretSerialByte(byte b)
 #ifdef COMMAND_DEBUG
         Serial.println(F(".  Command end"));
 #endif
-        actOnCommand(remoteCommand, remotePos);
+        actOnCommand(HullOSRemoteCommand, remotePos);
         resetSerialBuffer();
         return;
     }
@@ -3053,7 +3047,7 @@ bool exeuteProgramStatement()
 
     while (true)
     {
-        programByte = readByteFromHullOScode(programCounter++);
+        programByte = HullOScodeRunningCode[programCounter++];
 
         if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
         {
@@ -3070,6 +3064,33 @@ bool exeuteProgramStatement()
 
         if (programByte == STATEMENT_TERMINATOR)
             return true;
+    }
+}
+
+void updateRunningProgram()
+{
+    // If we receive serial data the program that is running
+    // must stop.
+    switch (programState)
+    {
+    case PROGRAM_STOPPED:
+    case PROGRAM_PAUSED:
+        break;
+    case PROGRAM_ACTIVE:
+        exeuteProgramStatement();
+        break;
+    case PROGRAM_AWAITING_MOVE_COMPLETION:
+        if (!motorsMoving())
+        {
+            programState = PROGRAM_ACTIVE;
+        }
+        break;
+    case PROGRAM_AWAITING_DELAY_COMPLETION:
+        if (millis() > delayEndTime)
+        {
+            programState = PROGRAM_ACTIVE;
+        }
+        break;
     }
 }
 

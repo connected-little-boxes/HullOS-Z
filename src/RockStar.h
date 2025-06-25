@@ -1,6 +1,6 @@
-#define MAX_TOKENS 10
-#define MAX_TOKEN_LENGTH 20
+#pragma once
 
-int rockstarProcessScriptLine(char *b);
+#include "HullOS.h"
 
+extern struct LanguageHandler RockstarLanguage;
 

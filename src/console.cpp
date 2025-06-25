@@ -18,12 +18,6 @@
 
 struct ConsoleSettings consoleSettings;
 
-int (*consoleInputLineHandler)(char *);
-
-// set to true during startup to force a console to override any serial settings
-
-bool forceConsole = false;
-
 struct SettingItem echoSerialInput = {
 	"Echo serial input",
 	"echoserial",
@@ -425,27 +419,6 @@ void doColourDisplay(char *commandLine)
 	alwaysDisplayMessage("Colour display finished");
 }
 
-void doHullOSHelp(char *commandLine)
-{
-	alwaysDisplayMessage("Hullos help");
-}
-
-void doHullOSRun(char *commandLine)
-{
-	alwaysDisplayMessage("Hullos run");
-}
-
-struct consoleCommand HullOSCommands[] =
-	{
-		{"help", "show all the commands", doHullOSHelp},
-		{"run", "run the HullOS program ", doHullOSRun}};
-
-void doHullOS(char *commandLine)
-{
-	char *hullosCommand = skipCommand(commandLine);
-
-	performCommand(hullosCommand, HullOSCommands, sizeof(HullOSCommands) / sizeof(struct consoleCommand));
-}
 
 void doDumpSprites(char *commandLine)
 {
@@ -609,21 +582,18 @@ void doFirmwareUpgradeReset(char *commandLine)
 
 #ifdef PROCESS_HULLOS
 
-void doStartPythonIshImmediate(char *commandLine){
-	HullOSStartPythonIshImmediate(commandLine);
+void doStartPythonIsh(char *commandLine){
+	HullOSStartLanguage(commandLine);
 }
 
-void doStartPythonIshCompile(char *commandLine){
-	HullOSStartPythonIshCompile(commandLine);
+void doStartRockstar(char *commandLine){
+	HullOSStartLanguage(commandLine);
 }
 
-void doStartRockstarImmediate(char *commandLine){
-	HullOSStartRockstarImmediate(commandLine);
+void doStartHullOS(char *commandLine){
+	HullOSStartLanguage(commandLine);
 }
 
-void doStartRockstarCompile(char *commandLine){
-	HullOSStartRockstarCompile(commandLine);
-}
 #endif
 
 struct consoleCommand userCommands[] =
@@ -642,10 +612,12 @@ struct consoleCommand userCommands[] =
 		{"deletecommand", "delete the named command", doDeleteCommand},
 		{"dump", "dump all the setting values", doDumpSettings},
 		{"help", "show all the commands", doHelp},
+#ifdef PROCESS_HULLOS
+		{"hullos", "start the HullOS language interpreter", doStartHullOS},
+#endif
 #ifdef SETTINGS_WEB_SERVER
 		{"host", "start the configuration web host", doStartWebServer},
 #endif
-		{"hullos", "HullOS commands", doHullOS},
 		{"listeners", "list the command listeners", doDumpListeners},
 		{"help", "show all the commands", doHelp},
 #if defined(WEMOSD1MINI) || defined(ESP32DOIT)
@@ -658,8 +630,7 @@ struct consoleCommand userCommands[] =
 		{"pottest", "test the pot sensor", doTestPotSensor},
 #endif
 #ifdef PROCESS_HULLOS
-		{"pythonishc", "open the PythonIsh programming interface to compile", doStartPythonIshCompile},
-		{"pythonishi", "open the PythonIsh programming interface for immediate", doStartPythonIshImmediate},
+		{"pythonish", "open the PythonIsh programming interface", doStartPythonIsh},
 #endif
 
 #ifdef SENSOR_RFID
@@ -667,8 +638,7 @@ struct consoleCommand userCommands[] =
 #endif
 
 #ifdef PROCESS_HULLOS
-		{"rockstarc", "open the rockstar programming interface", doStartRockstarCompile},
-		{"rockstari", "open the rockstar programming interface", doStartRockstarImmediate},
+		{"rockstar", "open the Rockstar programming interface", doStartRockstar},
 #endif
 
 #ifdef SENSOR_ROTARY
@@ -852,7 +822,9 @@ void bufferSerialChar(char ch)
 		{
 			serialReceiveBuffer[serialReceiveBufferPos] = 0;
 			alwaysDisplayMessage("\n\r");
-			consoleInputLineHandler(serialReceiveBuffer);
+			if(!processLanguageLine(serialReceiveBuffer)){
+				actOnConsoleCommandText(serialReceiveBuffer);
+			}
 			reset_serial_buffer();
 		}
 		return;
@@ -875,19 +847,9 @@ void checkSerialBuffer()
 	}
 }
 
-void setConsoleInputLineHandler(int (*handler)(char *)){
-	consoleInputLineHandler = handler;
-}
-
-void selectConsoleInput()
-{
-	setConsoleInputLineHandler(actOnConsoleCommandText);
-}
-
 void initConsole()
 {
 	consoleProcessDescriptor.status = CONSOLE_OFF;
-	selectConsoleInput();
 }
 
 void startConsole()

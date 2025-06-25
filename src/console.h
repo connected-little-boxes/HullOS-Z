@@ -19,17 +19,6 @@
 #define CONSOLE_OK 500
 #define CONSOLE_OFF 501
 
-void setConsoleInputLineHandler(int (*input)(char *));
-
-extern int (*consoleInputLineHandler)(char *);
-
-void selectConsoleInput();
-
-int actOnConsoleCommandText(char * buffer);
-
-
-extern bool forceConsole;
-
 extern struct process consoleProcessDescriptor;
 
 struct ConsoleSettings 
@@ -52,3 +41,5 @@ char * skipCommand(char * commandLine);
 int performCommand(char * commandLine, consoleCommand * commands, int noOfCommands);
 void performRemoteCommand(char * commandLine);
 void actOnSerialCommand(char * buffer);
+int actOnConsoleCommandText(char * buffer);
+

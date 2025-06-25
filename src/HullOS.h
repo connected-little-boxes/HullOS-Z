@@ -2,15 +2,29 @@
 
 #define HULLOS_OK 1400
 #define HULLOS_STOPPED 1401
+#define BAD_STORED_PROGRAM 1405
 
 #define HULLOS_PROGRAM_SIZE 2000
 #define HULLOS_LANGUAGE_NAME_SIZE 20
 #define HULLOS_PROGRAM_COMMAND_LENGTH 20
 
+
 struct HullOSSettings {
 	bool hullosEnabled;
+	bool runProgramOnStart;
 	unsigned char hullosLanguage[HULLOS_LANGUAGE_NAME_SIZE];
 };
+
+struct LanguageHandler {
+	char hullosLanguage[HULLOS_LANGUAGE_NAME_SIZE];
+	void (*setup)(void);
+	int (*consoleInputHandler)(char *);
+};
+
+extern struct LanguageHandler hullOSLanguage;
+
+bool processLanguageLine(char * line);
+void stopLanguageDecoding();
 
 void hullosOff();
 
@@ -22,10 +36,6 @@ extern struct SettingItemCollection hullosSettingItems;
 
 extern struct process hullosProcess;
 
-void HullOSStartPythonIshImmediate(char *commandLine);
-void HullOSStartPythonIshCompile(char *commandLine);
-
-void HullOSStartRockstarImmediate(char *commandLine);
-void HullOSStartRockstarCompile(char *commandLine);
+bool HullOSStartLanguage(char * languageName);
 
 void sendMessageToHullOS(char *programText);

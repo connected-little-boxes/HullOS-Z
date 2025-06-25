@@ -1,13 +1,32 @@
 #include <Arduino.h>
+#include "HullOS.h"
 #include "HullOSScript.h"
 #include "RockStar.h"
 #include "HullOSVariables.h"
+#include "HullOSCommands.h"
 #include "Utils.h"
 
 #define MAX_TOKENS 10
 #define MAX_TOKEN_LENGTH 20
 #define MAX_DELIMITERS 5
 #define MAX_DELIM_LENGTH 4
+
+
+int RockstarIshConsoleInputHandler(char * input){
+    return ERROR_OK;
+}
+
+
+void rockstarDecoderStart(){
+    Serial.printf("Starting Rockstar decoder");
+}
+
+struct LanguageHandler RockstarLanguage = {
+	"Rockstar",
+    rockstarDecoderStart,
+	RockstarIshConsoleInputHandler
+};
+
 
 const char rockstarCommandNames[] =
     "angry,cross,mad#"                // COMMAND_ANGRY       0

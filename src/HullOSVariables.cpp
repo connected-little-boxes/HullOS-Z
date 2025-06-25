@@ -706,7 +706,7 @@ bool getValue(int * result)
 
 	skipCodeSpaces();
 
-	if (*decodePos == STATEMENT_TERMINATOR || *decodePos == ',')
+	if (*decodePos == STATEMENT_TERMINATOR || *decodePos == ',' || *decodePos == 0)
 	{
 #ifdef VAR_DEBUG
 		messageLogf("Single operand");

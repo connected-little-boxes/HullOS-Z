@@ -2,8 +2,8 @@
 
 #include "HullOSVariables.h"
 
-//#define DIAGNOSTICS_ACTIVE
-//#define STORE_RECEIVED_BYTE_DEBUG
+// #define DIAGNOSTICS_ACTIVE
+// #define STORE_RECEIVED_BYTE_DEBUG
 
 // Stored program management
 
@@ -12,11 +12,14 @@
 #define ECHO_DOWNLOADS 4
 #define DUMP_DOWNLOADS 8
 
-#define PROGRAM_SIZE 1000
+#define PROGRAM_SIZE 10000
 
-extern unsigned charprogram_source [PROGRAM_SIZE] ;
+#define RUNNING_PROGRAM_FILENAME "active.txt"
 
-unsigned char readByteFromHullOScode();
+bool loadRunningProgramFromFile();
+
+void updateRunningProgram();
+
 
 enum ProgramState
 {
@@ -24,9 +27,7 @@ enum ProgramState
 	PROGRAM_PAUSED,
 	PROGRAM_ACTIVE,
 	PROGRAM_AWAITING_DELAY_COMPLETION,
-	PROGRAM_AWAITING_MOVE_COMPLETION,
-	EXECUTE_IMMEDIATELY,
-	STORE_PROGRAM
+	PROGRAM_AWAITING_MOVE_COMPLETION
 };
 
 #define COMMAND_BUFFER_SIZE 60
@@ -49,14 +50,18 @@ extern uint8_t diagnosticsOutputLevel;
 
 extern unsigned long delayEndTime;
 
-extern char programCommand[];
+extern char HullOScodeRunningCode[];
 extern char *commandPos;
 extern char *commandLimit;
 extern char *bufferLimit;
 extern char *decodePos;
 extern char *decodeLimit;
 
-extern char remoteCommand[];
+extern char HullOScodeCompileOutput[];
+extern char * compiledPos;
+extern char * compiledLimit;
+
+extern char HullOSRemoteCommand[];
 extern char *remotePos;
 extern char *remoteLimit;
 
@@ -65,8 +70,9 @@ extern char *remoteLimit;
 ///////////////////////////////////////////////////////////
 int CharsAvailable();
 
-void dumpProgramFromEEPROM(int EEPromStart);
+void dumpRunningProgram(int EEPromStart);
 void startProgramExecution();
+
 // RH - remote halt
 void haltProgramExecution();
 
@@ -102,7 +108,7 @@ void remoteDelay();
 // Return OK
 void declareLabel();
 
-	int findNextStatement(int programPosition);
+int findNextStatement(int programPosition);
 
 // Find a label in the program
 // Returns the offset into the program where the label is declared
@@ -156,7 +162,6 @@ void actOnCommand(char *commandDecodePos, char *comandDecodeLimit);
 
 void processCommandByte(uint8_t b);
 void resetSerialBuffer();
-void interpretSerialByte(uint8_t b);
 void processHullOSSerialByte(uint8_t b);
 void setupHullOSReceiver();
 
@@ -166,8 +171,4 @@ bool exeuteProgramStatement();
 
 void updateHullOS();
 
-uint8_t readHullOSProgramByte(int address);
-bool storeProgramIntoEEPROM(char * programStart, int EEPromStart);
-void clearProgramStoredFlag();
-bool isProgramStored();
-
+void HullOSProgramoutputFunction(char ch);

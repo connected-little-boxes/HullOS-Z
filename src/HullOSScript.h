@@ -120,11 +120,6 @@
 #define COMMAND_SYSTEM_COMMAND 100
 #define COMMAND_EMPTY_LINE 101
 
-// Allow us to redirect the compiled output to the program storage buffer or immediate execution
-
-void setProgramOutputFunction(void (*output)(unsigned char));
-extern void (*HullOSProgramoutputFunction)(unsigned char);
-
 void printError(int code);
 
 // The line number in the script
@@ -183,10 +178,6 @@ extern bool displayErrors;
 // The function to be used to send out compiled bytes.
 // Set at the start of the line by decodeScriptLine
 // Shared with all the functions below
-
-// YET ANOTHER REASON THAT THIS COMPILER IS NOT REENTRANT
-
-extern void (*HullOSProgramoutputFunction)(unsigned char);
 
 void resetScriptLine();
 

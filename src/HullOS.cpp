@@ -15,6 +15,77 @@
 
 struct HullOSSettings hullosSettings;
 
+int hullOSdecodeScriptLine(char *input)
+{
+    Serial.printf("Hullos decoding: %s\n", input);
+
+    if(strcasecmp(input,"exit")==0){
+        stopLanguageDecoding();
+        return ERROR_OK;
+    }
+
+    int len=strlen(input);
+    input[len]=STATEMENT_TERMINATOR;
+    len++;
+
+    actOnCommand(input,input+len);
+
+    return ERROR_OK;
+}
+
+void hullOSDecoderStart(){
+    Serial.printf("Starting HullOS decoder");
+}
+
+
+struct LanguageHandler hullOSLanguage = {
+    "HullOS",
+    hullOSDecoderStart,
+    hullOSdecodeScriptLine};
+
+struct LanguageHandler *allLanguages[] =
+    {
+        &hullOSLanguage,
+        &PythonIshLanguage,
+        &RockstarLanguage};
+
+struct LanguageHandler *currentLanguageHandler = NULL;
+
+struct LanguageHandler *findLanguage(char *languageName)
+{
+
+    for (int i = 0; i < sizeof(allLanguages) / sizeof(struct LanguageHandler *); i++)
+    {
+        struct LanguageHandler *ptr = allLanguages[i];
+        if (strncasecmp(ptr->hullosLanguage, languageName, HULLOS_LANGUAGE_NAME_SIZE) == 0)
+        {
+            currentLanguageHandler = ptr;
+            return ptr;
+        }
+    }
+    return NULL;
+}
+
+void stopLanguageDecoding()
+{
+    Serial.printf("Returning to robot commands\n");
+    currentLanguageHandler = NULL;
+}
+
+bool processLanguageLine(char *line)
+{
+    if (currentLanguageHandler != NULL)
+    {
+        int result = currentLanguageHandler->consoleInputHandler(line);
+        if (result != ERROR_OK)
+        {
+            printError(result);
+        }
+        return true;
+    }
+    return false;
+}
+
 struct SettingItem hullosEnabled = {
     "HullOS enabled",
     "hullosactive",
@@ -24,10 +95,18 @@ struct SettingItem hullosEnabled = {
     setFalse,
     validateYesNo};
 
+struct SettingItem runProgramOnStart = {
+    "HullOS run on start",
+    "hullosrunprogramonstart",
+    &hullosSettings.runProgramOnStart,
+    ONOFF_INPUT_LENGTH,
+    yesNo,
+    setTrue,
+    validateYesNo};
+
 boolean validateHullOSLanguage(void *dest, const char *newValueStr)
 {
-    if (strncasecmp(newValueStr, "Rockstar", HULLOS_LANGUAGE_NAME_SIZE) ||
-        strncasecmp(newValueStr, "PythonIsh", HULLOS_LANGUAGE_NAME_SIZE))
+    if (findLanguage((char *)newValueStr) != NULL)
     {
         strcpy((char *)dest, newValueStr);
         return true;
@@ -41,7 +120,7 @@ void setDefaultHullOSLanguage(void *dest)
 }
 
 struct SettingItem hullosProgramSetting = {
-    "Hullos language (Rockstar or PythonIsh)",
+    "Hullos language (Rockstar, PythonIsh or HullOS)",
     "hulloslanguage",
     &hullosSettings.hullosLanguage,
     HULLOS_LANGUAGE_NAME_SIZE,
@@ -51,11 +130,12 @@ struct SettingItem hullosProgramSetting = {
 
 struct SettingItem *hullosSettingItemPointers[] = {
     &hullosEnabled,
+    &runProgramOnStart,
     &hullosProgramSetting};
 
 struct SettingItemCollection hullosSettingItems = {
     "hullos",
-    "HullOs active",
+    "HullOs management",
     hullosSettingItemPointers,
     sizeof(hullosSettingItemPointers) / sizeof(struct SettingItem *)};
 
@@ -72,106 +152,72 @@ void hullosOn()
 
 void initHullOS()
 {
+    stopLanguageDecoding();
     hullosProcess.status = HULLOS_STOPPED;
 }
 
 void startHullOS()
 {
+    // read in the currently executing program
+
     if (hullosSettings.hullosEnabled)
     {
-        hullosProcess.status = HULLOS_OK;
-        clearVariables();
+        Serial.printf("HullOS Enabled");
+        if (loadRunningProgramFromFile())
+        {
+            Serial.printf("HullOS program loaded");
+            if (hullosSettings.runProgramOnStart)
+            {
+                startProgramExecution();
+            }
+            hullosProcess.status = HULLOS_OK;
+        }
+        else
+        {
+            hullosProcess.status = BAD_STORED_PROGRAM;
+        }
     }
 }
 
 void sendMessageToHullOS(char *programText)
 {
-
+    Serial.printf("Got a program via MQTT from the server: %s\n", programText);
 }
 
-void HullOSStartPythonIsh()
+
+bool HullOSStartLanguage(char *languageName)
 {
-    Serial.printf("Starting PythonIsh\n");
+    Serial.printf("Starting %s\n", languageName);
 
-    //   setProgramOutputFunction(storeReceivedByte);
+    LanguageHandler *handler = findLanguage(languageName);
 
-}
-
-void HullOSStartPythonIshImmediate(char *commandLine)
-{
-    Serial.printf("Starting PythonIsh Immediate\n");
-    programState = EXECUTE_IMMEDIATELY;
-    setProgramOutputFunction(interpretSerialByte);
-    setConsoleInputLineHandler(pythonIshdecodeScriptLine);
-    resetCommand();
-    resetSerialBuffer();
-}
-
-void HullOSStartPythonIshCompile(char *commandLine)
-{
-    Serial.printf("Starting PythonIsh Immediate\n");
-    programState = EXECUTE_IMMEDIATELY;
-    setProgramOutputFunction(storeReceivedByte);
-    setConsoleInputLineHandler(pythonIshdecodeScriptLine);
-    resetCommand();
-    resetSerialBuffer();
-}
-
-void HullOSStartRockstarImmediate(char *commandLine)
-{
-    Serial.printf("Starting Rockstar Immediate\n");
-    programState = EXECUTE_IMMEDIATELY;
-    setProgramOutputFunction(interpretSerialByte);
-    setConsoleInputLineHandler(rockstarProcessScriptLine);
-    resetCommand();
-    resetSerialBuffer();
-}
-
-void HullOSStartRockstarCompile(char *commandLine)
-{
-    Serial.printf("Starting Rockstar Compile\n");
-    programState = EXECUTE_IMMEDIATELY;
-    setProgramOutputFunction(storeReceivedByte);
-    setConsoleInputLineHandler(rockstarProcessScriptLine);
-    resetCommand();
-    resetSerialBuffer();
+    if (handler != NULL)
+    {
+        currentLanguageHandler = handler;
+        handler->setup();
+        resetCommand();
+        resetSerialBuffer();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void updateHullOS()
 {
-    // If we recieve serial data the program that is running
+    // If we receive serial data the program that is running
     // must stop.
 
-    if (hullosProcess.status == HULLOS_STOPPED)
+    switch (hullosProcess.status)
     {
-        return;
-    }
-
-    // If we recieve serial data the program that is running
-    // must stop.
-    switch (programState)
-    {
-	case EXECUTE_IMMEDIATELY:
+    case HULLOS_OK:
+        updateRunningProgram();
         break;
-	case STORE_PROGRAM:
+    case HULLOS_STOPPED:
         break;
-    case PROGRAM_STOPPED:
-    case PROGRAM_PAUSED:
-        break;
-    case PROGRAM_ACTIVE:
-        exeuteProgramStatement();
-        break;
-    case PROGRAM_AWAITING_MOVE_COMPLETION:
-        if (!motorsMoving())
-        {
-            programState = PROGRAM_ACTIVE;
-        }
-        break;
-    case PROGRAM_AWAITING_DELAY_COMPLETION:
-        if (millis() > delayEndTime)
-        {
-            programState = PROGRAM_ACTIVE;
-        }
+    case BAD_STORED_PROGRAM:
         break;
     }
 }
@@ -188,13 +234,18 @@ bool hullosStatusOK()
 
 void hullosStatusMessage(char *buffer, int bufferLength)
 {
-    if (hullosProcess.status == HULLOS_STOPPED)
+    switch (hullosProcess.status)
     {
+    case HULLOS_OK:
+        updateRunningProgram();
+        snprintf(buffer, bufferLength, "HullOS running");
+        break;
+    case HULLOS_STOPPED:
         snprintf(buffer, bufferLength, "HullOS stopped");
-    }
-    else
-    {
-        snprintf(buffer, bufferLength, "HullOS enabled");
+        break;
+    case BAD_STORED_PROGRAM:
+        snprintf(buffer, bufferLength, "HullOS Bad stored program");
+        break;
     }
 }
 

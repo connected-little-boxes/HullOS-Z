@@ -32,7 +32,7 @@
 #include "printer.h"
 #include "BME280Sensor.h"
 #include "HullOS.h"
-#include "boot.h" 
+#include "boot.h"
 #include "otaupdate.h"
 #include "outpin.h"
 #include "RFID.h"
@@ -42,7 +42,6 @@
 
 void setup1()
 {
-
 }
 
 void loop1()
@@ -138,7 +137,6 @@ void populateSensorList()
   addSensorToAllSensorsList(&Distance);
   addSensorToActiveSensorsList(&Distance);
 #endif
-
 }
 
 void displayControlMessage(int messageNumber, ledFlashBehaviour severity, char *messageText)
@@ -156,24 +154,31 @@ void startDevice()
 {
 
 #if defined(PICO_USE_UART)
-    Serial1.begin(115200); 
-    delay(100);
-    while(1){
-      Serial1.print(".");
-      delay(200);
-    }
+  Serial1.begin(115200);
+  delay(100);
+  while (1)
+  {
+    Serial1.print(".");
+    delay(200);
+  }
 #else
   Serial.begin(115200);
 #endif
 
-
-  delay(100);
+  for (int i = 0; i < 10; i++)
+  {
+    delay(1000);
+    Serial.println(10 - i);
+    if(Serial.available()){
+      break;
+    }
+  }
 
   alwaysDisplayMessage("\n\n\n\n");
 
-	char deviceNameBuffer[DEVICE_NAME_LENGTH];
-	PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
-	alwaysDisplayMessage("%s\n",deviceNameBuffer);
+  char deviceNameBuffer[DEVICE_NAME_LENGTH];
+  PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
+  alwaysDisplayMessage("%s\n", deviceNameBuffer);
   alwaysDisplayMessage("Connected Little Boxes Device\n");
   alwaysDisplayMessage("Powered by HULLOS-X\n");
   alwaysDisplayMessage("www.connectedlittleboxes.com\n");
@@ -222,7 +227,7 @@ void startDevice()
   if (bootMode == COLD_BOOT_MODE)
   {
 
-#if defined(SETTINGS_WEB_SERVER)    
+#if defined(SETTINGS_WEB_SERVER)
     // first power up
     if (needWifiConfigBootMode())
     {
@@ -242,7 +247,7 @@ void startDevice()
     {
       startHostingConfigWebsite(true);
     }
-#endif 
+#endif
 
 #if defined(WEMOSD1MINI) || defined(ESP32DOIT)
     if (bootMode == OTA_UPDATE_BOOT_MODE)
@@ -250,7 +255,6 @@ void startDevice()
       performOTAUpdate();
     }
 #endif
-
   }
 
   startstatusLedFlash(1000);
@@ -300,14 +304,13 @@ void heapMonitor()
     if (newHeap != oldHeap)
     {
       Serial.print("Heap: ");
-      displayMessage("%lu",newHeap);
+      displayMessage("%lu", newHeap);
       oldHeap = newHeap;
     }
     heapPrintTime = millis();
   }
 }
 #endif
-
 
 void setup()
 {
@@ -319,5 +322,5 @@ void loop()
   updateSensors();
   updateProcesses();
   delay(5);
-//  DISPLAY_MEMORY_MONITOR("System");
+  //  DISPLAY_MEMORY_MONITOR("System");
 }

@@ -1,11 +1,22 @@
 #include <Arduino.h>
 #include "HullOSVariables.h"
+#include "HullOSCommands.h"
 #include "Utils.h"
 #include "HullOSScript.h"
 #include "PythonIsh.h"
 #include "console.h"
+#include "HullOS.h"
 
-#include <Arduino.h>
+int pythonIshdecodeScriptLine(char * input);
+
+void pythonIshDecoderStart(){
+    Serial.printf("Starting PythonIsh decoder");
+}
+
+struct LanguageHandler PythonIshLanguage = {
+	"PythonIsh",
+	pythonIshDecoderStart
+};
 
 const char pythonishcommandNames[] =
 	"angry,cross,mad#"	 // COMMAND_ANGRY       0
@@ -52,8 +63,6 @@ const char pythonishcommandNames[] =
 	"dance#"		 // COMMAND_DANCE      41
 	"an,a,the,my,your,our#"	// COMMON_VARIABLE 42
 	;
-
-
 
 const char angryCommand[] = "PF20";
 
@@ -1488,12 +1497,12 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 int pythonIshdecodeScriptLine(char * input)
 {
 
-	Serial.printf("PythonIsh got line to decode: %s\n", input);
+	Serial.printf("PythonIsh script line thingy  got line to decode: %s\n", input);
 
 
 	if (strcasecmp(input, "Exit") == 0){
 		Serial.println("PythonIsh session ended");
-		selectConsoleInput();
+		stopLanguageDecoding();
 		return ERROR_OK;
 	}
 
