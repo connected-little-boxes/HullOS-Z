@@ -13,7 +13,7 @@
 #include "errors.h"
 #include "ArduinoJson-v5.13.2.h"
 #include "FS.h"
-#include <LITTLEFS.h>
+#include <LittleFS.h>
 #include <ArduinoTrace.h>
 
 #define COMMAND_REPLY_BUFFER_SIZE 240

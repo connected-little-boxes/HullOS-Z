@@ -68,7 +68,7 @@ struct LanguageHandler *findLanguage(char *languageName)
 
 void stopLanguageDecoding()
 {
-    Serial.printf("Returning to robot commands\n");
+    Serial.printf("Returning to CLB command prompt\n");
     currentLanguageHandler = NULL;
 }
 
