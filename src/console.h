@@ -32,7 +32,7 @@ extern struct ConsoleSettings consoleSettings;
 struct consoleCommand {
 	char * name;
 	char * commandDescription;
-	void(*actOnCommand)(char * commandLine);
+	void(*processLine)(char * commandLine);
 	char * ownerName;
 };
 

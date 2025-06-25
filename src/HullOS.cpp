@@ -24,11 +24,13 @@ int hullOSdecodeScriptLine(char *input)
         return ERROR_OK;
     }
 
+    // put a terminator on the end
+
     int len=strlen(input);
     input[len]=STATEMENT_TERMINATOR;
     len++;
 
-    actOnCommand(input,input+len);
+    hullOSActOnStatement(input,input+len);
 
     return ERROR_OK;
 }

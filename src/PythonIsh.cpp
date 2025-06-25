@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "HullOSVariables.h"
 #include "HullOSCommands.h"
-#include "utils.h"
+#include "Utils.h"
 #include "HullOSScript.h"
 #include "PythonIsh.h"
 #include "console.h"

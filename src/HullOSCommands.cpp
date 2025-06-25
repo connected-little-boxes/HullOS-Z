@@ -59,6 +59,8 @@ void HullOSProgramoutputFunction(char ch){
 
 ProgramState programState = PROGRAM_STOPPED;
 
+InterpreterState interpreterState = EXECUTE_IMMEDIATELY;
+
 unsigned char diagnosticsOutputLevel = 0;
 
 unsigned long delayEndTime;
@@ -236,6 +238,8 @@ void startDownloadingCode()
     // partially stored programs never get executed on power up
 
     clearStoredProgram();
+
+    interpreterState = STORE_PROGRAM;
 
     programWriteBase = 0;
 
@@ -2886,7 +2890,7 @@ void remoteWriteOutput()
     }
 }
 
-void actOnCommand(char *commandDecodePos, char *comandDecodeLimit)
+void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 {
     decodePos = commandDecodePos;
     decodeLimit = comandDecodeLimit;
@@ -2963,6 +2967,26 @@ void actOnCommand(char *commandDecodePos, char *comandDecodeLimit)
     }
 }
 
+void hullOSStoreStatement(char *commandDecodePos, char *comandDecodeLimit)
+{
+    Serial.printf(" HullOS storing: %s\n", commandDecodePos);
+}
+
+void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit)
+{
+    switch(interpreterState){
+        case EXECUTE_IMMEDIATELY:
+        hullOSExecuteStatement(commandDecodePos, comandDecodeLimit);
+        break;
+
+        case STORE_PROGRAM:
+        hullOSStoreStatement(commandDecodePos, comandDecodeLimit);
+        break;
+    }
+}
+
+
+
 void processCommandByte(byte b)
 {
     if (commandPos == bufferLimit)
@@ -2983,7 +3007,7 @@ void processCommandByte(byte b)
 #ifdef COMMAND_DEBUG
         Serial.println(F(".  Command end"));
 #endif
-        actOnCommand(HullOScodeRunningCode, commandPos);
+        hullOSActOnStatement(HullOScodeRunningCode, commandPos);
         resetCommand();
         return;
     }
@@ -3011,7 +3035,7 @@ void interpretSerialByte(byte b)
 #ifdef COMMAND_DEBUG
         Serial.println(F(".  Command end"));
 #endif
-        actOnCommand(HullOSRemoteCommand, remotePos);
+        hullOSActOnStatement(HullOSRemoteCommand, remotePos);
         resetSerialBuffer();
         return;
     }

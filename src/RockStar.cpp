@@ -4,7 +4,7 @@
 #include "RockStar.h"
 #include "HullOSVariables.h"
 #include "HullOSCommands.h"
-#include "utils.h"
+#include "Utils.h"
 
 #define MAX_TOKENS 10
 #define MAX_TOKEN_LENGTH 20

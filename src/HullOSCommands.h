@@ -20,7 +20,6 @@ bool loadRunningProgramFromFile();
 
 void updateRunningProgram();
 
-
 enum ProgramState
 {
 	PROGRAM_STOPPED,
@@ -28,6 +27,12 @@ enum ProgramState
 	PROGRAM_ACTIVE,
 	PROGRAM_AWAITING_DELAY_COMPLETION,
 	PROGRAM_AWAITING_MOVE_COMPLETION
+};
+
+enum InterpreterState
+{
+	EXECUTE_IMMEDIATELY,
+	STORE_PROGRAM
 };
 
 #define COMMAND_BUFFER_SIZE 60
@@ -158,7 +163,7 @@ void doRemoteWriteLine();
 void doRemotePrintValue();
 void remoteWriteOutput();
 
-void actOnCommand(char *commandDecodePos, char *comandDecodeLimit);
+void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit);
 
 void processCommandByte(uint8_t b);
 void resetSerialBuffer();

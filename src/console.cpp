@@ -743,7 +743,7 @@ int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands
 
 	if (comm != NULL)
 	{
-		comm->actOnCommand(commandLine);
+		comm->processLine(commandLine);
 		return WORKED_OK;
 	}
 

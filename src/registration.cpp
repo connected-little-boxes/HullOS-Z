@@ -31,13 +31,6 @@ struct SettingItemCollection registrationSettingItems = {
 	RegistrationSettingItemPointers,
 	sizeof(RegistrationSettingItemPointers) / sizeof(struct SettingItem *)};
 
-struct RegistrationCommand
-{
-	char *name;
-	char *commandDescription;
-	void (*actOnCommand)(char *commandLine);
-};
-
 void initRegistration()
 {
 	RegistrationProcess.status = REGISTRATION_OFF;
