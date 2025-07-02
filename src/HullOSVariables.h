@@ -125,7 +125,6 @@ struct variable
 extern variable variables[];
 void clearVariableSlot(int position);
 void clearVariables();
-void setupVariables();
 void setVariable(int position, int value);
 int getVariable(int position);
 bool isAssigned(int position);

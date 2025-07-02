@@ -283,12 +283,6 @@ void clearVariables()
 	{
 		clearVariableSlot(i);
 	}
-
-}
-
-void setupVariables()
-{
-	clearVariables();
 }
 
 void setVariable(int position, int value)

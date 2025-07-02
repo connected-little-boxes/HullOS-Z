@@ -160,6 +160,8 @@ void initHullOS()
 
 void startHullOS()
 {
+    clearVariables();
+
     // read in the currently executing program
 
     if (hullosSettings.hullosEnabled)

@@ -12,7 +12,7 @@
 #define MAX_DELIM_LENGTH 4
 
 
-int RockstarIshConsoleInputHandler(char * input){
+int RockstarIshDecodeScriptLine(char * input){
     return ERROR_OK;
 }
 
@@ -24,7 +24,7 @@ void rockstarDecoderStart(){
 struct LanguageHandler RockstarLanguage = {
 	"Rockstar",
     rockstarDecoderStart,
-	RockstarIshConsoleInputHandler
+	RockstarIshDecodeScriptLine
 };
 
 

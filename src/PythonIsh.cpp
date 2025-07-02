@@ -15,7 +15,8 @@ void pythonIshDecoderStart(){
 
 struct LanguageHandler PythonIshLanguage = {
 	"PythonIsh",
-	pythonIshDecoderStart
+	pythonIshDecoderStart,
+	pythonIshdecodeScriptLine
 };
 
 const char pythonishcommandNames[] =
