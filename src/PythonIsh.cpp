@@ -19,9 +19,10 @@ struct LanguageHandler PythonIshLanguage = {
 	pythonIshdecodeScriptLine
 };
 
+
 const char pythonishcommandNames[] =
-	"angry,cross,mad#"	 // COMMAND_ANGRY       0
-	"happy,pleased,glad#" // COMMAND_HAPPY       1
+	"angry#"	 // COMMAND_ANGRY       0
+	"happy#" // COMMAND_HAPPY       1
 	"move#"			 // COMMAND_MOVE        2
 	"turn#"			 // COMMAND_TURN        3
 	"arc#"			 // COMMAND_ARC         4
@@ -55,14 +56,12 @@ const char pythonishcommandNames[] =
 	"stop#"			 // COMMAND_STOP       32
 	"begin#"		 // COMMAND_BEGIN      33
 	"end#"			 // COMMAND_END        34
-	"write#"		 // COMMAND_PRINT      35
-	"print,scream,shout,whisper,say#"		 // COMMAND_PRINTLN    36
+	"print#"		 // COMMAND_PRINT      35
+	"println#"		 // COMMAND_PRINTLN    36
 	"break#"		 // COMMAND_BREAK      37
 	"duration#"		 // COMMAND_DURATION   38
 	"continue#"		 // COMMAND_CONTINUE   39
 	"angle#"		 // COMMAND_ANGLE      40
-	"dance#"		 // COMMAND_DANCE      41
-	"an,a,the,my,your,our#"	// COMMON_VARIABLE 42
 	;
 
 const char angryCommand[] = "PF20";
@@ -1497,9 +1496,7 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 
 int pythonIshdecodeScriptLine(char * input)
 {
-
-	Serial.printf("PythonIsh script line thingy  got line to decode: %s\n", input);
-
+	Serial.printf("PythonIsh script line thingy got line to decode: %s\n", input);
 
 	if (strcasecmp(input, "Exit") == 0){
 		Serial.println("PythonIsh session ended");

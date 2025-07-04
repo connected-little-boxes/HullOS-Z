@@ -198,27 +198,21 @@ void startDevice()
 
   DISPLAY_MEMORY_MONITOR("Populate sensor list");
 
-  PixelStatusLevels settingsStatus;
-
   SettingsSetupStatus status = setupSettings();
 
   switch (status)
   {
   case SETTINGS_SETUP_OK:
-    settingsStatus = PIXEL_STATUS_OK;
     displayMessage("Settings loaded OK\n");
     break;
   case SETTINGS_RESET_TO_DEFAULTS:
-    settingsStatus = PIXEL_STATUS_NOTIFICATION;
     displayMessage("Settings reset to defaults\n");
     break;
   case SETTINGS_FILE_SYSTEM_FAIL:
-    settingsStatus = PIXEL_STATUS_WARNING;
     displayMessage("Settings file system fail\n");
     break;
   default:
     displayMessage("Invalid setupSettings return\n");
-    settingsStatus = PIXEL_STATUS_ERROR;
   }
 
   // get the boot mode
@@ -262,12 +256,7 @@ void startDevice()
   initialiseAllProcesses();
 
   DISPLAY_MEMORY_MONITOR("Initialise all processes\n");
-
-  beginStatusDisplay(VERY_DARK_RED_COLOUR);
-
-  addStatusItem(settingsStatus);
-  renderStatusDisplay();
-
+  
   buildActiveProcessListFromMask(BOOT_PROCESS);
 
   startProcesses();
@@ -279,9 +268,6 @@ void startDevice()
   startSensors();
 
   DISPLAY_MEMORY_MONITOR("Start all sensors\n");
-
-  addStatusItem(PIXEL_STATUS_OK);
-  renderStatusDisplay();
 
   delay(1000); // show the status for a while
   if (messagesSettings.messagesEnabled)

@@ -23,6 +23,9 @@
 #include "utils.h"
 #include "version.h"
 
+#define DIAGNOSTICS_ACTIVE
+#define PROGRAM_DEBUG
+
 char HullOScodeRunningCode[HULLOS_PROGRAM_SIZE];
 char *commandPos;
 char *commandLimit;
@@ -31,17 +34,12 @@ char *decodePos;
 char *decodeLimit;
 
 char HullOScodeCompileOutput[HULLOS_PROGRAM_SIZE];
-char * compiledPos;
-char * compiledLimit;
+char *compiledPos;
+char *compiledLimit;
 
 char HullOSRemoteCommand[COMMAND_BUFFER_SIZE];
 char *remotePos;
 char *remoteLimit;
-
-bool loadRunningProgramFromFile(){
-
-    return false;
-}
 
 bool writeByteIntoHullOScodeCompileOutput(uint8_t byte, int pos)
 {
@@ -52,9 +50,10 @@ bool writeByteIntoHullOScodeCompileOutput(uint8_t byte, int pos)
     return true;
 }
 
-void HullOSProgramoutputFunction(char ch){
+void HullOSProgramoutputFunction(char ch)
+{
     Serial.printf("Writing a %c %d\n", ch, ch);
-    
+    storeReceivedByte(ch);
 }
 
 ProgramState programState = PROGRAM_STOPPED;
@@ -65,6 +64,50 @@ unsigned char diagnosticsOutputLevel = 0;
 
 unsigned long delayEndTime;
 
+///////////////////////////////////////////////////////////
+/// remote filename
+///////////////////////////////////////////////////////////
+
+#define REMOTE_FILENAME_BUFFER_SIZE 40
+
+char HullOScommandsFilenameBuffer[REMOTE_FILENAME_BUFFER_SIZE];
+
+bool getHullOSFileNameFromCode()
+{
+
+    if (*decodePos == STATEMENT_TERMINATOR)
+    {
+        return false;
+    }
+
+    int pos = 0;
+    char *ch = decodePos;
+    while (pos < REMOTE_FILENAME_BUFFER_SIZE - 1)
+    {
+
+        if (*ch == STATEMENT_TERMINATOR)
+        {
+            HullOScommandsFilenameBuffer[pos] = 0;
+            return true;
+        }
+
+        HullOScommandsFilenameBuffer[pos] = *ch;
+        ch++;
+        pos++;
+    }
+
+    return false;
+}
+
+void clearHullOSFilename()
+{
+    HullOScommandsFilenameBuffer[0] = 0;
+}
+
+bool HullOSFilenameSet()
+{
+    return HullOScommandsFilenameBuffer[0] != 0;
+}
 
 ///////////////////////////////////////////////////////////
 /// Serial comms
@@ -94,17 +137,17 @@ void dumpRunningProgram()
 
     Serial.println(F("Program: "));
 
-    unsigned char byte;
+    unsigned char b;
     while (true)
     {
-        byte = HullOScodeRunningCode[progPos++];
+        b = HullOScodeRunningCode[progPos++];
 
-        if (byte == STATEMENT_TERMINATOR)
+        if (b == STATEMENT_TERMINATOR)
             Serial.println();
         else
-            Serial.print(byte);
+            Serial.printf("%c", b);
 
-        if (byte == PROGRAM_TERMINATOR)
+        if (b == PROGRAM_TERMINATOR)
         {
             Serial.print(F("Program size: "));
             Serial.println(progPos);
@@ -119,19 +162,19 @@ void dumpRunningProgram()
     }
 }
 
-// Starts a program running at the given position
+// Starts a program running 
 
 void startProgramExecution()
 {
 
 #ifdef PROGRAM_DEBUG
-    Serial.print(F(".Starting program execution at: "));
-    Serial.println(programPosition);
+    Serial.println(F(".Starting program execution"));
 #endif
 
     clearVariables();
     setAllLightsOff();
     programCounter = 0;
+    resetCommand();
     programState = PROGRAM_ACTIVE;
 }
 
@@ -257,22 +300,51 @@ void startDownloadingCode()
 #endif
 }
 
-// Called when a byte is received from the host when in program storage mode
-// Adds it to the stored program, updates the stored position and the counter
-
 // #define STORE_RECEIVED_BYTE_DEBUG
+
+void dumpProgram(char *start)
+{
+    while (true)
+    {
+        char ch = *start;
+        if (ch == 0 || ch == PROGRAM_TERMINATOR)
+        {
+            break;
+        }
+        if (ch == STATEMENT_TERMINATOR)
+        {
+            Serial.println();
+        }
+        else
+        {
+            Serial.printf("%c", ch);
+        }
+        start++;
+    }
+}
 
 void endProgramReceive()
 {
+    Serial.printf("End Program Receive\n");
+
+    dumpProgram(HullOScodeCompileOutput);
+
     stopBusyPixel();
+
+    if (HullOSFilenameSet())
+    {
+        Serial.printf("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+        saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
+    }
 
     // enable immediate command receipt
 
-    programState = PROGRAM_STOPPED;
+    interpreterState = EXECUTE_IMMEDIATELY;
 }
 
 void storeReceivedByte(byte b)
 {
+    Serial.printf("Storing:%d %c\n", b, b);
     // ignore odd characters - except for CR
 
     if (b < 32 | b > 128)
@@ -304,32 +376,41 @@ void storeReceivedByte(byte b)
         {
         case 'x':
         case 'X':
-            endProgramReceive();
-
+            Serial.println("RX");
             // put the terminator on the end
 
             storeProgramByte(PROGRAM_TERMINATOR);
+
+            endProgramReceive();
 
 #ifdef DIAGNOSTICS_ACTIVE
 
             if (diagnosticsOutputLevel & DUMP_DOWNLOADS)
             {
-                dumpProgramFromEEPROM(STORED_PROGRAM_OFFSET);
+                dumpProgram(HullOScodeCompileOutput);
             }
 
 #endif
-
-            startProgramExecution();
-
-            break;
+            return;
 
         case 'A':
         case 'a':
             Serial.println("RA");
+
+            storeProgramByte(PROGRAM_TERMINATOR);
+
             endProgramReceive();
 
-            clearStoredProgram();
+            return;
 
+        case 'F':
+        case 'f':
+            // F is a special case - we let it through to allow program chaining
+
+            Serial.println("RF");
+
+            storeProgramByte('r');
+            lineStoreState = STORING;
             break;
 
         default:
@@ -1275,7 +1356,7 @@ void remoteColouredCandle()
 
     if (readColour(&r, &g, &b))
     {
-        flickeringColouredLights(r, g, b,10);
+        flickeringColouredLights(r, g, b, 10);
 
 #ifdef DIAGNOSTICS_ACTIVE
 
@@ -1375,7 +1456,7 @@ void remoteSetColorByName()
         return;
     }
 
-    flickeringColouredLights(r, g, b,10);
+    flickeringColouredLights(r, g, b, 10);
 
 #ifdef DIAGNOSTICS_ACTIVE
 
@@ -2408,18 +2489,45 @@ void programControl()
 
 // RM - start remote download
 
-void remoteDownload()
+void remoteDownloadCommand()
 {
 
 #ifdef REMOTE_DOWNLOAD_DEBUG
     Serial.println(F(".**remote download"));
 #endif
 
+    Serial.printf("Remote download command decode pos:%s\n", decodePos);
+
+    if (getHullOSFileNameFromCode())
+    {
+        Serial.printf("Got filename:%s\n", HullOScommandsFilenameBuffer);
+    }
+    else
+    {
+        Serial.printf("No filename supplied");
+        clearHullOSFilename();
+    }
     startDownloadingCode();
 }
 
 void startProgramCommand()
 {
+
+    Serial.printf("Start program command decode pos:%s\n", decodePos);
+
+    if (getHullOSFileNameFromCode())
+    {
+        Serial.printf("Got filename:%s\n", HullOScommandsFilenameBuffer);
+        if (loadFromFile(HullOScommandsFilenameBuffer, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
+        {
+            Serial.printf("Got code:%s\n", HullOScodeRunningCode);
+        }
+    }
+    else
+    {
+        Serial.printf("No filename supplied");
+    }
+
     startProgramExecution();
 
 #ifdef DIAGNOSTICS_ACTIVE
@@ -2456,6 +2564,42 @@ void clearProgramStoreCommand()
 #endif
 }
 
+void runProgramFromFileCommand()
+{
+
+    Serial.printf("Running program from file\n");
+
+    if (getHullOSFileNameFromCode())
+    {
+        Serial.printf("Got filename:%s\n", HullOScommandsFilenameBuffer);
+    }
+    else
+    {
+        Serial.printf("No filename supplied\n");
+        clearHullOSFilename();
+        return;
+    }
+
+    bool result = loadFromFile(
+        HullOScommandsFilenameBuffer,
+        HullOScodeRunningCode,
+        HULLOS_PROGRAM_SIZE);
+
+    if (!result)
+    {
+        Serial.printf("File read failed\n");
+        clearHullOSFilename();
+        return;
+    }
+
+    Serial.printf("Running program in %s\n", HullOScommandsFilenameBuffer);
+    dumpProgram(HullOScodeRunningCode);
+    Serial.printf("\n\n");
+    dumpRunningProgram();
+
+    startProgramExecution();
+}
+
 void remoteManagement()
 {
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -2483,7 +2627,7 @@ void remoteManagement()
     {
     case 'M':
     case 'm':
-        remoteDownload();
+        remoteDownloadCommand();
         break;
     case 'S':
     case 's':
@@ -2504,6 +2648,10 @@ void remoteManagement()
     case 'C':
     case 'c':
         clearProgramStoreCommand();
+        break;
+    case 'F':
+    case 'f':
+        runProgramFromFileCommand();
         break;
     }
 }
@@ -2895,9 +3043,11 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     decodePos = commandDecodePos;
     decodeLimit = comandDecodeLimit;
 
-    *decodeLimit = 0;
 
-#ifdef COMMAND_DEBUG
+
+    //    *decodeLimit = 0;
+
+#ifndef COMMAND_DEBUG
     Serial.print(F(".**processCommand:"));
     Serial.println((char *)decodePos);
 #endif
@@ -2969,23 +3119,29 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 
 void hullOSStoreStatement(char *commandDecodePos, char *comandDecodeLimit)
 {
-    Serial.printf(" HullOS storing: %s\n", commandDecodePos);
+    while (commandDecodePos != comandDecodeLimit)
+    {
+        storeReceivedByte(*commandDecodePos);
+        commandDecodePos++;
+    }
 }
 
 void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit)
 {
-    switch(interpreterState){
-        case EXECUTE_IMMEDIATELY:
+    switch (interpreterState)
+    {
+    case EXECUTE_IMMEDIATELY:
         hullOSExecuteStatement(commandDecodePos, comandDecodeLimit);
         break;
 
-        case STORE_PROGRAM:
+    case STORE_PROGRAM:
         hullOSStoreStatement(commandDecodePos, comandDecodeLimit);
+        break;
+    default:
+        Serial.println("Invalid interpreter state");
         break;
     }
 }
-
-
 
 void processCommandByte(byte b)
 {
@@ -3091,6 +3247,30 @@ bool exeuteProgramStatement()
     }
 }
 
+void programStatus(char *buffer, int bufferLength)
+{
+    switch (programState)
+    {
+    case PROGRAM_STOPPED:
+        snprintf(buffer, bufferLength, "HullOS Program stopped");
+    case PROGRAM_PAUSED:
+        snprintf(buffer, bufferLength, "HullOS Program paused");
+        break;
+    case PROGRAM_ACTIVE:
+        snprintf(buffer, bufferLength, "HullOS Program active");
+        break;
+    case PROGRAM_AWAITING_MOVE_COMPLETION:
+        snprintf(buffer, bufferLength, "HullOS Awaiting move completion");
+        break;
+    case PROGRAM_AWAITING_DELAY_COMPLETION:
+        snprintf(buffer, bufferLength, "HullOS Awaiting delay completion");
+        break;
+    default:
+        snprintf(buffer, bufferLength, "HullOS Invalid program state");
+        break;
+    }
+}
+
 void updateRunningProgram()
 {
     // If we receive serial data the program that is running
@@ -3139,8 +3319,6 @@ void loadTestProgram(int offset)
     }
 
     EEPROM.write(outPos, 0);
-
-    dumpProgramFromEEPROM(offset);
 }
 
 #endif

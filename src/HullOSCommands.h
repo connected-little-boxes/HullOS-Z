@@ -29,6 +29,8 @@ enum ProgramState
 	PROGRAM_AWAITING_MOVE_COMPLETION
 };
 
+void programStatus(char *buffer, int bufferLength);
+
 enum InterpreterState
 {
 	EXECUTE_IMMEDIATELY,
@@ -102,6 +104,7 @@ void startDownloadingCode(int downloadPosition);
 void endProgramReceive();
 void storeReceivedByte(uint8_t b);
 void resetCommand();
+void dumpProgram(char * start);
 
 // Command CDddd - delay time
 // Command CD    - previous delay
@@ -140,7 +143,7 @@ void compareAndJump(bool jumpIfTrue);
 void programControl();
 
 // RM - start remote download
-void remoteDownload();
+void remoteDownloadCommand();
 
 void haltProgramExecutionCommand();
 void clearProgramStoreCommand();

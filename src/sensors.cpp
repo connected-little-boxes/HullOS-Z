@@ -305,24 +305,6 @@ void createSensorJson(char *name, char *buffer, int bufferLength)
 	appendFormattedString(buffer, bufferLength, "}");
 }
 
-void displaySensorStatus()
-{
-	sensor *activeSensorPtr = activeSensorList;
-
-	while (activeSensorPtr != NULL)
-	{
-		PixelStatusLevels status;
-		if(activeSensorPtr->status == SENSOR_OK){
-			status = PIXEL_STATUS_OK;
-		}
-		else {
-			status = PIXEL_STATUS_ERROR;
-		}
-		addStatusItem(status);
-		activeSensorPtr = activeSensorPtr->nextActiveSensor;
-	}
-}
-
 void stopSensors()
 {
 	alwaysDisplayMessage("Stopping sensors\n");

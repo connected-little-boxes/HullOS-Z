@@ -65,7 +65,7 @@ const char* getErrorMessage(int code) {
         case ERROR_NO_RADIUS_IN_ARC: return "Missing radius in 'arc'.";
         case ERROR_NO_ANGLE_IN_ARC: return "Missing angle in 'arc'.";
         case ERROR_NO_COMMAND_START_CHAR: return "Missing command start character.";
-        case ERROR_INVALID_VARIABLE_NAME_IN_SET_COMMON_VARIABLE: return "Invalid variable name in shared 'set'.";
+        case ERROR_INVALID_VARIABLE_NAME_IN_SET_COMMON_VARIABLE: return "Invalid variable name in common variable 'set'.";
 		case ERROR_NO_ASSIGNMENT_NAME_IN_SET: return "No valid assignment name in 'set'.";
 		case ERROR_TOKEN_TOO_LARGE: return "Token too large.";
 		case ERROR_EMPTY_TOKEN: return "Missing token.";
@@ -224,7 +224,7 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 		if (ch == 0)
 			return END_OF_COMMANDS;
 
-		char inputCh = toLowerCase(*comparePos);
+ 		char inputCh = toLowerCase(*comparePos);
 
 		// If we have reached the end of the command and the end of the input at the same time
 		// we have a match. End of the input is a space or the end of the line
@@ -283,7 +283,7 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 // Decodes the command held in the area of memory referred to by bufferPos
 int decodeCommandName(const char * commandNames)
 {
-	// Set the position in the command list to the start of the list
+ 	// Set the position in the command list to the start of the list
 	scriptCommandPos = 0;
 
 	// Set the command counter to 0
@@ -319,15 +319,20 @@ int decodeCommandName(const char * commandNames)
 		switch (result)
 		{
 		case COMMAND_MATCHED:
+			Serial.printf("Command matched: %d\n", commandNumber);
 			return commandNumber;
 
 		case COMMAND_NOT_MATCHED:
 			if (!spinToCommandEnd(commandNames))
+			{
+				Serial.printf("Command not matched: %d\n", commandNumber);
 				return -1;
+			}
 			commandNumber++;
 			break;
 
 		case END_OF_COMMANDS:
+			Serial.printf("Hit the end\n");
 			return -1;
 			break;
 		}

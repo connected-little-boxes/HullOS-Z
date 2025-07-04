@@ -35,8 +35,11 @@ int hullOSdecodeScriptLine(char *input)
     return ERROR_OK;
 }
 
+void HullOSStartProgramOnReset();
+
 void hullOSDecoderStart(){
-    Serial.printf("Starting HullOS decoder");
+    Serial.printf("Starting HullOS decoder");    
+    HullOSStartProgramOnReset();
 }
 
 
@@ -160,27 +163,9 @@ void initHullOS()
 
 void startHullOS()
 {
+    hullosProcess.status = HULLOS_DEVICE_STARTED;
+
     clearVariables();
-
-    // read in the currently executing program
-
-    if (hullosSettings.hullosEnabled)
-    {
-        Serial.printf("HullOS Enabled");
-        if (loadRunningProgramFromFile())
-        {
-            Serial.printf("HullOS program loaded");
-            if (hullosSettings.runProgramOnStart)
-            {
-                startProgramExecution();
-            }
-            hullosProcess.status = HULLOS_OK;
-        }
-        else
-        {
-            hullosProcess.status = BAD_STORED_PROGRAM;
-        }
-    }
 }
 
 void sendMessageToHullOS(char *programText)
@@ -209,6 +194,26 @@ bool HullOSStartLanguage(char *languageName)
     }
 }
 
+void HullOSStartProgramOnReset()
+{
+    if (hullosSettings.hullosEnabled)
+    {
+        Serial.printf("HullOS Enabled\n");
+
+        if(loadFromFile(RUNNING_PROGRAM_FILENAME,HullOScodeRunningCode, HULLOS_PROGRAM_SIZE)){
+            Serial.printf("Got code:%s\n",HullOScodeRunningCode);
+            Serial.printf("HullOS program loaded\n");
+            if (hullosSettings.runProgramOnStart)
+            {
+                Serial.printf("Starting execution\n");
+                startProgramExecution();
+            }
+        }
+    }
+
+    hullosProcess.status = HULLOS_OK;
+}
+
 void updateHullOS()
 {
     // If we receive serial data the program that is running
@@ -216,12 +221,13 @@ void updateHullOS()
 
     switch (hullosProcess.status)
     {
+    case HULLOS_DEVICE_STARTED:
+        HullOSStartProgramOnReset();
+        break;
     case HULLOS_OK:
         updateRunningProgram();
         break;
     case HULLOS_STOPPED:
-        break;
-    case BAD_STORED_PROGRAM:
         break;
     }
 }
@@ -241,14 +247,10 @@ void hullosStatusMessage(char *buffer, int bufferLength)
     switch (hullosProcess.status)
     {
     case HULLOS_OK:
-        updateRunningProgram();
-        snprintf(buffer, bufferLength, "HullOS running");
+        programStatus(buffer,bufferLength);
         break;
     case HULLOS_STOPPED:
         snprintf(buffer, bufferLength, "HullOS stopped");
-        break;
-    case BAD_STORED_PROGRAM:
-        snprintf(buffer, bufferLength, "HullOS Bad stored program");
         break;
     }
 }

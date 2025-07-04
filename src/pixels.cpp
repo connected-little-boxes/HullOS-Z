@@ -203,6 +203,11 @@ int noOfPixels;
 
 void startPixelStrip()
 {
+	// return if the strip is already setup
+	if(strip != NULL){
+		return;
+	}
+
 	noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
 
 	if (noOfPixels == 0)
@@ -981,8 +986,61 @@ struct CommandItemCollection pixelCommands =
 		pixelCommandList,
 		sizeof(pixelCommandList) / sizeof(struct Command *)};
 
+
+//////////////////////////////////////////////////////////////////////////
+//// BUSY PIXEL
+//////////////////////////////////////////////////////////////////////////
+
+bool busyPixelActive=false;
+byte busyPixelPos = 0;
+byte busyRed, busyGreen, busyBlue;
+
+void updateBusyPixel()
+{
+	if(!busyPixelActive){
+		return;
+	}
+
+	busyPixelPos++;
+
+	if (busyPixelPos == noOfPixels)
+		busyPixelPos = 0;
+}
+
+void setBusyPixelColour(byte red, byte green, byte blue)
+{
+	busyRed = red;
+	busyBlue = blue;
+	busyGreen = green;
+}
+
+void startBusyPixel(byte red, byte green, byte blue)
+{
+	busyPixelActive=true;
+	setBusyPixelColour(red, green, blue);
+	busyPixelPos = 0;
+}
+
+void stopBusyPixel()
+{
+	busyPixelActive=false;
+}
+
+void renderBusyPixel()
+{
+	if(!busyPixelActive){
+		return;
+	}
+	strip->setPixelColor(rasterLookup[busyPixelPos], busyRed, busyGreen, busyBlue);
+}
+
+
+		// Called by the the leds in the Frame to draw the display
+// We draw the busy pixel on top
+
 void show()
 {
+	renderBusyPixel();
 	strip->show();
 }
 
@@ -1000,175 +1058,9 @@ void setPixel(int no, float r, float g, float b)
 	strip->setPixelColor(rasterLookup[no], rs, gs, bs);
 }
 
-// status display doesn't use the animated leds
-// this means that it can overlay the display
-
-int statusPixelNo = 0;
-Colour statusBackgroundColour;
-
-void resetStatusDisplay()
-{
-	int noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
-
-	if (noOfPixels == 0)
-		return;
-
-	statusPixelNo = 0;
-
-	for (int i = 0; i < noOfPixels; i++)
-	{
-		setPixel(i, statusBackgroundColour.Red,statusBackgroundColour.Blue,statusBackgroundColour.Green );
-	}
-}
-
 void setAllLightsOff()
 {
 	frame->fadeSpritesToWalkingColours("K", 10);
-}
-
-// Pixel position for busy display
-byte pixelPos = 0;
-byte busyRed, busyGreen, busyBlue;
-
-void updateBusyPixel()
-{
-	strip->fill(0,0,0);
-
-	strip->setPixelColor(rasterLookup[pixelPos], 0, 0, 0);
-
-	pixelPos++;
-
-	if (pixelPos == noOfPixels)
-		pixelPos = 0;
-
-	strip->setPixelColor(rasterLookup[pixelPos], busyRed, busyGreen, busyBlue);
-
-	strip->show();
-}
-
-void setBusyPixelColour(byte red, byte green, byte blue)
-{
-	busyRed = red;
-	busyBlue = blue;
-	busyGreen = green;
-}
-
-void startBusyPixel(byte red, byte green, byte blue)
-{
-	switch (pixelProcess.status)
-	{
-	case PIXEL_NO_PIXELS:
-		return;
-	case PIXEL_OK:
-		setBusyPixelColour(red, green, blue);
-		pixelProcess.status = PIXELS_BUSY;
-		pixelPos = 0;
-		updateBusyPixel();
-		break;
-	case PIXEL_OFF:
-		return;
-	case PIXELS_STATUS_ONLY:
-		return;
-	case PIXELS_BUSY:
-		return;
-	default:
-		return;
-	}
-}
-
-void stopBusyPixel()
-{
-	switch (pixelProcess.status)
-	{
-	case PIXEL_NO_PIXELS:
-		return;
-	case PIXEL_OK:
-		return;
-	case PIXEL_OFF:
-		return;
-	case PIXELS_STATUS_ONLY:
-		return;
-	case PIXELS_BUSY:
-		pixelProcess.status=PIXEL_OK;
-		return;
-	default:
-		return;
-	}
-}
-
-void displayBusyPixelWait(int ticks, int onTime, byte red, byte green, byte blue)
-{
-	startBusyPixel(red, green, blue);
-	for (int i = 0; i < ticks; i++)
-	{
-		updateBusyPixel();
-		delay(onTime);
-	}
-	stopBusyPixel();
-}
-
-void beginStatusDisplay(Colour c)
-{
-	startPixelStrip();
-	pixelProcess.status = PIXELS_STATUS_ONLY;
-	statusBackgroundColour = c;
-	resetStatusDisplay();
-	renderStatusDisplay();
-}
-
-boolean setStatusDisplayPixel(int pixelNumber, PixelStatusLevels status)
-{
-	int noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
-
-	if (noOfPixels == 0)
-		return false;
-
-	if (pixelNumber >= noOfPixels)
-		return false;
-
-	switch (status)
-	{
-	case PIXEL_STATUS_OK:
-		setPixel(pixelNumber, 0, 0.5, 0); // green
-		break;
-	case PIXEL_STATUS_NOTIFICATION:
-		setPixel(pixelNumber, 0, 0, 0.5); // blue
-		break;
-	case PIXEL_STATUS_WARNING:
-		setPixel(pixelNumber, 0.5, 0.5, 0); // yellow
-		break;
-	case PIXEL_STATUS_ERROR:
-		setPixel(pixelNumber, 0.5, 0, 0);
-		break;
-	}
-
-	return true;
-}
-
-void renderStatusDisplay()
-{
-	if (strip == NULL)
-		return;
-
-	strip->show();
-	delay(200);
-}
-
-void addStatusItem(PixelStatusLevels status)
-{
-	int noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
-
-	if (noOfPixels == 0)
-		return;
-
-	if (statusPixelNo >= noOfPixels)
-		resetStatusDisplay();
-
-	setStatusDisplayPixel(statusPixelNo, status);
-
-	statusPixelNo++;
-
-	return;
 }
 
 void initPixel()
@@ -1274,10 +1166,6 @@ void updatePixel()
 		break;
 	case PIXEL_OFF:
 		return;
-	case PIXELS_STATUS_ONLY:
-		return;
-	case PIXELS_BUSY:
-		return;
 	default:
 		break;
 	}
@@ -1305,12 +1193,6 @@ void pixelStatusMessage(char *buffer, int bufferLength)
 		break;
 	case PIXEL_OFF:
 		snprintf(buffer, bufferLength, "PIXEL OFF");
-		break;
-	case PIXELS_STATUS_ONLY:
-		snprintf(buffer, bufferLength, "PIXELS status only");
-		break;
-	case PIXELS_BUSY:
-		snprintf(buffer, bufferLength, "PIXEL busy display");
 		break;
 	default:
 		snprintf(buffer, bufferLength, "Pixel status invalid");

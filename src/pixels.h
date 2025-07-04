@@ -11,9 +11,6 @@
 #define PIXEL_OK 100
 #define PIXEL_OFF 101
 #define PIXEL_NO_PIXELS 102
-#define PIXELS_STATUS_ONLY 103
-#define PIXELS_AND_STATUS 104
-#define PIXELS_BUSY 105
 
 #include <Adafruit_NeoPixel.h>
 
@@ -30,17 +27,6 @@
 #define PIXEL_COMMAND_NAME_LENGTH 20
 #define PIXEL_COLOUR_NAME_LENGTH 15
 
-enum PixelStatusLevels
-{
-	PIXEL_STATUS_OK,
-	PIXEL_STATUS_NOTIFICATION,
-	PIXEL_STATUS_WARNING,
-	PIXEL_STATUS_ERROR
-};
-
-void addStatusItem(PixelStatusLevels status);
-void beginStatusDisplay(Colour colour);
-void renderStatusDisplay();
 void setupWalkingColour(Colour colour);
 void setAllLightsOff();
 

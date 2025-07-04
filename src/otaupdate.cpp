@@ -60,8 +60,6 @@ void update_error(int err)
 void performOTAUpdate()
 {
 
-	beginStatusDisplay(VERY_DARK_RED_COLOUR);
-
 	WiFiClient client;
 
 	alwaysDisplayMessage("Boot OTA Update requested");
