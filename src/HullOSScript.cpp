@@ -70,6 +70,12 @@ const char* getErrorMessage(int code) {
 		case ERROR_TOKEN_TOO_LARGE: return "Token too large.";
 		case ERROR_EMPTY_TOKEN: return "Missing token.";
 		case ERROR_MISSING_VARIABLE_IN_SIMPLE_ASSIGNMENT: return "Missing variable in simple assignment.";
+		case ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START: return "Missing quote in filename start";
+		case ERROR_MISSING_QUOTE_IN_FILENAME_STRING_END: return "Missing quote in filename end";
+		case ERROR_FILENAME_TOO_LONG: return "Filename too long";
+		case ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING: return "Save not available when compiling. End compile before saving";
+		case ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING: return "Load not available when compiling. End compile before loading";
+		case ERROR_FILE_LOAD_FAILED: return "File load failed";
         default: return "Unknown error.";
     }
 }

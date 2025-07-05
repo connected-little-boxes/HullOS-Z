@@ -63,6 +63,7 @@ const char pythonishcommandNames[] =
 	"continue#"		 // COMMAND_CONTINUE   39
 	"angle#"		 // COMMAND_ANGLE      40
 	"save#"			 // COMMAND_SAVE       41
+	"load#"			 // COMMAND_LOAD       42
 	;
 
 const char angryCommand[] = "PF20";
@@ -1196,13 +1197,97 @@ int compileDirectCommand()
 	return ERROR_OK;
 }
 
-int compileProgramSave(){
-	Serial.println("Compiling program save command");
-
+int getProgramFilenameFromCode(){
+	
 	skipInputSpaces();
+
+	char ch = *bufferPos;
+
+	if(ch!='"'){
+		return ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START;
+	}
+	
+	// move past the quote
+	bufferPos++;
+
+	// Now copy the filename into the buffer
+
+	int pos=0;
+
+	while(true){
+
+		ch = *bufferPos;
+
+		Serial.printf("  Copying:%d %c\n",ch,ch);
+
+		if(ch==0){
+			return ERROR_MISSING_QUOTE_IN_FILENAME_STRING_END;
+		}
+
+		if(ch=='"'){
+			// terminate the output filename
+			HullOScommandsFilenameBuffer[pos]=0;
+			break;
+		}
+
+		if(pos>=REMOTE_FILENAME_BUFFER_SIZE-1){
+			return ERROR_FILENAME_TOO_LONG;
+		}
+
+		HullOScommandsFilenameBuffer[pos]=ch;
+		bufferPos++;
+		pos++;
+	}
 
 	return ERROR_OK;
 }
+
+int compileProgramSave(){
+
+	Serial.println("Compiling program save command");
+
+	if (compilingProgram)
+	{
+		return ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if(result != ERROR_OK){
+		return result;
+	}
+
+	// If we get here the filename is valid
+
+	Serial.printf("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+	saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
+
+	return ERROR_OK;
+}
+
+int compileProgramLoad(){
+	Serial.println("Compiling program load command");
+
+	if (compilingProgram)
+	{
+		return ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if(result != ERROR_OK){
+		return result;
+	}
+
+	if (!loadFromFile(HullOScommandsFilenameBuffer,HullOScodeRunningCode,HULLOS_PROGRAM_SIZE)){
+		return ERROR_FILE_LOAD_FAILED;
+	}
+
+	startProgramExecution();
+	
+	return ERROR_OK;
+}
+
 
 int processCommand(byte commandNo)
 {
@@ -1300,6 +1385,9 @@ int processCommand(byte commandNo)
 
 	case COMMAND_SAVE:
 		return compileProgramSave();
+
+	case COMMAND_LOAD:
+		return compileProgramLoad();
 
 	default:
 		return compileAssignment();
@@ -1460,7 +1548,7 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 
 int pythonIshdecodeScriptLine(char * input)
 {
-	Serial.printf("PythonIsh script line thingy got line to decode: %s\n", input);
+	Serial.printf("PythonIsh script line thingy got line to decode: %s %d\n", input,strlen(input));
 
 	if (strcasecmp(input, "Exit") == 0){
 		Serial.println("PythonIsh session ended");

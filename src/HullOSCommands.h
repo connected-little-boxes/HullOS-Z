@@ -14,6 +14,10 @@
 
 #define PROGRAM_SIZE 10000
 
+#define REMOTE_FILENAME_BUFFER_SIZE 40
+
+extern char HullOScommandsFilenameBuffer[REMOTE_FILENAME_BUFFER_SIZE];
+
 #define RUNNING_PROGRAM_FILENAME "active.txt"
 
 bool loadRunningProgramFromFile();
@@ -176,6 +180,8 @@ void setupHullOSReceiver();
 // Executes the statement in the EEPROM at the current program counter
 // The statement is assembled into a buffer by interpretCommandByte
 bool executeProgramStatement();
+
+
 
 void updateHullOS();
 

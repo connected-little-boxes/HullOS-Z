@@ -68,8 +68,6 @@ unsigned long delayEndTime;
 /// remote filename
 ///////////////////////////////////////////////////////////
 
-#define REMOTE_FILENAME_BUFFER_SIZE 40
-
 char HullOScommandsFilenameBuffer[REMOTE_FILENAME_BUFFER_SIZE];
 
 bool getHullOSFileNameFromCode()
