@@ -53,7 +53,7 @@ bool writeByteIntoHullOScodeCompileOutput(uint8_t byte, int pos)
 void HullOSProgramoutputFunction(char ch)
 {
     Serial.printf("Writing a %c %d\n", ch, ch);
-    storeReceivedByte(ch);
+    processCommandByte(ch);
 }
 
 ProgramState programState = PROGRAM_STOPPED;
@@ -1625,7 +1625,7 @@ void remoteSetIndividualPixel()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("Fail: mising colours after pixel"));
+            Serial.println(F("Fail: missing colours after pixel"));
         }
 
 #endif
@@ -2600,6 +2600,24 @@ void runProgramFromFileCommand()
     startProgramExecution();
 }
 
+void saveCompiledProgramToFileCommand()
+{
+    Serial.printf("Save compiled program into a file\n");
+
+    if (getHullOSFileNameFromCode())
+    {
+        Serial.printf("Got save filename:%s\n", HullOScommandsFilenameBuffer);
+    }
+    else
+    {
+        Serial.printf("No filename supplied\n");
+        clearHullOSFilename();
+        return;
+    }
+
+    saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
+}
+
 void remoteManagement()
 {
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -2652,6 +2670,10 @@ void remoteManagement()
     case 'F':
     case 'f':
         runProgramFromFileCommand();
+        break;
+    case 'W':
+    case 'w':
+        saveCompiledProgramToFileCommand();
         break;
     }
 }
@@ -3175,28 +3197,6 @@ void resetSerialBuffer()
     remoteLimit = HullOSRemoteCommand + COMMAND_BUFFER_SIZE;
 }
 
-void interpretSerialByte(byte b)
-{
-    if (remotePos == remoteLimit)
-    {
-        resetSerialBuffer();
-        return;
-    }
-
-    *remotePos = b;
-    remotePos++;
-
-    if (b == STATEMENT_TERMINATOR)
-    {
-#ifdef COMMAND_DEBUG
-        Serial.println(F(".  Command end"));
-#endif
-        hullOSActOnStatement(HullOSRemoteCommand, remotePos);
-        resetSerialBuffer();
-        return;
-    }
-}
-
 void setupHullOSReceiver()
 {
 #ifdef COMMAND_DEBUG
@@ -3206,10 +3206,10 @@ void setupHullOSReceiver()
     resetSerialBuffer();
 }
 
-// Executes the statement in the EEPROM at the current program counter
+// Executes the statement at the current program counter
 // The statement is assembled into a buffer by interpretCommandByte
 
-bool exeuteProgramStatement()
+bool executeProgramStatement()
 {
     char programByte;
 
@@ -3281,7 +3281,7 @@ void updateRunningProgram()
     case PROGRAM_PAUSED:
         break;
     case PROGRAM_ACTIVE:
-        exeuteProgramStatement();
+        executeProgramStatement();
         break;
     case PROGRAM_AWAITING_MOVE_COMPLETION:
         if (!motorsMoving())

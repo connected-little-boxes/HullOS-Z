@@ -62,6 +62,7 @@ const char pythonishcommandNames[] =
 	"duration#"		 // COMMAND_DURATION   38
 	"continue#"		 // COMMAND_CONTINUE   39
 	"angle#"		 // COMMAND_ANGLE      40
+	"save#"			 // COMMAND_SAVE       41
 	;
 
 const char angryCommand[] = "PF20";
@@ -1195,50 +1196,13 @@ int compileDirectCommand()
 	return ERROR_OK;
 }
 
-#define SCRIPT_DEBUG
-
-int compileCommonVariable()
-{
-#ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling common variable: "));
-#endif // SCRIPT_DEBUG
-
-	// Not allowed to indent after a set
-	previousStatementStartedBlock = false;
+int compileProgramSave(){
+	Serial.println("Compiling program save command");
 
 	skipInputSpaces();
 
-	if (checkIdentifier(bufferPos) != VARIABLE_NAME_OK)
-		return ERROR_INVALID_VARIABLE_NAME_IN_SET_COMMON_VARIABLE;
-
-	int position;
-
-	if (findVariable(bufferPos, &position) == VARIABLE_NOT_FOUND)
-	{
-		if (createVariable(bufferPos, &position) == NO_ROOM_FOR_VARIABLE)
-		{
-			return ERROR_TOO_MANY_VARIABLES;
-		}
-	}
-
-	sendCommand(setCommand);
-
-	writeBytesFromBuffer(getVariableNameLength(position));
-
-	skipInputSpaces();
-
-	if (checkForAssignmentName())
-	{
-		return ERROR_NO_ASSIGNMENT_NAME_IN_SET;
-	}
-
-	HullOSProgramoutputFunction('='); // write the equals
-
-	skipInputSpaces();
-
-	return processValue();
+	return ERROR_OK;
 }
-
 
 int processCommand(byte commandNo)
 {
@@ -1334,8 +1298,8 @@ int processCommand(byte commandNo)
 	case COMMAND_CONTINUE:
 		return compileContinue();
 
-	case COMMON_VARIABLE:
-		return compileCommonVariable();
+	case COMMAND_SAVE:
+		return compileProgramSave();
 
 	default:
 		return compileAssignment();

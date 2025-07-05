@@ -175,7 +175,7 @@ void setupHullOSReceiver();
 
 // Executes the statement in the EEPROM at the current program counter
 // The statement is assembled into a buffer by interpretCommandByte
-bool exeuteProgramStatement();
+bool executeProgramStatement();
 
 void updateHullOS();
 
