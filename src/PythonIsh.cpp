@@ -63,6 +63,7 @@ const char pythonishcommandNames[] =
 	"angle#"	  // COMMAND_ANGLE      40
 	"save#"		  // COMMAND_SAVE       41
 	"load#"		  // COMMAND_LOAD       42
+	"dump#"		  // COMMAND_DUMP       43
 	;
 
 const char angryCommand[] = "PF20";
@@ -1074,7 +1075,7 @@ int compilePrintln()
 }
 
 // Decodes a zero terminated script line into a sequence of byte commands
-// The byte commnds are sent to the output function specified
+// The byte commands are sent to the output function specified
 // The script line is not buffered, and must not change while this function is running
 
 bool checkForAssignmentName()
@@ -1289,12 +1290,40 @@ int compileProgramLoad()
 		return result;
 	}
 
-	if (!loadFromFile(HullOScommandsFilenameBuffer, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
+	if (!fileExists(HullOScommandsFilenameBuffer))
 	{
 		return ERROR_FILE_LOAD_FAILED;
 	}
 
-	startProgramExecution();
+	sendCommand("RS");
+	sendCommand(HullOScommandsFilenameBuffer);
+
+	return ERROR_OK;
+}
+
+int compileProgramDump()
+{
+	Serial.println("Compiling program dump command");
+
+	if (storingProgram())
+	{
+		return ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		return result;
+	}
+
+	if (!fileExists(HullOScommandsFilenameBuffer))
+	{
+		return ERROR_FILE_DUMP_FAILED;
+	}
+
+	sendCommand("RD");
+	sendCommand(HullOScommandsFilenameBuffer);
 
 	return ERROR_OK;
 }
@@ -1398,6 +1427,9 @@ int processCommand(byte commandNo)
 
 	case COMMAND_LOAD:
 		return compileProgramLoad();
+
+	case COMMAND_DUMP:
+		return compileProgramDump();
 
 	default:
 		return compileAssignment();
@@ -1556,9 +1588,13 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 	return result;
 }
 
+//#define DEBUG_PYTHONISH
+
 int pythonIshdecodeScriptLine(char *input)
 {
-	Serial.printf("PythonIsh script line thingy got line to decode: %s %d\n", input, strlen(input));
+#ifdef DEBUG_PYTHONISH
+	Serial.printf("PythonIsh got line to decode: %s %d\n", input, strlen(input));
+#endif
 
 	if (strcasecmp(input, "Exit") == 0)
 	{

@@ -76,6 +76,8 @@ const char* getErrorMessage(int code) {
 		case ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING: return "Save not available when compiling. End compile before saving";
 		case ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING: return "Load not available when compiling. End compile before loading";
 		case ERROR_FILE_LOAD_FAILED: return "File load failed";
+		case ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING: return "Dump not available when compiling. End compile before dumping";
+		case ERROR_FILE_DUMP_FAILED: return "File dump failed";
         default: return "Unknown error.";
     }
 }
@@ -321,7 +323,7 @@ int decodeCommandName(const char * commandNames)
 		switch (result)
 		{
 		case COMMAND_MATCHED:
-			Serial.printf("Command matched: %d\n", commandNumber);
+//			Serial.printf("Command matched: %d\n", commandNumber);
 			return commandNumber;
 
 		case COMMAND_NOT_MATCHED:

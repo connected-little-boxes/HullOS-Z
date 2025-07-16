@@ -23,23 +23,16 @@
 #include "utils.h"
 #include "version.h"
 
-#define DIAGNOSTICS_ACTIVE
-#define PROGRAM_DEBUG
+//#define DIAGNOSTICS_ACTIVE
+//#define PROGRAM_DEBUG
 
 char HullOScodeRunningCode[HULLOS_PROGRAM_SIZE];
-char *commandPos;
-char *commandLimit;
-char *bufferLimit;
 char *decodePos;
 char *decodeLimit;
 
 char HullOScodeCompileOutput[HULLOS_PROGRAM_SIZE];
 char *compiledPos;
 char *compiledLimit;
-
-char HullOSRemoteCommand[COMMAND_BUFFER_SIZE];
-char *remotePos;
-char *remoteLimit;
 
 bool writeByteIntoHullOScodeCompileOutput(uint8_t byte, int pos)
 {
@@ -50,10 +43,52 @@ bool writeByteIntoHullOScodeCompileOutput(uint8_t byte, int pos)
     return true;
 }
 
+char HullOSOutputBuffer[HULLOS_PROGRAM_COMMAND_LENGTH];
+
+int HullOSOutputBufferPos;
+
+void resetHullOSOutputBuffer()
+{
+    HullOSOutputBufferPos=0;
+}
+
+// #define HullOS_DEBUG
+
 void HullOSProgramoutputFunction(char ch)
 {
-    Serial.printf("Writing a %c %d\n", ch, ch);
-    processCommandByte(ch);
+
+#ifdef HullOS_DEBUG
+
+    Serial.printf("Got a HullOS program ch %c\n",ch);
+
+    if (ch==STATEMENT_TERMINATOR){
+        Serial.printf("Writing a line terminator\n");
+    }
+    else {
+        Serial.printf("Writing a %c %d\n", ch, ch);
+    }
+
+#endif
+
+    if (HullOSOutputBufferPos>=HULLOS_PROGRAM_COMMAND_LENGTH-2){
+        Serial.printf("HullOS command too long - ignoring\n");
+        resetHullOSOutputBuffer();
+        return;
+    }
+
+    if(ch == STATEMENT_TERMINATOR)
+    {
+        HullOSOutputBuffer[HullOSOutputBufferPos++]=STATEMENT_TERMINATOR;
+        HullOSOutputBuffer[HullOSOutputBufferPos++]=0;
+
+#ifdef HullOS_DEBUG
+        Serial.printf("Got a statement to perform: %s\n",HullOSOutputBuffer);
+#endif
+        hullOSActOnStatement(HullOSOutputBuffer,HullOSOutputBuffer+HullOSOutputBufferPos);
+        resetHullOSOutputBuffer();
+        return;
+    }
+    HullOSOutputBuffer[HullOSOutputBufferPos++]=ch;
 }
 
 ProgramState programState = PROGRAM_STOPPED;
@@ -137,8 +172,9 @@ int bufferWritePosition;
 void dumpRunningProgram()
 {
     int progPos = 0;
+    int lineNumber = 2;
 
-    Serial.println(F("Program: "));
+    Serial.print("Program:\n1 : ");
 
     unsigned char b;
     while (true)
@@ -146,7 +182,7 @@ void dumpRunningProgram()
         b = HullOScodeRunningCode[progPos++];
 
         if (b == STATEMENT_TERMINATOR)
-            Serial.println();
+            Serial.printf("\n%d : ", lineNumber++);
         else
             Serial.printf("%c", b);
 
@@ -186,7 +222,7 @@ void startProgramExecution()
 void haltProgramExecution()
 {
 #ifdef PROGRAM_DEBUG
-    Serial.print(F(".Ending program execution at: "));
+    Serial.print(F("Ending program execution at: "));
     Serial.println(programCounter);
 #endif
 
@@ -276,9 +312,6 @@ void startDownloadingCode()
 #ifdef PROGRAM_DEBUG
     Serial.println(".Starting code download");
 #endif
-
-    // Stop the current program
-    haltProgramExecution();
 
     // clear the existing program so that
     // partially stored programs never get executed on power up
@@ -479,8 +512,7 @@ void resetCommand()
 #ifdef COMMAND_DEBUG
     Serial.println(".**resetCommand");
 #endif
-    commandPos = HullOScodeRunningCode;
-    bufferLimit = commandPos + COMMAND_BUFFER_SIZE;
+    resetHullOSOutputBuffer();
 }
 
 #ifdef COMMAND_DEBUG
@@ -1848,7 +1880,7 @@ int findNextStatement(int programPosition)
 // This is always the start of a statement, and usually the start of the program, to allow
 // branches up the code.
 
-// #define FIND_LABEL_IN_PROGRAM_DEBUG
+//#define FIND_LABEL_IN_PROGRAM_DEBUG
 
 int findLabelInProgram(char *label, int programPosition)
 {
@@ -2007,6 +2039,8 @@ int findLabelInProgram(char *label, int programPosition)
         }
     }
 }
+
+// #define JUMP_TO_LABEL_DEBUG
 
 // Command CJxxxx - jump to label
 // Jumps to the specified label
@@ -2516,14 +2550,14 @@ void remoteDownloadCommand()
 void startProgramCommand()
 {
 
-    Serial.printf("Start program command decode pos:%s\n", decodePos);
+//    Serial.printf("Start program command decode pos:%s\n", decodePos);
 
     if (getHullOSFileNameFromCode())
     {
         Serial.printf("Got filename:%s\n", HullOScommandsFilenameBuffer);
         if (loadFromFile(HullOScommandsFilenameBuffer, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
         {
-            Serial.printf("Got code:%s\n", HullOScodeRunningCode);
+            dumpRunningProgram();
         }
     }
     else
@@ -2555,7 +2589,6 @@ void haltProgramExecutionCommand()
 
 void clearProgramStoreCommand()
 {
-    haltProgramExecution();
 
     clearStoredProgram();
 
@@ -3102,13 +3135,19 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     decodePos = commandDecodePos;
     decodeLimit = comandDecodeLimit;
 
-
-
     //    *decodeLimit = 0;
 
-#ifndef COMMAND_DEBUG
+#ifdef COMMAND_DEBUG
+
+    dumpRunningProgram();
+
     Serial.print(F(".**processCommand:"));
-    Serial.println((char *)decodePos);
+    char * dump_pos=commandDecodePos;
+    while(dump_pos != comandDecodeLimit){
+        Serial.printf("%c", *dump_pos);
+        dump_pos++;
+    }
+    Serial.println();
 #endif
 
     char commandCh = *decodePos;
@@ -3190,48 +3229,19 @@ void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit)
     switch (interpreterState)
     {
     case EXECUTE_IMMEDIATELY:
+        // This might change the interpreter state to STORE_PROGRAM
         hullOSExecuteStatement(commandDecodePos, comandDecodeLimit);
         break;
 
     case STORE_PROGRAM:
+        // This might change the interpreter state to EXECUTE_IMMEDIATELY
         hullOSStoreStatement(commandDecodePos, comandDecodeLimit);
+
         break;
     default:
         Serial.println("Invalid interpreter state");
         break;
     }
-}
-
-void processCommandByte(byte b)
-{
-    if (commandPos == bufferLimit)
-    {
-#ifdef COMMAND_DEBUG
-        Serial.println(F(".  Command buffer full - resetting"));
-#endif
-        resetCommand();
-        return;
-    }
-
-    *commandPos = b;
-
-    commandPos++;
-
-    if (b == STATEMENT_TERMINATOR)
-    {
-#ifdef COMMAND_DEBUG
-        Serial.println(F(".  Command end"));
-#endif
-        hullOSActOnStatement(HullOScodeRunningCode, commandPos);
-        resetCommand();
-        return;
-    }
-}
-
-void resetSerialBuffer()
-{
-    remotePos = HullOSRemoteCommand;
-    remoteLimit = HullOSRemoteCommand + COMMAND_BUFFER_SIZE;
 }
 
 void setupHullOSReceiver()
@@ -3244,7 +3254,6 @@ void setupHullOSReceiver()
 }
 
 // Executes the statement at the current program counter
-// The statement is assembled into a buffer by interpretCommandByte
 
 bool executeProgramStatement()
 {
@@ -3262,25 +3271,38 @@ bool executeProgramStatement()
     }
 #endif
 
+    char * statementStart = HullOScodeRunningCode + programCounter;
+    int statementLength = 0;
+
     while (true)
     {
         programByte = HullOScodeRunningCode[programCounter++];
-
-        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
-        {
-            haltProgramExecution();
-            return false;
-        }
 
 #ifdef PROGRAM_DEBUG
         Serial.print(F(".    program byte: "));
         Serial.println(programByte);
 #endif
 
-        processCommandByte(programByte);
+        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR){
+            if(statementLength>0){
+                hullOSExecuteStatement(statementStart, statementStart+statementLength);
+            }
+            haltProgramExecution();
+            return false;
+        }
 
-        if (programByte == STATEMENT_TERMINATOR)
+        if (programByte == STATEMENT_TERMINATOR){
+            hullOSExecuteStatement(statementStart, statementStart+statementLength);
             return true;
+        }
+
+        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR){
+            if(statementLength>0){
+                hullOSExecuteStatement(statementStart, statementStart+statementLength);
+            }
+            haltProgramExecution();
+            return false;
+        }
     }
 }
 

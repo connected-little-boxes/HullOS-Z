@@ -245,6 +245,21 @@ void saveToFile(char * path, char * src){
     file.close();
 }
 
+bool fileExists(char * path)
+{
+	TRACELOG("Checking file exists:");
+	TRACELOGLN(path);
+
+    file = LittleFS.open(path, "r");
+
+    if(!file){
+        return false;
+    }
+
+    file.close();
+    return true;
+}
+
 bool loadFromFile(char * path, char * dest, int length){
 
 	TRACELOG("Loading from a file:");
@@ -272,7 +287,10 @@ bool loadFromFile(char * path, char * dest, int length){
         pos++;
 	}
 
+    dest[pos]=PROGRAM_TERMINATOR;
+
 	file.close();
+    
 	TRACELOGLN("Settings loaded successfully");
 
     return true;

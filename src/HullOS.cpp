@@ -185,7 +185,6 @@ bool HullOSStartLanguage(char *languageName)
         currentLanguageHandler = handler;
         handler->setup();
         resetCommand();
-        resetSerialBuffer();
         return true;
     }
     else

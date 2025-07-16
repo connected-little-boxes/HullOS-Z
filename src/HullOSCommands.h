@@ -64,8 +64,6 @@ extern uint8_t diagnosticsOutputLevel;
 extern unsigned long delayEndTime;
 
 extern char HullOScodeRunningCode[];
-extern char *commandPos;
-extern char *commandLimit;
 extern char *bufferLimit;
 extern char *decodePos;
 extern char *decodeLimit;
@@ -178,8 +176,6 @@ void setupHullOSReceiver();
 // Executes the statement in the EEPROM at the current program counter
 // The statement is assembled into a buffer by interpretCommandByte
 bool executeProgramStatement();
-
-
 
 void updateHullOS();
 
