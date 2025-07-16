@@ -41,6 +41,8 @@ enum InterpreterState
 	STORE_PROGRAM
 };
 
+bool storingProgram ();
+
 #define COMMAND_BUFFER_SIZE 60
 
 // Set command terminator to CR
@@ -71,10 +73,6 @@ extern char *decodeLimit;
 extern char HullOScodeCompileOutput[];
 extern char * compiledPos;
 extern char * compiledLimit;
-
-extern char HullOSRemoteCommand[];
-extern char *remotePos;
-extern char *remoteLimit;
 
 ///////////////////////////////////////////////////////////
 /// Serial comms

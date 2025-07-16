@@ -165,6 +165,8 @@ void startDevice()
   Serial.begin(115200);
 #endif
 
+#ifdef STARTUP_WAIT
+
   for (int i = 0; i < 10; i++)
   {
     delay(1000);
@@ -173,6 +175,8 @@ void startDevice()
       break;
     }
   }
+
+#endif
 
   alwaysDisplayMessage("\n\n\n\n");
 

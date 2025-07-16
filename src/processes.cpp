@@ -191,6 +191,7 @@ void updateProcesses()
 	while (procPtr != NULL)
 	{
 		unsigned long startMicros = micros();
+//		Serial.printf("%s\n", procPtr->processName);
 		procPtr->udpateProcess();
 		unsigned long runTime = ulongDiff(micros(), startMicros);
 		if(messagesSettings.speedMessagesEnabled) {

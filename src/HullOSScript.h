@@ -140,7 +140,8 @@ extern bool programError;
 
 // Flag to indicate that a program is being compiled - i.e. a begin keyword has been detected
 
-extern bool compilingProgram;
+extern bool storingProgram()
+;
 
 // The start position of the command in the input buffer
 // Set by decodeCommand
@@ -206,6 +207,8 @@ int processValue();
 void sendCommand(const char *command);
 void endCommand();
 void abandonCompilation();
+const char* getErrorMessage(int code);
+
 
 #ifdef SCRIPT_DEBUG
 

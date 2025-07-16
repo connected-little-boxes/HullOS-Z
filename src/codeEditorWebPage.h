@@ -67,7 +67,7 @@ const char *webPage = R"(
         console.log("Saved:", data); // Show success feedback if needed
       })
       .catch(error => {
-        alert("Error: Unable to send the program.\n" + error.message);
+        alert("Error: Unable to send the program." + error.message);
       });
     });
         var serial = null;

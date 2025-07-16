@@ -99,10 +99,6 @@ int scriptLineNumber;
 
 bool programError;
 
-// Flag to indicate that a program is being compiled - i.e. a begin keyword has been detected
-
-bool compilingProgram = false;
-
 // The start position of the command in the input buffer
 // Set by decodeCommand
 // Shared with all the functions below

@@ -7,63 +7,62 @@
 #include "console.h"
 #include "HullOS.h"
 
-int pythonIshdecodeScriptLine(char * input);
+int pythonIshdecodeScriptLine(char *input);
 
-void pythonIshDecoderStart(){
-    Serial.printf("Starting PythonIsh decoder");
+void pythonIshDecoderStart()
+{
+	Serial.printf("Starting PythonIsh decoder");
 }
 
 struct LanguageHandler PythonIshLanguage = {
 	"PythonIsh",
 	pythonIshDecoderStart,
-	pythonIshdecodeScriptLine
-};
-
+	pythonIshdecodeScriptLine};
 
 const char pythonishcommandNames[] =
-	"angry#"	 // COMMAND_ANGRY       0
-	"happy#" // COMMAND_HAPPY       1
-	"move#"			 // COMMAND_MOVE        2
-	"turn#"			 // COMMAND_TURN        3
-	"arc#"			 // COMMAND_ARC         4
-	"delay#"		 // COMMAND_DELAY       5
-	"colour#"		 // COMMAND_COLOUR      6
-	"color#"		 // COMMAND_COLOR       7
-	"pixel#"		 // COMMAND_PIXEL       8
-	"set#"			 // COMMAND_SET         9
-	"if#"			 // COMMAND_IF         10
-	"do#"			 // COMMAND_DO         11
-	"while#"		 // COMMAND_WHILE      12
-	"intime#"		 // COMMAND_INTIME     13
-	"endif#"		 // COMMAND_ENDIF      14
-	"forever#"		 // COMMAND_FOREVER    15
-	"endwhile#"		 // COMMAND_ENDWHILE   16
-	"sound#"		 // COMMAND_SOUND      17
-	"until#"		 // COMMAND_UNTIL      18
-	"clear#"		 // COMMAND_CLEAR      19
-	"run#"			 // COMMAND_RUN        20
-	"background#"	 // COMMAND_BACKGROUND 21
-	"else#"			 // COMMAND_ELSE       22
-	"red#"			 // COMMAND_RED        23
-	"green#"		 // COMMAND_GREEN      24
-	"blue#"			 // COMMAND_BLUE       25
-	"yellow#"		 // COMMAND_YELLOW     26
-	"magenta#"		 // COMMAND_MAGENTA    27
-	"cyan#"			 // COMMAND_CYAN       28
-	"white#"		 // COMMAND_WHITE      29
-	"black#"		 // COMMAND_BLACK      30
-	"wait#"			 // COMMAND_WAIT       31
-	"stop#"			 // COMMAND_STOP       32
-	"begin#"		 // COMMAND_BEGIN      33
-	"end#"			 // COMMAND_END        34
-	"print#"		 // COMMAND_PRINT      35
-	"println#"		 // COMMAND_PRINTLN    36
-	"break#"		 // COMMAND_BREAK      37
-	"duration#"		 // COMMAND_DURATION   38
-	"continue#"		 // COMMAND_CONTINUE   39
-	"angle#"		 // COMMAND_ANGLE      40
-	"save#"			 // COMMAND_SAVE       41
-	"load#"			 // COMMAND_LOAD       42
+	"angry#"	  // COMMAND_ANGRY       0
+	"happy#"	  // COMMAND_HAPPY       1
+	"move#"		  // COMMAND_MOVE        2
+	"turn#"		  // COMMAND_TURN        3
+	"arc#"		  // COMMAND_ARC         4
+	"delay#"	  // COMMAND_DELAY       5
+	"colour#"	  // COMMAND_COLOUR      6
+	"color#"	  // COMMAND_COLOR       7
+	"pixel#"	  // COMMAND_PIXEL       8
+	"set#"		  // COMMAND_SET         9
+	"if#"		  // COMMAND_IF         10
+	"do#"		  // COMMAND_DO         11
+	"while#"	  // COMMAND_WHILE      12
+	"intime#"	  // COMMAND_INTIME     13
+	"endif#"	  // COMMAND_ENDIF      14
+	"forever#"	  // COMMAND_FOREVER    15
+	"endwhile#"	  // COMMAND_ENDWHILE   16
+	"sound#"	  // COMMAND_SOUND      17
+	"until#"	  // COMMAND_UNTIL      18
+	"clear#"	  // COMMAND_CLEAR      19
+	"run#"		  // COMMAND_RUN        20
+	"background#" // COMMAND_BACKGROUND 21
+	"else#"		  // COMMAND_ELSE       22
+	"red#"		  // COMMAND_RED        23
+	"green#"	  // COMMAND_GREEN      24
+	"blue#"		  // COMMAND_BLUE       25
+	"yellow#"	  // COMMAND_YELLOW     26
+	"magenta#"	  // COMMAND_MAGENTA    27
+	"cyan#"		  // COMMAND_CYAN       28
+	"white#"	  // COMMAND_WHITE      29
+	"black#"	  // COMMAND_BLACK      30
+	"wait#"		  // COMMAND_WAIT       31
+	"stop#"		  // COMMAND_STOP       32
+	"begin#"	  // COMMAND_BEGIN      33
+	"end#"		  // COMMAND_END        34
+	"print#"	  // COMMAND_PRINT      35
+	"println#"	  // COMMAND_PRINTLN    36
+	"break#"	  // COMMAND_BREAK      37
+	"duration#"	  // COMMAND_DURATION   38
+	"continue#"	  // COMMAND_CONTINUE   39
+	"angle#"	  // COMMAND_ANGLE      40
+	"save#"		  // COMMAND_SAVE       41
+	"load#"		  // COMMAND_LOAD       42
 	;
 
 const char angryCommand[] = "PF20";
@@ -519,7 +518,7 @@ int compileAssignment()
 		return ERROR_NO_EQUALS_IN_SET;
 	}
 
-	bufferPos++;		 // skip past the equals
+	bufferPos++;					  // skip past the equals
 	HullOSProgramoutputFunction('='); // write the equals
 
 	skipInputSpaces();
@@ -654,9 +653,8 @@ void beginCompilingStatements()
 	operationStackPointer = 0;
 	labelCounter = 0;
 	resetScriptLine();
-	scriptLineNumber = 1;	 // start at the first line
-	programError = false;	 // indicate that no errors were detected
-	compilingProgram = true; // indicate that we are compiling a program
+	scriptLineNumber = 1; // start at the first line
+	programError = false; // indicate that no errors were detected
 }
 
 const char endCommandText[] = "RX";
@@ -675,8 +673,6 @@ void endCompilingStatements()
 		sendCommand(endCommandText);
 		Serial.println("OK");
 	}
-
-	compilingProgram = false;
 }
 
 // Drops a comparison statement
@@ -738,7 +734,7 @@ int dropComparisonStatement(int labelNo, bool trueTest)
 int compileIf()
 {
 
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_IF_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
 	}
@@ -767,7 +763,7 @@ int compileElse()
 #ifdef SCRIPT_DEBUG
 	Serial.print(F("Compiling else: "));
 #endif // SCRIPT_DEBUG
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_ELSE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
 	}
@@ -781,7 +777,7 @@ int compileWhile()
 	Serial.print(F("Compiling while: "));
 #endif // SCRIPT_DEBUG
 
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_WHILE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
 	}
@@ -810,7 +806,7 @@ int compileForever()
 	Serial.print(F("Compiling forever: "));
 #endif // SCRIPT_DEBUG
 
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_FOREVER_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
 	}
@@ -872,7 +868,7 @@ int compileBreak()
 	Serial.print(F("Compiling break: "));
 #endif // SCRIPT_DEBUG
 
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_BREAK_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
 	}
@@ -899,7 +895,7 @@ int compileContinue()
 	// Not allowed to indent after a continue
 	previousStatementStartedBlock = false;
 
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_CONTINUE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
 	}
@@ -927,7 +923,7 @@ int clearProgram()
 	Serial.print(F("Performing clear program: "));
 #endif // SCRIPT_DEBUG
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		return ERROR_CLEAR_WHEN_COMPILING_PROGRAM;
 	}
@@ -945,7 +941,7 @@ int runProgram()
 	Serial.print(F("Performing run program: "));
 #endif // SCRIPT_DEBUG
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		return ERROR_RUN_WHEN_COMPILING_PROGRAM;
 	}
@@ -975,7 +971,7 @@ int compileStop()
 	// Not allowed to indent after a sound
 	previousStatementStartedBlock = false;
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		return ERROR_STOP_WHEN_COMPILING_PROGRAM;
 	}
@@ -992,7 +988,7 @@ int compileBegin()
 	// Not allowed to indent after a begin
 	previousStatementStartedBlock = false;
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		return ERROR_BEGIN_WHEN_COMPILING_PROGRAM;
 	}
@@ -1009,7 +1005,7 @@ int compileEnd()
 	// Not allowed to indent after a end
 	previousStatementStartedBlock = false;
 
-	if (!compilingProgram)
+	if (!storingProgram())
 	{
 		return ERROR_END_WHEN_NOT_COMPILING_PROGRAM;
 	}
@@ -1081,36 +1077,41 @@ int compilePrintln()
 // The byte commnds are sent to the output function specified
 // The script line is not buffered, and must not change while this function is running
 
+bool checkForAssignmentName()
+{
+	const char *names = " is, are, are, am, was, were,'s,'re";
 
-bool checkForAssignmentName(){
-	const char * names = " is, are, are, am, was, were,'s,'re";
-
-	char * namePos = (char *) names;
+	char *namePos = (char *)names;
 
 	// Loop round each of the items in the names list
-	while(true){
+	while (true)
+	{
 
 		// set the source to the input buffer
-		char * sourcePos = bufferPos;
+		char *sourcePos = bufferPos;
 
 		// get the first character out of the name we are looking for
 		char firstNameCh = *namePos;
 
-		if(firstNameCh == ' '){
+		if (firstNameCh == ' ')
+		{
 
 			// if the search name starts with a space we skip leading spaces in the source
-			// this lets us handle 's and 're correctly 
+			// this lets us handle 's and 're correctly
 
-			while(true){
+			while (true)
+			{
 
 				char ch = *sourcePos;
 
-				if(ch == 0){
+				if (ch == 0)
+				{
 					// reached the end during search for a space
 					return false;
 				}
 
-				if(ch!=' '){
+				if (ch != ' ')
+				{
 					// move past the space at the start of the name
 					namePos++;
 					break;
@@ -1125,20 +1126,20 @@ bool checkForAssignmentName(){
 
 		// now we can start looking for a match to the current name
 
-		while(true)
+		while (true)
 		{
-			if(*namePos==*sourcePos)
+			if (*namePos == *sourcePos)
 			{
-				// got a character match 
-				
-				// move on to the next characters in the source and name test	
+				// got a character match
+
+				// move on to the next characters in the source and name test
 
 				namePos++;
 				sourcePos++;
 
 				// has the name ended?
 
-				if(*namePos==',' || *namePos==0)
+				if (*namePos == ',' || *namePos == 0)
 				{
 					// got a complete  match in the names string
 					// skip the source pos to the character beyond the name
@@ -1150,7 +1151,7 @@ bool checkForAssignmentName(){
 			{
 				// mismatched character in the name - spin to the next name - if any - in the test names
 
-				while(true)
+				while (true)
 				{
 
 					// get the next character
@@ -1159,30 +1160,29 @@ bool checkForAssignmentName(){
 					// move beyond it
 					namePos++;
 
-					if(ch == 0)
+					if (ch == 0)
 					{
 						// reached the end of the names
 						return false;
 					}
 
-					if(ch==',')
+					if (ch == ',')
 					{
 						// got another name following - move on
 
-						if(*namePos == 0){
+						if (*namePos == 0)
+						{
 							// handle a trailing comma with nothing after it
 							return false;
 						}
 
 						break;
 					}
-
 				}
 			}
 		}
 	}
 }
-
 
 int compileDirectCommand()
 {
@@ -1197,44 +1197,50 @@ int compileDirectCommand()
 	return ERROR_OK;
 }
 
-int getProgramFilenameFromCode(){
-	
+int getProgramFilenameFromCode()
+{
+
 	skipInputSpaces();
 
 	char ch = *bufferPos;
 
-	if(ch!='"'){
+	if (ch != '"')
+	{
 		return ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START;
 	}
-	
+
 	// move past the quote
 	bufferPos++;
 
 	// Now copy the filename into the buffer
 
-	int pos=0;
+	int pos = 0;
 
-	while(true){
+	while (true)
+	{
 
 		ch = *bufferPos;
 
-		Serial.printf("  Copying:%d %c\n",ch,ch);
+		Serial.printf("  Copying:%d %c\n", ch, ch);
 
-		if(ch==0){
+		if (ch == 0)
+		{
 			return ERROR_MISSING_QUOTE_IN_FILENAME_STRING_END;
 		}
 
-		if(ch=='"'){
+		if (ch == '"')
+		{
 			// terminate the output filename
-			HullOScommandsFilenameBuffer[pos]=0;
+			HullOScommandsFilenameBuffer[pos] = 0;
 			break;
 		}
 
-		if(pos>=REMOTE_FILENAME_BUFFER_SIZE-1){
+		if (pos >= REMOTE_FILENAME_BUFFER_SIZE - 1)
+		{
 			return ERROR_FILENAME_TOO_LONG;
 		}
 
-		HullOScommandsFilenameBuffer[pos]=ch;
+		HullOScommandsFilenameBuffer[pos] = ch;
 		bufferPos++;
 		pos++;
 	}
@@ -1242,18 +1248,20 @@ int getProgramFilenameFromCode(){
 	return ERROR_OK;
 }
 
-int compileProgramSave(){
+int compileProgramSave()
+{
 
 	Serial.println("Compiling program save command");
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		return ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING;
 	}
 
 	int result = getProgramFilenameFromCode();
 
-	if(result != ERROR_OK){
+	if (result != ERROR_OK)
+	{
 		return result;
 	}
 
@@ -1265,29 +1273,31 @@ int compileProgramSave(){
 	return ERROR_OK;
 }
 
-int compileProgramLoad(){
+int compileProgramLoad()
+{
 	Serial.println("Compiling program load command");
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		return ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING;
 	}
 
 	int result = getProgramFilenameFromCode();
 
-	if(result != ERROR_OK){
+	if (result != ERROR_OK)
+	{
 		return result;
 	}
 
-	if (!loadFromFile(HullOScommandsFilenameBuffer,HullOScodeRunningCode,HULLOS_PROGRAM_SIZE)){
+	if (!loadFromFile(HullOScommandsFilenameBuffer, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
+	{
 		return ERROR_FILE_LOAD_FAILED;
 	}
 
 	startProgramExecution();
-	
+
 	return ERROR_OK;
 }
-
 
 int processCommand(byte commandNo)
 {
@@ -1546,11 +1556,12 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 	return result;
 }
 
-int pythonIshdecodeScriptLine(char * input)
+int pythonIshdecodeScriptLine(char *input)
 {
-	Serial.printf("PythonIsh script line thingy got line to decode: %s %d\n", input,strlen(input));
+	Serial.printf("PythonIsh script line thingy got line to decode: %s %d\n", input, strlen(input));
 
-	if (strcasecmp(input, "Exit") == 0){
+	if (strcasecmp(input, "Exit") == 0)
+	{
 		Serial.println("PythonIsh session ended");
 		stopLanguageDecoding();
 		return ERROR_OK;
@@ -1572,7 +1583,7 @@ int pythonIshdecodeScriptLine(char * input)
 	// Lines that start with a ! are console commands
 	if (*bufferPos == '!')
 	{
-		actOnConsoleCommandText(input+1);
+		actOnConsoleCommandText(input + 1);
 		return ERROR_OK;
 	}
 
@@ -1600,7 +1611,7 @@ int pythonIshdecodeScriptLine(char * input)
 	// Find the position of the first item
 	// sort out any outward indents
 
-	if (compilingProgram)
+	if (storingProgram())
 	{
 		if (indent < currentIndentLevel)
 		{
@@ -1649,7 +1660,7 @@ int pythonIshdecodeScriptLine(char * input)
 	{
 		abandonCompilation();
 
-		if (compilingProgram)
+		if (storingProgram())
 		{
 			Serial.print("Line:  ");
 			Serial.print(scriptLineNumber);

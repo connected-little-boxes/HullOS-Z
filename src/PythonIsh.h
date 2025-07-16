@@ -5,3 +5,5 @@
 #include "HullOS.h"
 extern struct LanguageHandler PythonIshLanguage;
 
+int pythonIshdecodeScriptLine(char *input);
+

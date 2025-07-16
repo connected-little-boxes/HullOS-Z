@@ -105,4 +105,6 @@ void saveToFile(char * path, char * src);
 
 bool loadFromFile(char * path, char * dest, int length);
 
+void listLittleFSContents();
 
+void printFileContents(const char *filename);

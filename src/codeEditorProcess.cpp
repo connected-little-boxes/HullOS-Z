@@ -1,3 +1,5 @@
+#ifdef PROCESS_CODE_EDITOR
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -26,6 +28,8 @@
 #include "pixels.h"
 #include "settings.h"
 #include "HullOS.h"
+#include "PythonIsh.h"
+#include "HullOSScript.h"
 
 struct CodeEditorSettings codeEditorSettings;
 
@@ -82,6 +86,8 @@ WebServer server(80);
 
 void handleRoot()
 {
+    Serial.println("Server root hit");
+
     server.send(200, "text/html", webPage);
 }
 
@@ -108,12 +114,81 @@ void handleNotFound()
 
 char codeEditSource[CODE_EDIT_PROGRAM_SIZE];
 
-void saveCode(){
-    saveToFile(CODE_EDIT_PROGRAM_FILE_NAME,codeEditSource);
+void saveCode()
+{
+    saveToFile(CODE_EDIT_PROGRAM_FILE_NAME, codeEditSource);
 }
 
-bool loadCodeFromFile(){
-    return loadFromFile(CODE_EDIT_PROGRAM_FILE_NAME, codeEditSource,CODE_EDIT_PROGRAM_SIZE);
+bool loadCodeFromFile()
+{
+    return loadFromFile(CODE_EDIT_PROGRAM_FILE_NAME, codeEditSource, CODE_EDIT_PROGRAM_SIZE);
+}
+
+bool sendTextToPythonIsh(char * text){
+
+    char * chPos = text;
+
+    char lineBuffer [CODE_EDITOR_MESSAGE_LENGTH];
+
+    int bufferPos = 0;
+    int lineCount=1;
+    bool finished = false;
+    bool gotLine = false;
+
+    while(!finished){
+
+        // process each line in turn
+
+        bufferPos=0;
+
+        while(true){
+
+            char ch = *chPos;
+
+            if(ch==0){
+                // end of input test
+                finished=true;
+                break;
+            }
+
+            if(ch=='\n'){
+                chPos++;
+                break;
+            }
+
+            if(bufferPos==CODE_EDITOR_MESSAGE_LENGTH){
+                // input line too long
+                return false;
+            }
+
+            // store the byte
+            lineBuffer[bufferPos]=ch;
+
+            // move down the buffer
+            chPos++;
+            bufferPos++;
+        }
+
+        // got a line of text from the input
+        // terminate it
+
+        if(bufferPos==0){
+            // ignore empty lines
+            continue;
+        }
+
+        lineBuffer[bufferPos]=0;
+
+        int result = pythonIshdecodeScriptLine(lineBuffer);
+        
+        if(result != ERROR_OK){
+            const char * error = getErrorMessage(result);
+            Serial.printf("%d line:%s\n",lineCount,error);
+            return false;
+        }
+        lineCount++;
+    }
+    return true;
 }
 
 void sendByteToRobot(byte b)
@@ -128,17 +203,20 @@ bool sendStringToCodeBuffer(String str)
 {
     int codeLength = str.length();
 
-    if( codeLength > (CODE_EDIT_PROGRAM_SIZE-1)){
+    if (codeLength > (CODE_EDIT_PROGRAM_SIZE - 1))
+    {
         return false;
     }
 
     for (int i = 0; i < codeLength; i++)
     {
-        codeEditSource[i]=str[i];
+        codeEditSource[i] = str[i];
     }
+
+    codeEditSource[codeLength] = 0;
+
     return true;
 }
-
 
 void setupCodeEditorServer()
 {
@@ -166,13 +244,13 @@ void setupCodeEditorServer()
 
     server.on("/save", []()
               {
-    // code is the only argument
-    String robotCode = server.arg(0); 
-    sendStringToCodeBuffer(robotCode);
-    Serial.printf("Source code received from web page: %s\n", codeEditSource);
-
-    saveCode();
-    handleRoot(); });
+                  // code is the only argument
+                  String robotCode = server.arg(0);
+                  sendStringToCodeBuffer(robotCode);
+                  sendTextToPythonIsh(codeEditSource);
+                  // Serial.printf("Source code received from web page: %s\n", codeEditSource);
+                  saveCode();
+                  handleRoot(); });
 
     server.onNotFound(handleNotFound);
 
@@ -297,6 +375,9 @@ unsigned long millisOfLastCodeEditorUpdate;
 
 void startcodeEditorProcess()
 {
+
+    sendTextToPythonIsh("red\ngreen\nyellow\n");
+
     loadCodeFromFile();
 
     Serial.printf("Source code: %s\n", codeEditSource);
@@ -318,15 +399,15 @@ void startcodeEditorProcess()
 void updatecodeEditorProcess()
 {
 
-	unsigned long currentMillis = millis();
-	unsigned long millisSinceLastUpdate = ulongDiff(currentMillis, millisOfLastCodeEditorUpdate);
+    unsigned long currentMillis = millis();
+    unsigned long millisSinceLastUpdate = ulongDiff(currentMillis, millisOfLastCodeEditorUpdate);
 
-	if (millisSinceLastUpdate < MILLIS_BETWEEN_CODE_EDIT_UPDATES)
-	{
+    if (millisSinceLastUpdate < MILLIS_BETWEEN_CODE_EDIT_UPDATES)
+    {
         return;
-	}
+    }
 
-	millisOfLastCodeEditorUpdate = currentMillis;
+    millisOfLastCodeEditorUpdate = currentMillis;
 
     switch (codeEditorProcess.status)
     {
@@ -402,5 +483,7 @@ struct process codeEditorProcess = {
     NULL, // no command options
     0     // no command options
 };
+
+#endif
 
 #endif

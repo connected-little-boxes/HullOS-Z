@@ -1,3 +1,5 @@
+#ifdef PROCESS_MOTOR
+
 #include "Motors.h"
 #include "Utils.h"
 
@@ -1250,3 +1252,5 @@ struct process motorProcessDescriptor = {
     NULL,
     NULL,
     NULL};
+
+    #endif

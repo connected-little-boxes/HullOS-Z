@@ -60,6 +60,11 @@ ProgramState programState = PROGRAM_STOPPED;
 
 InterpreterState interpreterState = EXECUTE_IMMEDIATELY;
 
+bool storingProgram ()
+{
+    return interpreterState==STORE_PROGRAM;
+}
+
 unsigned char diagnosticsOutputLevel = 0;
 
 unsigned long delayEndTime;
@@ -166,7 +171,7 @@ void startProgramExecution()
 {
 
 #ifdef PROGRAM_DEBUG
-    Serial.println(F(".Starting program execution"));
+    Serial.println(F("Starting program execution"));
 #endif
 
     clearVariables();
@@ -2616,6 +2621,32 @@ void saveCompiledProgramToFileCommand()
     saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
 }
 
+void dumpFileCommand()
+{
+    Serial.printf("Dump named file\n");
+
+    if (getHullOSFileNameFromCode())
+    {
+        Serial.printf("  Got dump filename:%s\n", HullOScommandsFilenameBuffer);
+    }
+    else
+    {
+        Serial.printf("  No filename supplied\n");
+        clearHullOSFilename();
+        return;
+    }
+
+    printFileContents(HullOScommandsFilenameBuffer);
+}
+
+void listFilesCommand()
+{
+    Serial.printf("List all files\n");
+
+    listLittleFSContents();
+}
+
+
 void remoteManagement()
 {
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -2641,33 +2672,41 @@ void remoteManagement()
 
     switch (commandCh)
     {
-    case 'M':
-    case 'm':
-        remoteDownloadCommand();
+    case 'C':
+    case 'c':
+        clearProgramStoreCommand();
         break;
-    case 'S':
-    case 's':
-        startProgramCommand();
+    case 'D':
+    case 'd':
+        dumpFileCommand();
+        break;
+    case 'F':
+    case 'f':
+        runProgramFromFileCommand();
         break;
     case 'H':
     case 'h':
         haltProgramExecutionCommand();
         break;
+    case 'l':
+    case 'L':
+        listFilesCommand();
+        break;
+    case 'M':
+    case 'm':
+        remoteDownloadCommand();
+        break;
     case 'P':
     case 'p':
         pauseProgramExecution();
         break;
+    case 'S':
+    case 's':
+        startProgramCommand();
+        break;
     case 'R':
     case 'r':
         resumeProgramExecution();
-        break;
-    case 'C':
-    case 'c':
-        clearProgramStoreCommand();
-        break;
-    case 'F':
-    case 'f':
-        runProgramFromFileCommand();
         break;
     case 'W':
     case 'w':

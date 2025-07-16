@@ -2,6 +2,7 @@
 #include <limits.h>
 #include "utils.h"
 #include "messages.h"
+#include "HullOSCommands.h"
 
 int rand_seed=1234;
 int rand_mult=8121;
@@ -277,3 +278,56 @@ bool loadFromFile(char * path, char * dest, int length){
     return true;
 }
 
+
+void listLittleFSContents()
+{
+    Serial.println("Listing LittleFS contents:");
+    if (!LittleFS.begin()) {
+        Serial.println("Failed to mount LittleFS");
+        return;
+    }
+
+    File root = LittleFS.open("/","r");
+    if (!root || !root.isDirectory()) {
+        Serial.println("Failed to open root directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while (file) {
+        Serial.print("File: ");
+        Serial.print(file.name());
+        Serial.print(" - Size: ");
+        Serial.println(file.size());
+
+        file = root.openNextFile();
+    }
+}
+
+void printFileContents(const char *filename) {
+  // Attempt to open the file for reading
+  File file = LittleFS.open(filename, "r");
+  if (!file) {
+    Serial.print("Failed to open file: ");
+    Serial.println(filename);
+    return;
+  }
+
+  Serial.print("Contents of ");
+  Serial.print(filename);
+  Serial.println(":");
+
+  // Read and print each character
+  while (file.available()) {
+    char ch = file.read();
+    if(ch==STATEMENT_TERMINATOR){
+        Serial.println();
+    }
+    else {
+        Serial.write(ch);
+    }
+  }
+
+  file.close();
+  Serial.println(); // Final newline after content
+}
