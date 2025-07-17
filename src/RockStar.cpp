@@ -4,6 +4,7 @@
 #include "RockStar.h"
 #include "HullOSVariables.h"
 #include "HullOSCommands.h"
+#include "console.h"
 #include "Utils.h"
 
 #define MAX_TOKENS 10
@@ -11,130 +12,69 @@
 #define MAX_DELIMITERS 5
 #define MAX_DELIM_LENGTH 4
 
+#define ROCKSTAR_DEBUG
 
-int RockstarIshDecodeScriptLine(char * input){
-    return ERROR_OK;
-}
+int RockstarIshDecodeScriptLine(char *input);
 
-
-void rockstarDecoderStart(){
+void rockstarDecoderStart()
+{
     Serial.printf("Starting Rockstar decoder");
 }
 
 struct LanguageHandler RockstarLanguage = {
-	"Rockstar",
+    "Rockstar",
     rockstarDecoderStart,
-	RockstarIshDecodeScriptLine
-};
-
+    RockstarIshDecodeScriptLine};
 
 const char rockstarCommandNames[] =
-    "angry,cross,mad#"                // COMMAND_ANGRY       0
-    "happy,pleased,glad#"             // COMMAND_HAPPY       1
-    "move#"                           // COMMAND_MOVE        2
-    "turn#"                           // COMMAND_TURN        3
-    "arc#"                            // COMMAND_ARC         4
-    "delay#"                          // COMMAND_DELAY       5
-    "colour#"                         // COMMAND_COLOUR      6
-    "color#"                          // COMMAND_COLOR       7
-    "pixel#"                          // COMMAND_PIXEL       8
-    "set#"                            // COMMAND_SET         9
-    "if#"                             // COMMAND_IF         10
-    "do#"                             // COMMAND_DO         11
-    "while#"                          // COMMAND_WHILE      12
-    "intime#"                         // COMMAND_INTIME     13
-    "endif#"                          // COMMAND_ENDIF      14
-    "forever#"                        // COMMAND_FOREVER    15
-    "endwhile#"                       // COMMAND_ENDWHILE   16
-    "sound#"                          // COMMAND_SOUND      17
-    "until#"                          // COMMAND_UNTIL      18
-    "clear#"                          // COMMAND_CLEAR      19
-    "run#"                            // COMMAND_RUN        20
-    "background#"                     // COMMAND_BACKGROUND 21
-    "else#"                           // COMMAND_ELSE       22
-    "red#"                            // COMMAND_RED        23
-    "green#"                          // COMMAND_GREEN      24
-    "blue#"                           // COMMAND_BLUE       25
-    "yellow#"                         // COMMAND_YELLOW     26
-    "magenta#"                        // COMMAND_MAGENTA    27
-    "cyan#"                           // COMMAND_CYAN       28
-    "white#"                          // COMMAND_WHITE      29
-    "black#"                          // COMMAND_BLACK      30
-    "wait#"                           // COMMAND_WAIT       31
-    "stop#"                           // COMMAND_STOP       32
-    "begin#"                          // COMMAND_BEGIN      33
-    "end#"                            // COMMAND_END        34
-    "write#"                          // COMMAND_PRINT      35
-    "print,scream,shout,whisper,say#" // COMMAND_PRINTLN    36
-    "break#"                          // COMMAND_BREAK      37
-    "duration#"                       // COMMAND_DURATION   38
-    "continue#"                       // COMMAND_CONTINUE   39
-    "angle#"                          // COMMAND_ANGLE      40
-    "dance#"                          // COMMAND_DANCE      41
-    "an,a,the,my,your,our#"           // COMMON_VARIABLE 42
+    "angry,cross,mad#"                // ROCKSTAR_COMMAND_ANGRY       0
+    "happy,pleased,mellow#"           // ROCKSTAR_COMMAND_HAPPY       1
+    "move#"                           // ROCKSTAR_COMMAND_MOVE        2
+    "turn#"                           // ROCKSTAR_COMMAND_TURN        3
+    "arc#"                            // ROCKSTAR_COMMAND_ARC         4
+    "delay#"                          // ROCKSTAR_COMMAND_DELAY       5
+    "colour#"                         // ROCKSTAR_COMMAND_COLOUR      6
+    "color#"                          // ROCKSTAR_COMMAND_COLOR       7
+    "pixel#"                          // ROCKSTAR_COMMAND_PIXEL       8
+    "set#"                            // ROCKSTAR_COMMAND_SET         9
+    "if#"                             // ROCKSTAR_COMMAND_IF         10
+    "do#"                             // ROCKSTAR_COMMAND_DO         11
+    "while#"                          // ROCKSTAR_COMMAND_WHILE      12
+    "intime#"                         // ROCKSTAR_COMMAND_INTIME     13
+    "endif#"                          // ROCKSTAR_COMMAND_ENDIF      14
+    "forever#"                        // ROCKSTAR_COMMAND_FOREVER    15
+    "endwhile#"                       // ROCKSTAR_COMMAND_ENDWHILE   16
+    "sound#"                          // ROCKSTAR_COMMAND_SOUND      17
+    "until#"                          // ROCKSTAR_COMMAND_UNTIL      18
+    "clear#"                          // ROCKSTAR_COMMAND_CLEAR      19
+    "run#"                            // ROCKSTAR_COMMAND_RUN        20
+    "background#"                     // ROCKSTAR_COMMAND_BACKGROUND 21
+    "else#"                           // ROCKSTAR_COMMAND_ELSE       22
+    "red#"                            // ROCKSTAR_COMMAND_RED        23
+    "green#"                          // ROCKSTAR_COMMAND_GREEN      24
+    "blue#"                           // ROCKSTAR_COMMAND_BLUE       25
+    "yellow#"                         // ROCKSTAR_COMMAND_YELLOW     26
+    "magenta#"                        // ROCKSTAR_COMMAND_MAGENTA    27
+    "cyan#"                           // ROCKSTAR_COMMAND_CYAN       28
+    "white#"                          // ROCKSTAR_COMMAND_WHITE      29
+    "black#"                          // ROCKSTAR_COMMAND_BLACK      30
+    "wait#"                           // ROCKSTAR_COMMAND_WAIT       31
+    "stop#"                           // ROCKSTAR_COMMAND_STOP       32
+    "begin#"                          // ROCKSTAR_COMMAND_BEGIN      33
+    "end#"                            // ROCKSTAR_COMMAND_END        34
+    "write#"                          // ROCKSTAR_COMMAND_PRINT      35
+    "print,scream,shout,whisper,say#" // ROCKSTAR_COMMAND_PRINTLN    36
+    "break#"                          // ROCKSTAR_COMMAND_BREAK      37
+    "duration#"                       // ROCKSTAR_COMMAND_DURATION   38
+    "continue#"                       // ROCKSTAR_COMMAND_CONTINUE   39
+    "angle#"                          // ROCKSTAR_COMMAND_ANGLE      40
+    "save#"                           // ROCKSTAR_COMMAND_SAVE       41
+    "load#"                           // ROCKSTAR_COMMAND_SAVE       42
+    "dump#"                           // ROCKSTAR_COMMAND_DUMP       43
+    "dance#"                          // ROCKSTAR_COMMAND_DANCE      44
+    "an,a,the,my,your,our#"           // ROCKSTAR_COMMON_VARIABLE    45
+    "is,are,am,was,were#"             // ROCKSTAR_IS_OPERATOR        46
     ;
-
-// Helper to check if input at position p matches any delimiter
-static int isDelimiter(const char *p, const char delimiters[MAX_DELIMITERS][MAX_DELIM_LENGTH])
-{
-    for (int d = 0; d < MAX_DELIMITERS; d++)
-    {
-        const char *delim = delimiters[d];
-        if (delim[0] == '\0')
-            continue;
-
-        int i = 0;
-        while (delim[i] && p[i] && delim[i] == p[i])
-            i++;
-        if (delim[i] == '\0')
-            return i; // matched, return length
-    }
-    return 0; // not a delimiter
-}
-
-bool findCommandMatch(const char *input, char *matchedBuf, int *outCommand) {
-    const char *p = (const char *)rockstarCommandNames;
-    int commandIndex = 0;
-
-    while (*p) {
-        const char *groupStart = p;
-
-        while (*p && *p != '#') {
-            const char *q = p;
-            const char *w = input;
-
-            // Compare current synonym with input
-            while (*q && *w && tolower(*q) == tolower(*w) && *q != ',' && *q != '#') {
-                q++;
-                w++;
-            }
-
-            // Matched if input ended and next table char is separator
-            if (*w == '\0' && (*q == ',' || *q == '#')) {
-                // Copy matched word
-                char *out = matchedBuf;
-                while (*p && *p != ',' && *p != '#') {
-                    *out++ = *p++;
-                }
-                *out = '\0';
-                *outCommand = commandIndex;
-                return true;
-            }
-
-            // Skip to start of next synonym
-            while (*p && *p != ',' && *p != '#') p++;
-            if (*p == ',') p++;  // move past comma
-        }
-
-        // Move past '#' to start next group
-        if (*p == '#') {
-            p++;
-            commandIndex++;
-        }
-    }
-
-    return false;
-}
 
 int splitInput(const char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH])
 {
@@ -184,160 +124,478 @@ int splitInput(const char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH])
     return tokenIndex;
 }
 
+inline bool atRockStarStatementEnd()
+{
+    char ch = *bufferPos;
+    return (ch == 0) || (ch == '.') || (ch == '!') || (ch == STATEMENT_TERMINATOR);
+}
+
 char nextToken[MAX_TOKEN_LENGTH];
 
-int getNextToken(){
+int copyIntoToken(int startPos)
+{
 
     skipInputSpaces();
-    
-    int tokenOffset=0;
 
-    while(true){
+    int tokenOffset = startPos;
 
+    while (true)
+    {
         char ch = *bufferPos;
 
-        if(ch==0 || ch==' ') {
-            nextToken[tokenOffset]=0;
+        if (atRockStarStatementEnd() || ch == ' ')
+        {
+            nextToken[tokenOffset] = 0;
+#ifdef ROCKSTAR_DEBUG
+            Serial.printf("Got next token:%s\n", nextToken);
+#endif
             return ERROR_OK;
         }
 
-        nextToken[tokenOffset]=ch;
+        nextToken[tokenOffset] = ch;
         bufferPos++;
         tokenOffset++;
-        if(tokenOffset+1>=MAX_TOKEN_LENGTH)
+        if (tokenOffset>= MAX_TOKEN_LENGTH-1)
         {
             return ERROR_TOKEN_TOO_LARGE;
         }
     }
 }
 
+int getStartToken()
+{
+    return copyIntoToken(0);
+}
+
+int appendStringToToken(char * str){
+    int tokenOffset = strlen(nextToken);
+
+    while(true){
+
+        char ch = *str;
+
+        if(ch==0){
+            nextToken[tokenOffset]=0;
+            return ERROR_OK;
+        }
+
+        nextToken[tokenOffset]=ch;
+
+        tokenOffset++;
+        str++;
+
+        if (tokenOffset>= MAX_TOKEN_LENGTH-1)
+        {
+            return ERROR_TOKEN_TOO_LARGE;
+        }
+    }
+}
+
+int appendToToken()
+{
+    return copyIntoToken(strlen(nextToken));
+}
+
 char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
 
-int dropSimpleAssignment(char * variableName){
+int dropSimpleAssignment(char *variableName)
+{
 
-
+#ifdef ROCKSTAR_DEBUG
     Serial.printf("Dropping simple assignment to %s\n", nextToken);
+#endif
 
-    if(nextToken[0]==0){
+    if (nextToken[0] == 0)
+    {
         return ERROR_MISSING_VARIABLE_IN_SIMPLE_ASSIGNMENT;
     }
 
     // Simple assignment is followed directly by the value
 
-	skipInputSpaces();
+    skipInputSpaces();
 
-	if (checkIdentifier(bufferPos) != VARIABLE_NAME_OK)
-		return ERROR_INVALID_VARIABLE_NAME_IN_SET;
+    if (checkIdentifier(nextToken) != VARIABLE_NAME_OK)
+        return ERROR_INVALID_VARIABLE_NAME_IN_SET;
 
-	int position;
+    int position;
 
-	if (findVariable(bufferPos, &position) == VARIABLE_NOT_FOUND)
-	{
-		if (createVariable(bufferPos, &position) == NO_ROOM_FOR_VARIABLE)
-		{
-			return ERROR_TOO_MANY_VARIABLES;
-		}
-	}
+    if (findVariable(bufferPos, &position) == VARIABLE_NOT_FOUND)
+    {
+        if (createVariable(bufferPos, &position) == NO_ROOM_FOR_VARIABLE)
+        {
+            return ERROR_TOO_MANY_VARIABLES;
+        }
+    }
 
-	sendCommand("VS");
+    sendCommand("VS");
 
-	writeBytesFromBuffer(getVariableNameLength(position));
+    sendCommand(nextToken);
 
-	skipInputSpaces();
+    skipInputSpaces();
 
-	HullOSProgramoutputFunction('='); // write the equals
+    HullOSProgramoutputFunction('='); // write the equals
 
-	skipInputSpaces();
+    skipInputSpaces();
 
-	return processValue();
+    int result = processValue();
 
+    if (result == ERROR_OK)
+    {
+        endCommand();
+    }
+
+    return result;
 }
 
-int rockstarProcessScriptLine(char *input, void (*output)(byte))
+int processRockstarCommand(int commandNo)
 {
-    Serial.printf("Got a line to decode %s\n", input);
+#ifdef ROCKSTAR_DEBUG
 
-    bufferPos = input;
+    Serial.printf("Processing Rockstar Command:%d\n", commandNo);
 
-    int result = getNextToken();
+#endif
 
-    if(result != ERROR_OK){
-        return result;
-    }
-
-    if(nextToken[0]==0){
-        return ERROR_EMPTY_TOKEN;
-    }
-
-    if(endsWith(nextToken,"'s")){
-        strip_end(nextToken,2);
-        resetScriptLine();
-        return dropSimpleAssignment(nextToken);
-    }
-    
-    if(endsWith(nextToken,"'re")){
-        strip_end(nextToken,3);
-        resetScriptLine();
-        return dropSimpleAssignment(nextToken);
-    }
-
-    resetScriptLine();
-    return ERROR_OK;
-
-
-    int count = splitInput(input, tokens);
-
-    Serial.print("Split into ");
-    Serial.print(count);
-    Serial.println(" tokens:");
-
-    if (count == 0)
+    switch (commandNo)
     {
-        resetScriptLine();
+    case ROCKSTAR_COMMAND_ANGRY: // angry
+        return compileAngry();
+
+    case ROCKSTAR_COMMAND_HAPPY: // happy
+        return compileHappy();
+
+    case ROCKSTAR_COMMAND_PRINT:
+        return compilePrint();
+
+    case ROCKSTAR_COMMAND_PRINTLN:
+        return compilePrintln();
+
+        /*
+            case ROCKSTAR_COMMAND_MOVE: // move
+                return compileMove();
+
+            case ROCKSTAR_COMMAND_TURN: // turn
+                return compileTurn();
+
+            case ROCKSTAR_COMMAND_ARC: // arc
+                return compileArc();
+
+            case ROCKSTAR_COMMAND_DELAY: // delay
+                return compileDelay();
+
+            case ROCKSTAR_COMMAND_COLOUR: // colour
+                return compileColour();
+
+            case ROCKSTAR_COMMAND_COLOR: // color
+                return compileColour();
+
+            case ROCKSTAR_COMMAND_PIXEL: // pixel
+                return compilePixel();
+
+            case ROCKSTAR_COMMAND_IF: // if
+                return compileIf();
+
+            case ROCKSTAR_COMMAND_WHILE: // while
+                return compileWhile();
+
+            case ROCKSTAR_COMMAND_CLEAR: // clear
+                return clearProgram();
+
+            case ROCKSTAR_COMMAND_RUN: // run
+                return runProgram();
+
+            case ROCKSTAR_COMMAND_ELSE: // else
+                return compileElse();
+
+            case ROCKSTAR_COMMAND_FOREVER: // forever
+                return compileForever();
+
+            case ROCKSTAR_COMMAND_SET:
+                return compileAssignment();
+
+            case ROCKSTAR_COMMAND_RED:
+            case ROCKSTAR_COMMAND_BLUE:
+            case ROCKSTAR_COMMAND_GREEN:
+            case ROCKSTAR_COMMAND_MAGENTA:
+            case ROCKSTAR_COMMAND_CYAN:
+            case ROCKSTAR_COMMAND_YELLOW:
+            case ROCKSTAR_COMMAND_WHITE:
+                return compileSimpleColor();
+
+            case ROCKSTAR_COMMAND_BLACK:
+                return compileBlack();
+
+            case ROCKSTAR_COMMAND_WAIT:
+                return compileWait();
+
+            case ROCKSTAR_COMMAND_STOP:
+                return compileStop();
+
+            case ROCKSTAR_COMMAND_BEGIN:
+                return compileBegin();
+
+            case ROCKSTAR_COMMAND_END:
+                return compileEnd();
+
+            case ROCKSTAR_COMMAND_SYSTEM_COMMAND:
+                return compileDirectCommand();
+
+            case ROCKSTAR_COMMAND_SOUND:
+                return compileSound();
+
+            case ROCKSTAR_COMMAND_BREAK:
+                return compileBreak();
+
+            case ROCKSTAR_COMMAND_CONTINUE:
+                return compileContinue();
+
+            case ROCKSTAR_COMMAND_SAVE:
+                return compileProgramSave();
+
+            case ROCKSTAR_COMMAND_LOAD:
+                return compileProgramLoad();
+
+            case ROCKSTAR_COMMAND_DUMP:
+                return compileProgramDump();
+            default:
+                return compileAssignment();
+        */
+    }
+
+    return ERROR_INVALID_COMMAND;
+}
+
+// Parses the poetic number at *bufferPos
+
+int RockstarPoeticParse()
+{
+
+#ifdef ROCKSTAR_DEBUG
+    Serial.printf("Poetic parse from here %s\n", bufferPos);
+#endif
+
+    int result = 0;
+
+    skipInputSpaces();
+
+    int digit = 0;
+
+    while (true)
+    {
+
+        if (atRockStarStatementEnd())
+        {
+            result = (result * 10) + digit;
+            return result;
+        }
+
+        char ch = *bufferPos;
+
+        if (isAlpha(ch) || ch == '-')
+        {
+            digit++;
+        }
+
+        if (ch == ' ')
+        {
+            result = (result * 10) + digit;
+            digit = 0;
+            skipInputSpaces();
+        }
+        else
+        {
+            bufferPos++;
+        }
+
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("ch:%c digit:%d result:%d", ch, digit, result);
+#endif
+    }
+}
+
+int RockstarIshDecodeScriptLine(char *input)
+{
+    char ch;
+
+#ifdef ROCKSTAR_DEBUG
+    Serial.printf("Got a line of Rockstar to decode %s\n", input);
+#endif
+
+    if (strcasecmp(input, "Exit") == 0)
+    {
+        Serial.println("Rockstar session ended");
+        stopLanguageDecoding();
         return ERROR_OK;
     }
 
-    for (int i = 0; i < count; i++)
+    bufferPos = input;
+
+    byte indent = skipInputSpaces();
+
+    // Lines that start with a # are comments
+    if (*bufferPos == '#')
     {
-        Serial.print("Token ");
-        Serial.print(i);
-        Serial.print(": ");
-        Serial.println(tokens[i]);
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("Comment\n");
+#endif
+        return ERROR_OK;
     }
 
-    char matched[20];
-    int command;
-
-    if (findCommandMatch(tokens[0], matched, &command))
+    // Lines that start with a ! are console commands
+    if (*bufferPos == '!')
     {
-        Serial.print("Matched command ");
-        Serial.print(command);
-        Serial.print(" as '");
-        Serial.print(matched);
-        Serial.println("'");
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("HullOS\n");
+#endif
+        actOnConsoleCommandText(input + 1);
+        return ERROR_OK;
+    }
 
-        switch (command)
-        {
-        case COMMAND_PRINT:
+    int result = getStartToken();
 
-            /* code */
-            break;
-        
-        default:
-            break;
+    if (result != ERROR_OK)
+    {
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("No token found\n");
+#endif
+        return result;
+    }
+
+    if (nextToken[0] == 0)
+    {
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("Empty token found\n");
+#endif
+        return ERROR_EMPTY_TOKEN;
+    }
+
+    if (endsWith(nextToken, "'s"))
+    {
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("Possessive assignment 2\n");
+#endif
+        strip_end(nextToken, 2);
+        resetScriptLine();
+        return dropSimpleAssignment(nextToken);
+    }
+
+    if (endsWith(nextToken, "'re"))
+    {
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("Possessive assignment 3\n");
+#endif
+        strip_end(nextToken, 3);
+        resetScriptLine();
+        return dropSimpleAssignment(nextToken);
+    }
+
+    // move back to the start of the line for input decoding
+
+    bufferPos = input;
+
+    int commandNo = decodeCommandName(rockstarCommandNames);
+
+    if (commandNo == -1)
+    {
+#ifdef ROCKSTAR_DEBUG
+        Serial.printf("No command found. Checking for compound assignment\n");
+#endif
+
+        // no command found - look for an assignment starting with a variable name
+        // record the start of the name:
+
+        char *varnamePos = bufferPos;
+
+        bufferPos = bufferPos + strlen(nextToken);
+
+        while(true){
+
+            commandNo = decodeCommandName(rockstarCommandNames);
+
+            if (commandNo != ROCKSTAR_IS_OPERATOR){
+#ifdef ROCKSTAR_DEBUG
+            Serial.printf("Space terminated element in variable name. Moved input position to here:%s\n", bufferPos);
+#endif
+
+                // Add a space to the end of the variable name 
+
+                if(appendStringToToken(" ")!=ERROR_OK){
+                    return ERROR_TOKEN_TOO_LARGE_FOR_BUFFER;
+                }
+
+                // add the next word from the variable name
+
+                if(appendToToken()!=ERROR_OK){
+                    return ERROR_TOKEN_TOO_LARGE_FOR_BUFFER;
+                }
+                continue;
+            }
+            else {
+    #ifdef ROCKSTAR_DEBUG
+                Serial.printf("Is assignment of possibly poetic number\n");
+    #endif
+                sendCommand("VS");
+
+                sendCommand(nextToken);
+
+                HullOSProgramoutputFunction('='); // write the equals
+
+                skipInputSpaces();
+
+                ch = *bufferPos;
+
+                // if the value starts with a digit we parse it as an expression
+
+                if (isdigit(ch))
+                {
+
+                    int result = processValue();
+
+                    if (result == ERROR_OK)
+                    {
+                        endCommand();
+                    }
+
+                    return result;
+                }
+
+                int val = RockstarPoeticParse();
+
+    #ifdef ROCKSTAR_DEBUG
+                Serial.printf("Poetic number to assign:%d\n", val);
+    #endif
+                char numberBuffer[20];
+
+                snprintf(numberBuffer, 20, "%d", val);
+
+                sendCommand(numberBuffer);
+
+                endCommand();
+                return ERROR_OK;
+            }
         }
     }
-    else
+
+    result = processRockstarCommand(commandNo);
+
+    if (result != ERROR_OK)
     {
-        Serial.println("No match found.");
+        abandonCompilation();
+
+        if (storingProgram())
+        {
+            Serial.print("Line:  ");
+            Serial.print(scriptLineNumber);
+            Serial.print(" ");
+        }
+
+        Serial.print("Error: ");
+        Serial.print(result);
+        Serial.print(" ");
+        Serial.println(input);
+        printError(result);
     }
 
-    resetScriptLine();
+    endCommand();
 
-    return ERROR_OK;
-}
-
-int rockstarProcessScriptLine(char *b)
-{
-    return ERROR_OK;
+    return result;
 }

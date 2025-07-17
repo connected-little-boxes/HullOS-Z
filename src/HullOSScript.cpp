@@ -78,6 +78,7 @@ const char* getErrorMessage(int code) {
 		case ERROR_FILE_LOAD_FAILED: return "File load failed";
 		case ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING: return "Dump not available when compiling. End compile before dumping";
 		case ERROR_FILE_DUMP_FAILED: return "File dump failed";
+		case ERROR_TOKEN_TOO_LARGE_FOR_BUFFER: return "Token too large for buffer";
         default: return "Unknown error.";
     }
 }
@@ -233,27 +234,17 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 		// If we have reached the end of the command and the end of the input at the same time
 		// we have a match. End of the input is a space or the end of the line
 
-		if (ch == COMMAND_ALIAS_SEPARATOR)
-		{
-			// we've found an alias for the command
-			// this will only happen the middle of a statement so we don't need to worry about the end of
-			// the input
-			bufferPos = comparePos;
-#ifdef COMPARE_COMMAND_DEBUG
-			Serial.println("..match");
-#endif
-			return COMMAND_MATCHED;
-		}
-
-		if (ch == COMMAND_NAME_TERMINATOR && (inputCh == ' ' | inputCh == 0))
-		{
-			// Set the buffer position to the end of the command
-			bufferPos = comparePos;
-
-#ifdef COMPARE_COMMAND_DEBUG
-			Serial.println("..match");
-#endif
-			return COMMAND_MATCHED;
+		if (ch == COMMAND_ALIAS_SEPARATOR | ch == COMMAND_NAME_TERMINATOR){
+			// found the end of the command name
+			// have we also reached the end of the input string
+			if (inputCh== 0 || inputCh==' ' ){
+				// we've found an alias for the command
+				bufferPos = comparePos;
+	#ifdef COMPARE_COMMAND_DEBUG
+				Serial.println("..match with command");
+	#endif
+				return COMMAND_MATCHED;
+			}			
 		}
 
 		if (ch != inputCh)
@@ -278,11 +269,12 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 				return COMMAND_NOT_MATCHED;
 			}
 		}
-		scriptCommandPos++;
-		comparePos++;
+		else {
+			scriptCommandPos++;
+			comparePos++;
+		}
 	}
 }
-
 
 // Decodes the command held in the area of memory referred to by bufferPos
 int decodeCommandName(const char * commandNames)
@@ -329,14 +321,18 @@ int decodeCommandName(const char * commandNames)
 		case COMMAND_NOT_MATCHED:
 			if (!spinToCommandEnd(commandNames))
 			{
+#ifdef SCRIPT_DEBUG
 				Serial.printf("Command not matched: %d\n", commandNumber);
+#endif
 				return -1;
 			}
 			commandNumber++;
 			break;
 
 		case END_OF_COMMANDS:
+#ifdef SCRIPT_DEBUG
 			Serial.printf("Hit the end\n");
+#endif
 			return -1;
 			break;
 		}
@@ -545,6 +541,90 @@ void endCommand()
 void abandonCompilation()
 {
 	programError = true;
+}
+
+const char angryCommand[] = "PF20";
+
+int compileAngry()
+{
+#ifdef SCRIPT_DEBUG
+	Serial.println(F("Compiling angry: "));
+#endif // SCRIPT_DEBUG
+
+	sendCommand(angryCommand);
+	previousStatementStartedBlock = false;
+	return ERROR_OK;
+}
+
+const char happyCommand[] = "PF1";
+
+int compileHappy()
+{
+#ifdef SCRIPT_DEBUG
+	Serial.println(F("Compiling happy: "));
+#endif // SCRIPT_DEBUG
+
+	sendCommand(happyCommand);
+	previousStatementStartedBlock = false;
+	return ERROR_OK;
+}
+
+// compile a print statement
+// The command is followed by an expression or a string of text enclosed in " characters
+//
+int compilePrint()
+{
+	// Not allowed to indent after a print
+	previousStatementStartedBlock = false;
+
+	// first character of the write command
+	HullOSProgramoutputFunction('W');
+
+	skipInputSpaces();
+
+	if (*bufferPos == '"')
+	{
+		// start of a message - just drop out the string of text
+		HullOSProgramoutputFunction('T');
+
+		bufferPos++; // skip the starting double quote
+		while (*bufferPos != 0 && *bufferPos != '"')
+		{
+			HullOSProgramoutputFunction(*bufferPos);
+			bufferPos++;
+		}
+		if (*bufferPos == 0)
+		{
+			return ERROR_MISSING_CLOSE_QUOTE_ON_PRINT;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	}
+	else
+	{
+		// start of a value - just drop out the expression
+		HullOSProgramoutputFunction('V');
+		// dropping a value - just process it
+		return processValue();
+	}
+}
+
+const char newlineCommand[] = "WL";
+
+int compilePrintln()
+{
+	// Not allowed to indent after a println
+	previousStatementStartedBlock = false;
+
+	compilePrint();
+
+	// Going to follow this command with another
+	endCommand();
+
+	sendCommand(newlineCommand);
+	return ERROR_OK;
 }
 
 
