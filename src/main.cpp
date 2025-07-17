@@ -40,6 +40,8 @@
 #include "distance.h"
 #include "codeEditorProcess.h"
 
+#ifdef PROCESS_MOTOR
+
 void setup1()
 {
 }
@@ -48,6 +50,8 @@ void loop1()
 {
   updateMotorsCore1();
 }
+
+#endif
 
 // This function will be different for each build of the device.
 

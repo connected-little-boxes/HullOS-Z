@@ -218,10 +218,10 @@ void dumpProcessStatus()
 		{
 			alwaysDisplayMessage("    %s:", procPtr->processName);
 			procPtr->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
-			alwaysDisplayMessage("%s Active time(microsecs): ", processStatusBuffer);
-			alwaysDisplayMessage("%lu",procPtr->activeTime);
-			alwaysDisplayMessage(" Total time(millisecs): ");
-			alwaysDisplayMessage("%lu\n",procPtr->totalTime/1000);
+			alwaysDisplayMessage("%s Active time: ", processStatusBuffer);
+			alwaysDisplayMessage("%lu millisecs",procPtr->activeTime/1000);
+			alwaysDisplayMessage(" Total time: ");
+			alwaysDisplayMessage("%lu millisecs\n",procPtr->totalTime/1000);
 		}
 		procPtr = procPtr->nextActiveProcess;
 	}

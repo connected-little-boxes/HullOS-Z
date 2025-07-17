@@ -226,8 +226,9 @@ void haltProgramExecution()
     Serial.println(programCounter);
 #endif
 
+#ifdef PROCESS_MOTOR
     motorStop();
-
+#endif
     programState = PROGRAM_STOPPED;
 }
 
@@ -518,6 +519,8 @@ void resetCommand()
 #ifdef COMMAND_DEBUG
 #define MOVE_FORWARDS_DEBUG
 #endif
+
+#ifdef PROCESS_MOTOR
 
 // Command MFddd,ttt - move distance ddd over time ttt (ttt expressed in "ticks" - tenths of a second)
 // Return OK
@@ -1271,6 +1274,8 @@ void remoteMoveControl()
         break;
     }
 }
+
+#endif
 
 #ifdef COMMAND_DEBUG
 #define PIXEL_COLOUR_DEBUG
@@ -2380,6 +2385,8 @@ void compareAndJump(bool jumpIfTrue)
     // otherwise do nothing
 }
 
+#ifdef PROCESS_MOTOR
+
 // Command CIccc
 // Jump to label if the motors are not running
 
@@ -2458,6 +2465,8 @@ void jumpWhenMotorsInactive()
     // otherwise do nothing
 }
 
+#endif
+
 void programControl()
 {
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -2483,6 +2492,9 @@ void programControl()
 
     switch (commandCh)
     {
+
+#ifdef PROCESS_MOTOR
+
     case 'I':
     case 'i':
         jumpWhenMotorsInactive();
@@ -2491,6 +2503,8 @@ void programControl()
     case 'a':
         pauseWhenMotorsActive();
         break;
+#endif
+
     case 'D':
     case 'd':
         remoteDelay();
@@ -3168,10 +3182,12 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     case 'i':
         information();
         break;
+#ifdef PROCESS_MOTOR
     case 'M':
     case 'm':
         remoteMoveControl();
         break;
+#endif
     case 'P':
     case 'p':
         remotePixelControl();
@@ -3342,12 +3358,14 @@ void updateRunningProgram()
     case PROGRAM_ACTIVE:
         executeProgramStatement();
         break;
+#ifdef PROCESS_MOTOR
     case PROGRAM_AWAITING_MOVE_COMPLETION:
         if (!motorsMoving())
         {
             programState = PROGRAM_ACTIVE;
         }
         break;
+#endif
     case PROGRAM_AWAITING_DELAY_COMPLETION:
         if (millis() > delayEndTime)
         {

@@ -51,6 +51,7 @@ const char *webPage = R"(
 
       const textarea = document.getElementById("codeTextarea");
       const text = textarea.value;
+      text = 'begin\n' + text + '\nend\nsave "active.txt"\nload "active.txt"\n';
 
       fetch("/save", {
         method: "POST",

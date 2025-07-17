@@ -1,3 +1,5 @@
+#ifdef PROCESS_MOTOR
+
 #pragma once
 
 #include <Arduino.h>
@@ -68,3 +70,5 @@ void storeActiveWheelSettings();
 void loadActiveWheelSettings();
 void setupWheelSettings();
 void updateMotorsCore1();
+
+#endif
