@@ -42,6 +42,8 @@
 
 #ifdef PROCESS_MOTOR
 
+#ifdef PICO_CORE_MOTOR
+
 void setup1()
 {
 }
@@ -50,6 +52,8 @@ void loop1()
 {
   updateMotorsCore1();
 }
+
+#endif
 
 #endif
 

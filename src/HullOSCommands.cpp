@@ -25,7 +25,7 @@
 
 //#define DIAGNOSTICS_ACTIVE
 //#define PROGRAM_DEBUG
-#define HullOS_DEBUG
+//#define HullOS_DEBUG
 
 
 char HullOScodeRunningCode[HULLOS_PROGRAM_SIZE];

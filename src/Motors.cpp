@@ -262,6 +262,8 @@ inline void setRight(byte bits)
   digitalWrite(motorSettings.rpin4, bits & 8);
 }
 
+volatile bool motorsRunning = false;
+
 #ifdef ARDUINO_ARCH_ESP32
 
 hw_timer_t *leftTimer = NULL;
@@ -429,7 +431,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
 
 #endif
 
-#ifdef PICOtimer
+#ifdef PICO_TIMER_MOTOR
 
 struct repeating_timer leftTimer;
 struct repeating_timer rightTimer;
@@ -521,7 +523,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
     {
       leftMotorWaveformDelta = -1;
     }
-    leftTimer.delay_us = leftInterruptIntervalInMicroSeconds;
+    add_repeating_timer_us(leftInterruptIntervalInMicroSeconds, onLeft, NULL, &leftTimer);
   }
 
   long rightInterruptIntervalInMicroseconds;
@@ -539,11 +541,11 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
     rightStepCounter = 0;
     if (rightStepsToMove > 0)
     {
-      rightMotorWaveformDelta = -1;
+      rightMotorWaveformDelta = 1;
     }
     else
     {
-      rightMotorWaveformDelta = 1;
+      rightMotorWaveformDelta = -1;
     }
     add_repeating_timer_us(rightInterruptIntervalInMicroseconds, onRight, NULL, &rightTimer);
   }
@@ -560,7 +562,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
 
 #endif
 
-#ifdef PICO
+#ifdef PICO_CORE_MOTOR
 
 unsigned long lastMicros;
 
@@ -576,8 +578,6 @@ volatile unsigned long rightTimeOfNextStep;
 volatile unsigned long currentMicros;
 volatile unsigned long leftTimeSinceLastStep;
 volatile unsigned long rightTimeSinceLastStep;
-
-volatile bool motorsRunning = false;
 
 inline void startMotor(unsigned long stepLimit, unsigned long microSecsPerPulse, bool forward,
                        volatile unsigned long *motorStepLimit, volatile unsigned long *motorPulseInterval,
