@@ -877,7 +877,7 @@ int performCommandsInStore(char *commandStoreName)
 		TRACELOG("     Found file:");
 		TRACELOGLN(entry.name());
 
-		String line = entry.readStringUntil('\n');
+		String line = entry.readStringUntil(LINE_FEED);
 
 		const char *lineChar = line.c_str();
 		TRACELOG("    Contains command:");

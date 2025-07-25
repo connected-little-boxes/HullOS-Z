@@ -60,3 +60,6 @@ void DistanceStatusMessage(struct sensor * Distancesensor, char * buffer, int bu
 void DistanceTest();
 
 extern struct sensor Distance;
+
+int readDistance();
+

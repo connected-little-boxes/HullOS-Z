@@ -362,15 +362,22 @@ void dumpProgram(char *start)
 
 void endProgramReceive()
 {
+
+#ifdef PROGRAM_DEBUG
+
     Serial.printf("End Program Receive\n");
 
     dumpProgram(HullOScodeCompileOutput);
+
+#endif
 
     stopBusyPixel();
 
     if (HullOSFilenameSet())
     {
+#ifdef PROGRAM_DEBUG
         Serial.printf("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+#endif
         saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
     }
 
@@ -381,7 +388,11 @@ void endProgramReceive()
 
 void storeReceivedByte(byte b)
 {
+
+#ifdef PROGRAM_DEBUG
     Serial.printf("Storing:%d %c\n", b, b);
+#endif
+
     // ignore odd characters - except for CR
 
     if (b < 32 | b > 128)
@@ -413,7 +424,9 @@ void storeReceivedByte(byte b)
         {
         case 'x':
         case 'X':
+#ifdef PROGRAM_DEBUG
             Serial.println("RX");
+#endif
             // put the terminator on the end
 
             storeProgramByte(PROGRAM_TERMINATOR);
@@ -432,8 +445,9 @@ void storeReceivedByte(byte b)
 
         case 'A':
         case 'a':
+#ifdef PROGRAM_DEBUG
             Serial.println("RA");
-
+#endif
             storeProgramByte(PROGRAM_TERMINATOR);
 
             endProgramReceive();
@@ -443,9 +457,9 @@ void storeReceivedByte(byte b)
         case 'F':
         case 'f':
             // F is a special case - we let it through to allow program chaining
-
+#ifdef PROGRAM_DEBUG
             Serial.println("RF");
-
+#endif
             storeProgramByte('r');
             lineStoreState = STORING;
             break;
@@ -2547,8 +2561,9 @@ void remoteDownloadCommand()
     Serial.println(F(".**remote download"));
 #endif
 
+#ifdef PROGRAM_DEBUG
     Serial.printf("Remote download command decode pos:%s\n", decodePos);
-
+#endif
     if (getHullOSFileNameFromCode())
     {
         Serial.printf("Got filename:%s\n", HullOScommandsFilenameBuffer);

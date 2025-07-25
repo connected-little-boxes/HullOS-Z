@@ -116,15 +116,14 @@ void doDumpStatus(char *commandLine)
 #if defined(ARDUINO_ARCH_ESP8266)
 
 	alwaysDisplayMessage("Heap: ");
-	alwaysDisplayMessage("%u\n",ESP.getFreeHeap());
+	alwaysDisplayMessage("%u\n", ESP.getFreeHeap());
 
 #endif
 
 #if defined(ARDUINO_ARCH_ESP32)
 	alwaysDisplayMessage("Heap: ");
-	alwaysDisplayMessage("%u\n",ESP.getFreeHeap());
+	alwaysDisplayMessage("%u\n", ESP.getFreeHeap());
 #endif
-
 }
 
 void doRestart(char *commandLine)
@@ -183,7 +182,8 @@ void doDumpListeners(char *commandline)
 	printControllerListeners();
 }
 
-void doTestRFIDSensor(char *commandline){
+void doTestRFIDSensor(char *commandline)
+{
 	pollRFID();
 }
 
@@ -209,7 +209,8 @@ void printCommandsJson(process *p)
 			snprintf(consoleMessageBuffer, CONSOLE_MESSAGE_SIZE, "   ");
 			appendCommandDescriptionToJson(com, consoleMessageBuffer, CONSOLE_MESSAGE_SIZE);
 			alwaysDisplayMessage(consoleMessageBuffer);
-			if(i < (c->noOfCommands-1)){
+			if (i < (c->noOfCommands - 1))
+			{
 				alwaysDisplayMessage(",");
 			}
 		}
@@ -230,7 +231,7 @@ void doShowRemoteCommandsJson(char *commandLine)
 		{
 			procPtr = procPtr->nextAllProcesses;
 		}
-		else 
+		else
 		{
 			printCommandsJson(procPtr);
 			procPtr = procPtr->nextAllProcesses;
@@ -278,8 +279,8 @@ void doShowRemoteCommandsText(char *commandLine)
 
 void appendSensorDescriptionToJson(sensor *s, char *buffer, int bufferSize)
 {
-	appendFormattedString ( buffer, bufferSize, "{\"name\":\"%s\",\"version\":\"%s\",\"triggers\":[", 
-			s->sensorName, Version);
+	appendFormattedString(buffer, bufferSize, "{\"name\":\"%s\",\"version\":\"%s\",\"triggers\":[",
+						  s->sensorName, Version);
 
 	for (int i = 0; i < s->noOfSensorListenerFunctions; i++)
 	{
@@ -315,13 +316,13 @@ void doShowSensorsJson(char *commandLine)
 void appendSensorDescriptionToText(sensor *s, char *buffer, int bufferSize)
 {
 	appendFormattedString(buffer, bufferSize, "Sensor name %s\n",
-			 s->sensorName);
+						  s->sensorName);
 
 	for (int i = 0; i < s->noOfSensorListenerFunctions; i++)
 	{
 		sensorEventBinder *binder = &s->sensorListenerFunctions[i];
-		appendFormattedString(buffer, bufferSize, "   trigger:%s\n", 
-				 binder->listenerName);
+		appendFormattedString(buffer, bufferSize, "   trigger:%s\n",
+							  binder->listenerName);
 	}
 }
 
@@ -419,7 +420,6 @@ void doColourDisplay(char *commandLine)
 	alwaysDisplayMessage("Colour display finished");
 }
 
-
 void doDumpSprites(char *commandLine)
 {
 	frame->dump();
@@ -455,7 +455,7 @@ void dumpFilesInStores()
 
 				alwaysDisplayMessage("   Command:%s\n", storeFile.name());
 
-				String line = storeFile.readStringUntil('\n');
+				String line = storeFile.readStringUntil(LINE_FEED);
 				const char *lineChar = line.c_str();
 				alwaysDisplayMessage("      %s\n", lineChar);
 				storeFile.close();
@@ -465,7 +465,7 @@ void dumpFilesInStores()
 	dir.close();
 }
 
-void  deleteFileInStore(char *deleteName)
+void deleteFileInStore(char *deleteName)
 {
 	alwaysDisplayMessage("Deleting file:%s\n", deleteName);
 
@@ -508,12 +508,11 @@ void  deleteFileInStore(char *deleteName)
 				// on the ESP8266 and the PICO LittleFS the dir name function just delivers the name of the file in the folder(test)
 				// on the ESP32 LittleFS it delivers the file path to the file (\start\test)
 
-
 #if defined(ARDUINO_ARCH_ESP32)
 				buildStoreFilename(compareFileName, STORE_FILENAME_LENGTH, storeName, deleteName);
 #endif
 
-#if defined(ARDUINO_ARCH_ESP8266)  || defined(PICO)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(PICO)
 				strcpy(compareFileName, deleteName);
 #endif
 
@@ -525,7 +524,7 @@ void  deleteFileInStore(char *deleteName)
 					strcpy(fullDeleteFileName, compareFileName);
 #endif
 
-#if defined(ARDUINO_ARCH_ESP8266)  || defined(PICO)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(PICO)
 					buildStoreFilename(fullDeleteFileName, STORE_FILENAME_LENGTH, storeName, filename);
 #endif
 				}
@@ -582,15 +581,18 @@ void doFirmwareUpgradeReset(char *commandLine)
 
 #ifdef PROCESS_HULLOS
 
-void doStartPythonIsh(char *commandLine){
+void doStartPythonIsh(char *commandLine)
+{
 	HullOSStartLanguage(commandLine);
 }
 
-void doStartRockstar(char *commandLine){
+void doStartRockstar(char *commandLine)
+{
 	HullOSStartLanguage(commandLine);
 }
 
-void doStartHullOS(char *commandLine){
+void doStartHullOS(char *commandLine)
+{
 	HullOSStartLanguage(commandLine);
 }
 
@@ -604,7 +606,7 @@ struct consoleCommand userCommands[] =
 		{"clearalllisteners", "clear all the command listeners", doClearAllListeners},
 		{"clear", "clear all settings and restart the device", doClear},
 		{"clearsensorlisteners", "clear the command listeners for a sensor", doClearSensorListeners},
-#ifdef PROCESS_PIXELS		
+#ifdef PROCESS_PIXELS
 		{"colours", "step through all the colours", doColourDisplay},
 #endif
 		{"commands", "show all the remote commands", doShowRemoteCommandsText},
@@ -653,7 +655,7 @@ struct consoleCommand userCommands[] =
 		{"setdrinksresetcard", "setup the drinks reset card", doRFIDSetupDrinksResetCard},
 #endif
 
-#ifdef PROCESS_PIXELS		
+#ifdef PROCESS_PIXELS
 		{"sprites", "dump sprite data", doDumpSprites},
 #endif
 		{"status", "show the sensor status", doDumpStatus},
@@ -666,8 +668,8 @@ struct consoleCommand userCommands[] =
 
 void doHelp(char *commandLine)
 {
-	alwaysDisplayMessage("\n\nConnected Little Boxes\n Device Version %s\n\nThese are all the available commands.\n\n",
-				  Version);
+	alwaysDisplayMessage("\n\nConnected Little Boxes\nDevice Version %s\n\nThese are all the available commands.\n\n",
+						 Version);
 
 	int noOfCommands = sizeof(userCommands) / sizeof(struct consoleCommand);
 
@@ -677,19 +679,19 @@ void doHelp(char *commandLine)
 	}
 
 	alwaysDisplayMessage("\nYou can view the value of any setting just by typing the setting name, for example:\n\n"
-				  "    mqttdevicename\n\n"
-				  "- would show you the MQTT device name.\n"
-				  "You can assign a new value to a setting, for example:\n\n"
-				  "     mqttdevicename=Rob\n\n"
-				  "- would set the name of the mqttdevicename to Rob.\n\n"
-				  "To see a list of all the setting names use the command settings.\n"
-				  "This displays all the settings, their values and names.\n"
-				  "To see a dump of settings (which can be restored to the device later) use dump.\n"
-				  "The dump and settings can be followed by a filter string to match setting names\n\n"
-				  "   dump pix\n\n"
-				  "- would dump all the settings that contain the string pix\n\n"
-				  "If you enter a JSON string this will be interpreted as a remote command.\n"
-				  "See the remote command documentation for more details of this.\n");
+						 "    mqttdevicename\n\n"
+						 "- would show you the MQTT device name.\n"
+						 "You can assign a new value to a setting, for example:\n\n"
+						 "     mqttdevicename=Rob\n\n"
+						 "- would set the name of the mqttdevicename to Rob.\n\n"
+						 "To see a list of all the setting names use the command settings.\n"
+						 "This displays all the settings, their values and names.\n"
+						 "To see a dump of settings (which can be restored to the device later) use dump.\n"
+						 "The dump and settings can be followed by a filter string to match setting names\n\n"
+						 "   dump pix\n\n"
+						 "- would dump all the settings that contain the string pix\n\n"
+						 "If you enter a JSON string this will be interpreted as a remote command.\n"
+						 "See the remote command documentation for more details of this.\n");
 }
 
 boolean findCommandName(consoleCommand *com, char *name)
@@ -756,20 +758,20 @@ int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands
 	switch (result)
 	{
 	case displayedOK:
-		alwaysDisplayMessage("setting displayed OK");
+		alwaysDisplayMessage("setting displayed OK\n");
 		return true;
 	case setOK:
-		alwaysDisplayMessage("setting set OK");
+		alwaysDisplayMessage("setting set OK\n");
 		if (consoleSettings.autoSaveSettings)
 		{
 			saveSettings();
 		}
 		return WORKED_OK;
 	case settingNotFound:
-		alwaysDisplayMessage("setting not found");
+		alwaysDisplayMessage("setting not found\n");
 		return COMMAND_SETTING_NOT_FOUND;
 	case settingValueInvalid:
-		alwaysDisplayMessage("setting value invalid");
+		alwaysDisplayMessage("setting value invalid\n");
 		return COMMAND_SETTING_VALUE_INVALID;
 	}
 
@@ -792,39 +794,53 @@ void reset_serial_buffer()
 	serialReceiveBufferPos = 0;
 }
 
-int actOnConsoleCommandText(char * buffer)
+int actOnConsoleCommandText(char *buffer)
 {
 	return performCommand(buffer, userCommands, sizeof(userCommands) / sizeof(struct consoleCommand));
 }
-
-#define BACKSPACE_CHAR 0x08
 
 void bufferSerialChar(char ch)
 {
 	if (consoleSettings.echoInput)
 	{
-		Serial.print(ch);
 		if (ch == BACKSPACE_CHAR)
 		{
 			if (serialReceiveBufferPos > 0)
 			{
+				Serial.print(ch);
 				serialReceiveBufferPos--;
 				Serial.print(' ');
 				Serial.print(ch);
 			}
 			return;
 		}
+
+		if (ch != LINE_FEED)
+		{
+			Serial.print(ch);
+		}
 	}
 
-	if (ch == '\n' || ch == '\r' || ch == 0)
+	if (ch == LINE_FEED || ch == '\r' || ch == 0)
 	{
 		if (serialReceiveBufferPos > 0)
 		{
 			serialReceiveBuffer[serialReceiveBufferPos] = 0;
+
 			alwaysDisplayMessage("\n\r");
-			if(!processLanguageLine(serialReceiveBuffer)){
-				actOnConsoleCommandText(serialReceiveBuffer);
+
+			if (serialReceiveBuffer[0] == '*')
+			{
+				hullOSdecodeScriptLine(serialReceiveBuffer + 1);
 			}
+			else
+			{
+				if (!processLanguageLine(serialReceiveBuffer))
+				{
+					actOnConsoleCommandText(serialReceiveBuffer);
+				}
+			}
+
 			reset_serial_buffer();
 		}
 		return;
@@ -988,14 +1004,12 @@ struct CommandItem *ConsolealwaysDisplayMessageCommandItems[] =
 
 int doSetConsoleReport(char *destination, unsigned char *settingBase);
 
-struct Command consoleReportText
-{
+struct Command consoleReportText{
 	"reporttext",
-		"Reports a text message",
-		ConsolealwaysDisplayMessageCommandItems,
-		sizeof(ConsolealwaysDisplayMessageCommandItems) / sizeof(struct CommandItem *),
-		doSetConsoleReport
-};
+	"Reports a text message",
+	ConsolealwaysDisplayMessageCommandItems,
+	sizeof(ConsolealwaysDisplayMessageCommandItems) / sizeof(struct CommandItem *),
+	doSetConsoleReport};
 
 int doSetConsoleReport(char *destination, unsigned char *settingBase)
 {
@@ -1034,14 +1048,12 @@ struct CommandItem *ConsoleJSONsendValueCommandItems[] =
 
 int doShowJSONvalue(char *destination, unsigned char *settingBase);
 
-struct Command consoleReportJSONvalue
-{
+struct Command consoleReportJSONvalue{
 	"reportjson",
-		"report a message as a JSON object",
-		ConsoleJSONsendValueCommandItems,
-		sizeof(ConsoleJSONsendValueCommandItems) / sizeof(struct CommandItem *),
-		doShowJSONvalue
-};
+	"report a message as a JSON object",
+	ConsoleJSONsendValueCommandItems,
+	sizeof(ConsoleJSONsendValueCommandItems) / sizeof(struct CommandItem *),
+	doShowJSONvalue};
 
 int doShowJSONvalue(char *destination, unsigned char *settingBase)
 {
@@ -1088,14 +1100,12 @@ struct CommandItem *consoleCommandItems[] =
 
 int doRemoteConsoleCommand(char *destination, unsigned char *settingBase);
 
-struct Command performConsoleCommand
-{
+struct Command performConsoleCommand{
 	"remote",
-		"Perform a remote console command",
-		consoleCommandItems,
-		sizeof(consoleCommandItems) / sizeof(struct CommandItem *),
-		doRemoteConsoleCommand
-};
+	"Perform a remote console command",
+	consoleCommandItems,
+	sizeof(consoleCommandItems) / sizeof(struct CommandItem *),
+	doRemoteConsoleCommand};
 
 int doRemoteConsoleCommand(char *destination, unsigned char *settingBase)
 {

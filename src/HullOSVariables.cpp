@@ -13,6 +13,10 @@
 #include "HullOSCommands.h"
 #include "HullOSVariables.h"
 
+#ifdef SENSOR_DISTANCE
+#include "distance.h"
+#endif
+
 int evaluatePlus(int op1, int op2)
 {
 	return op1 + op2;
@@ -169,7 +173,18 @@ int readRandom()
 }
 struct reading randomReading = { "random", readRandom };
 
-struct reading * readers[NO_OF_HARDWARE_READERS] = { &randomReading, &test };
+#ifdef SENSOR_DISTANCE
+
+struct reading distanceReading = { (char*)"distance", readDistance };
+
+#endif
+
+struct reading * readers[] = { 	
+#ifdef SENSOR_DISTANCE
+	&distanceReading,
+#endif
+	&randomReading, 
+	&test };
 
 bool validReading(char * text)
 {
@@ -182,7 +197,7 @@ bool validReading(char * text)
 		return false;
 	}
 
-	for (int i = 0; i < NO_OF_HARDWARE_READERS; i++)
+	for (int i = 0; i < sizeof(readers)/sizeof(struct reading *); i++)
 	{
 		struct reading * currentReader = readers[i];
 
@@ -228,7 +243,7 @@ struct reading * getReading(char * text)
 		return NULL;
 	}
 
-	for (int i = 0; i < NO_OF_HARDWARE_READERS; i++)
+	for (int i = 0; i < sizeof(readers)/sizeof(struct reading *); i++)
 	{
 		struct reading * currentReader = readers[i];
 

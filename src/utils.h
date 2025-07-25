@@ -28,6 +28,9 @@ void display_memory_monitor( char * item);
 void appendFormattedString(char * dest, int limit, const char *format, ...);
 
 #define ESC_KEY 0x1b
+#define LINE_FEED '\n'
+#define RETURN_KEY '\r'
+#define BACKSPACE_CHAR 0x08
 
 #if defined(ARDUINO_ARCH_ESP32)
 

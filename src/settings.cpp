@@ -700,7 +700,7 @@ bool loadAllSettingsFromFile(char *path)
 
 	while (loadFile.available())
 	{
-		String line = loadFile.readStringUntil('\n');
+		String line = loadFile.readStringUntil(LINE_FEED);
 
 		const char *lineChar = line.c_str();
 

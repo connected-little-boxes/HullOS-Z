@@ -19,6 +19,7 @@ struct LanguageHandler {
 	char hullosLanguage[HULLOS_LANGUAGE_NAME_SIZE];
 	void (*setup)(void);
 	int (*consoleInputHandler)(char *);
+	char * prompt;
 };
 
 extern struct LanguageHandler hullOSLanguage;
@@ -39,3 +40,5 @@ extern struct process hullosProcess;
 bool HullOSStartLanguage(char * languageName);
 
 void sendMessageToHullOS(char *programText);
+
+int hullOSdecodeScriptLine(char *input);

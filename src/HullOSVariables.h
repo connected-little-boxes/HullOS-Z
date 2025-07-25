@@ -106,8 +106,6 @@ extern struct reading test;
 int readRandom();
 extern struct reading randomReading;
 
-#define NO_OF_HARDWARE_READERS 2
-
 extern struct reading * readers[];
 
 bool validReading(char * text);

@@ -24,7 +24,8 @@ void rockstarDecoderStart()
 struct LanguageHandler RockstarLanguage = {
     "Rockstar",
     rockstarDecoderStart,
-    RockstarIshDecodeScriptLine};
+    RockstarIshDecodeScriptLine,
+    "R>"};
 
 const char rockstarCommandNames[] =
     "angry,cross,mad#"                // ROCKSTAR_COMMAND_ANGRY       0
@@ -420,36 +421,11 @@ int RockstarIshDecodeScriptLine(char *input)
     Serial.printf("Got a line of Rockstar to decode %s\n", input);
 #endif
 
-    if (strcasecmp(input, "Exit") == 0)
-    {
-        Serial.println("Rockstar session ended");
-        stopLanguageDecoding();
-        return ERROR_OK;
-    }
-
     bufferPos = input;
 
     byte indent = skipInputSpaces();
 
     // Lines that start with a # are comments
-    if (*bufferPos == '#')
-    {
-#ifdef ROCKSTAR_DEBUG
-        Serial.printf("Comment\n");
-#endif
-        return ERROR_OK;
-    }
-
-    // Lines that start with a ! are console commands
-    if (*bufferPos == '!')
-    {
-#ifdef ROCKSTAR_DEBUG
-        Serial.printf("HullOS\n");
-#endif
-        actOnConsoleCommandText(input + 1);
-        return ERROR_OK;
-    }
-
     int result = getStartToken();
 
     if (result != ERROR_OK)

@@ -328,6 +328,13 @@ void DistanceStatusMessage(char *buffer, int bufferLength)
 	}
 }
 
+int readDistance()
+{
+	int result = getDistanceValueInt();
+	return result;
+}
+
+
 struct sensor Distance = {
 	"Distance",
 	0, // millis at last reading

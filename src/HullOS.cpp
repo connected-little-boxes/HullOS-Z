@@ -12,6 +12,7 @@
 #include "mqtt.h"
 #include "Motors.h"
 #include "console.h"
+#include "PythonIsh.h"
 
 struct HullOSSettings hullosSettings;
 
@@ -46,7 +47,9 @@ void hullOSDecoderStart(){
 struct LanguageHandler hullOSLanguage = {
     "HullOS",
     hullOSDecoderStart,
-    hullOSdecodeScriptLine};
+    hullOSdecodeScriptLine,
+    "H>"
+};
 
 struct LanguageHandler *allLanguages[] =
     {
@@ -79,16 +82,31 @@ void stopLanguageDecoding()
 
 bool processLanguageLine(char *line)
 {
-    if (currentLanguageHandler != NULL)
-    {
+    if (currentLanguageHandler == NULL){
+        return false;
+    }
+
+    if (strcasecmp(line, "Exit") == 0){
+        Serial.printf("%s session ended\n", currentLanguageHandler->hullosLanguage);
+        stopLanguageDecoding();
+        return true;
+    }
+
+    if (*line == '!'){
+        actOnConsoleCommandText(line + 1);
+    }
+    else {
         int result = currentLanguageHandler->consoleInputHandler(line);
+
         if (result != ERROR_OK)
         {
             printError(result);
         }
-        return true;
     }
-    return false;
+    
+    Serial.print(currentLanguageHandler->prompt);
+
+    return true;
 }
 
 struct SettingItem hullosEnabled = {
@@ -168,11 +186,82 @@ void startHullOS()
     clearVariables();
 }
 
+char * programTextPos;
+
+#define PROGRAM_TEXT_LINE_BUFFER_SIZE 100
+char programTextLineBuffer[PROGRAM_TEXT_LINE_BUFFER_SIZE+1];
+
+bool getProgramTextLine(){
+
+    // return false if we are at the end of the string
+
+    if(!*programTextPos){
+        return false;
+    }
+
+    int chCount = 0;
+
+    while(true){
+
+        char ch = *programTextPos;
+//        Serial.printf("Got a: %d %c\n", ch, ch);
+
+        if(ch==0){
+            // end of the input string
+            if(chCount==0){
+                return false;
+            }
+            programTextLineBuffer[chCount]=0;
+            return true;
+        }
+
+        if(ch==STATEMENT_TERMINATOR){
+//            Serial.printf("Reached the end of the string\n");
+            programTextLineBuffer[chCount]=0;
+            programTextPos++;
+            return true;
+        }
+
+        if(ch<' '){
+            programTextPos++;
+            continue;
+        }
+
+        programTextLineBuffer[chCount] = ch;
+
+        chCount++;
+        programTextPos++;
+    }
+} 
+
 void sendMessageToHullOS(char *programText)
 {
-    Serial.printf("Got a program via MQTT from the server: %s\n", programText);
-}
+    Serial.printf("Got command via MQTT from the server: %s\n", programText);
 
+    if(programText[0]=='*'){
+        Serial.printf("Performing HullOS command\n ");
+        hullOSdecodeScriptLine(programText+1);
+        return;
+    }
+
+    Serial.printf("Processing a PythonIsh program\n");
+
+    pythonIshdecodeScriptLine("begin");
+
+    programTextPos = programText;
+
+    while(getProgramTextLine()){
+        Serial.printf("   got a line:%s\n", programTextLineBuffer);
+        pythonIshdecodeScriptLine(programTextLineBuffer);
+    }
+
+    pythonIshdecodeScriptLine("end");
+
+    pythonIshdecodeScriptLine("save \"active.txt\"");
+
+    pythonIshdecodeScriptLine("load \"active.txt\"");
+    
+}
 
 bool HullOSStartLanguage(char *languageName)
 {
@@ -184,6 +273,7 @@ bool HullOSStartLanguage(char *languageName)
     {
         currentLanguageHandler = handler;
         handler->setup();
+        Serial.printf("%s", handler->prompt);
         resetCommand();
         return true;
     }

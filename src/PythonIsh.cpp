@@ -11,13 +11,14 @@ int pythonIshdecodeScriptLine(char *input);
 
 void pythonIshDecoderStart()
 {
-	Serial.printf("Starting PythonIsh decoder");
+	Serial.printf("Starting PythonIsh decoder\n");
 }
 
 struct LanguageHandler PythonIshLanguage = {
 	"PythonIsh",
 	pythonIshDecoderStart,
-	pythonIshdecodeScriptLine};
+	pythonIshdecodeScriptLine,
+	"P>"};
 
 const char pythonishcommandNames[] =
 	"angry#"	  // COMMAND_ANGRY       0
@@ -1402,32 +1403,12 @@ int pythonIshdecodeScriptLine(char *input)
 	Serial.printf("PythonIsh got line to decode: %s %d\n", input, strlen(input));
 #endif
 
-	if (strcasecmp(input, "Exit") == 0)
-	{
-		Serial.println("PythonIsh session ended");
-		stopLanguageDecoding();
-		return ERROR_OK;
-	}
-
 	// Set the shared buffer pointer to point to the statement being decoded
 	bufferPos = input;
 
 	int result;
 
 	byte indent = skipInputSpaces();
-
-	// Lines that start with a # are comments
-	if (*bufferPos == '#')
-	{
-		return ERROR_OK;
-	}
-
-	// Lines that start with a ! are console commands
-	if (*bufferPos == '!')
-	{
-		actOnConsoleCommandText(input + 1);
-		return ERROR_OK;
-	}
 
 	int commandNo = decodeCommandName(pythonishcommandNames);
 

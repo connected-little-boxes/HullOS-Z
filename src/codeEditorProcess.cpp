@@ -151,7 +151,7 @@ bool sendTextToPythonIsh(char * text){
                 break;
             }
 
-            if(ch=='\n'){
+            if(ch==LINE_FEED){
                 chPos++;
                 break;
             }
