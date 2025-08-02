@@ -7,6 +7,10 @@
 #include "messages.h"
 #include "printer.h"
 
+#ifdef PICO
+#include "pico/cyw43_arch.h"
+#endif
+
 unsigned long millisAtLastFlash;
 unsigned long flashDurationInMillis = 0;
 bool ledLit = false;
@@ -71,10 +75,18 @@ void statusLedOff()
     if (!ledLit)
         return;
 
+#ifdef PICO
+
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0); // OFF
+
+#else
+
     if (statusLedSettings.statusLedOutputPinActiveLow)
         digitalWrite(statusLedSettings.statusLedOutputPin, true);
     else
         digitalWrite(statusLedSettings.statusLedOutputPin, false);
+
+#endif
 
     ledLit = false;
 }
@@ -84,6 +96,11 @@ void statusLedOn()
     if (ledLit)
         return;
 
+#ifdef PICO
+
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1); // ON
+
+#else
     if (statusLedSettings.statusLedOutputPinActiveLow)
     {
         digitalWrite(statusLedSettings.statusLedOutputPin, false);
@@ -91,6 +108,8 @@ void statusLedOn()
     else{
         digitalWrite(statusLedSettings.statusLedOutputPin, true);
     }
+
+#endif
 
     ledLit = true;
 }
