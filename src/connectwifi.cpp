@@ -253,7 +253,13 @@ void checkWiFiScanResult()
 		{
 			snprintf(wifiActiveAPName, WIFI_SSID_LENGTH, "%s", wifiSettings[settingNumber].wifiSsid);
 			displayMessage("*       Connecting to %s\n", wifiActiveAPName);
-			WiFi.begin(wifiSettings[settingNumber].wifiSsid,
+
+#ifdef PICO
+			WiFi.beginNoBlock(
+#else
+			WiFi.begin(
+#endif
+				wifiSettings[settingNumber].wifiSsid,
 					   wifiSettings[settingNumber].wifiPassword);
 			WiFiTimerStart = millis();
 			WiFiProcessDescriptor.status = WIFI_CONNECTING;

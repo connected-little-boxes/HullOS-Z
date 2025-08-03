@@ -298,8 +298,8 @@ void addDistanceReading(char *jsonBuffer, int jsonBufferSize)
 
 	if (Distance.status == SENSOR_OK)
 	{
-		appendFormattedString(jsonBuffer, jsonBufferSize, ",\"pir\":\"%d\"",
-							  DistanceactiveReading->distance);
+		appendFormattedString(jsonBuffer, jsonBufferSize, ",\"dist\":\"%d\"",
+							  readDistance());
 	}
 }
 
@@ -311,7 +311,7 @@ void DistanceStatusMessage(char *buffer, int bufferLength)
 	switch (Distance.status)
 	{
 	case SENSOR_OK:
-		snprintf(buffer, bufferLength, "Distance %d",DistanceactiveReading->distance);
+		snprintf(buffer, bufferLength, "Distance On %d",readDistance());
 		break;
 
 	case SENSOR_OFF:
