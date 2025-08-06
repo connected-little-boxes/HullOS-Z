@@ -18,7 +18,7 @@ struct HullOSSettings hullosSettings;
 
 int hullOSdecodeScriptLine(char *input)
 {
-    Serial.printf("Hullos decoding: %s\n", input);
+//    Serial.printf("Hullos decoding: %s\n", input);
 
     if(strcasecmp(input,"exit")==0){
         stopLanguageDecoding();

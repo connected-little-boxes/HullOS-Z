@@ -634,7 +634,7 @@ void saveAllSettingsToFile(char *path)
 {
 	TRACELOG("Saving all settings to the file:");
 	TRACELOGLN(path);
-	saveFile = LittleFS.open(path, "w");
+	saveFile = fileOpen(path, "w");
 	iterateThroughSensorSettingCollections(saveSettingCollectionToFile);
 	iterateThroughProcessSettingCollections(saveSettingCollectionToFile);
 	saveFile.close();
@@ -690,7 +690,7 @@ bool loadAllSettingsFromFile(char *path)
 	TRACELOG("Loading all settings from the file:");
 	TRACELOGLN(path);
 
-	loadFile = LittleFS.open(path, "r");
+	loadFile = fileOpen(path, "r");
 
 	if (!loadFile || loadFile.isDirectory())
 	{

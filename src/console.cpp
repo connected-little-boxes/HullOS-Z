@@ -427,7 +427,7 @@ void doDumpSprites(char *commandLine)
 
 void dumpFilesInStores()
 {
-	File dir = LittleFS.open("/", "r");
+	File dir = fileOpen("/", "r");
 
 	while (true)
 	{
@@ -469,7 +469,7 @@ void deleteFileInStore(char *deleteName)
 {
 	alwaysDisplayMessage("Deleting file:%s\n", deleteName);
 
-	File dir = LittleFS.open("/", "r");
+	File dir = fileOpen("/", "r");
 
 	char fullDeleteFileName[STORE_FILENAME_LENGTH];
 

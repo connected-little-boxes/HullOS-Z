@@ -235,12 +235,31 @@ void strip_end(char *str, int n) {
 
 File file;
 
+
+File fileOpen(const char * path, char * mode){
+
+#if defined(ARDUINO_ARCH_ESP32)
+
+    char buff [REMOTE_FILENAME_BUFFER_SIZE+1];
+
+    snprintf(buff,REMOTE_FILENAME_BUFFER_SIZE+1,"/%s",path);
+
+    return LittleFS.open(buff,mode);
+
+#else
+
+    return LittleFS.open(path,mode);
+
+#endif
+}
+
+
 void saveToFile(char * path, char * src){
 
 	TRACELOG("Saving to a file:");
 	TRACELOGLN(path);
 
-    file = LittleFS.open(path, "w");
+    file = fileOpen(path, "w");
     file.printf("%s",src);
     file.close();
 }
@@ -250,7 +269,7 @@ bool fileExists(char * path)
 	TRACELOG("Checking file exists:");
 	TRACELOGLN(path);
 
-    file = LittleFS.open(path, "r");
+    file = fileOpen(path, "r");
 
     if(!file){
         return false;
@@ -265,7 +284,7 @@ bool loadFromFile(char * path, char * dest, int length){
 	TRACELOG("Loading from a file:");
 	TRACELOGLN(path);
 
-	file = LittleFS.open(path, "r");
+	file = fileOpen(path, "r");
 
 	if (!file || file.isDirectory())
 	{
@@ -305,7 +324,7 @@ void listLittleFSContents()
         return;
     }
 
-    File root = LittleFS.open("/","r");
+    File root = fileOpen("/","r");
     if (!root || !root.isDirectory()) {
         Serial.println("Failed to open root directory");
         return;
@@ -324,7 +343,7 @@ void listLittleFSContents()
 
 void printFileContents(const char *filename) {
   // Attempt to open the file for reading
-  File file = LittleFS.open(filename, "r");
+  File file = fileOpen(filename, "r");
   if (!file) {
     Serial.print("Failed to open file: ");
     Serial.println(filename);

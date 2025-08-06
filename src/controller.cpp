@@ -787,7 +787,7 @@ int checkAndAddToStore(JsonObject &root)
 		return JSON_MESSAGE_STORE_FOLDERNAME_INVALID;
 	}
 
-	File folder = LittleFS.open(fullStoreName, "r");
+	File folder = fileOpen(fullStoreName, "r");
 
 	if (!folder)
 	{
@@ -802,7 +802,7 @@ int checkAndAddToStore(JsonObject &root)
 			return JSON_MESSAGE_COULD_NOT_CREATE_STORE_FOLDER;
 		}
 
-		folder = LittleFS.open(fullStoreName, "r");
+		folder = fileOpen(fullStoreName, "r");
 	}
 
 	if (!folder.isDirectory())
@@ -824,7 +824,7 @@ int checkAndAddToStore(JsonObject &root)
 	TRACELOG("    storing the command in:");
 	TRACELOGLN(fullFileName);
 
-	File outputFile = LittleFS.open(fullFileName, "w");
+	File outputFile = fileOpen(fullFileName, "w");
 
 	// Remove these tags from the saved command
 	root.remove("store");
@@ -856,7 +856,7 @@ int performCommandsInStore(char *commandStoreName)
 		return JSON_MESSAGE_STORE_FOLDERNAME_INVALID;
 	}
 
-	File folder = LittleFS.open(fullStoreName, "r");
+	File folder = fileOpen(fullStoreName, "r");
 
 	if (!folder)
 	{

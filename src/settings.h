@@ -4,7 +4,7 @@
 #include "FS.h"
 #include <LittleFS.h>
 
-#define SETTINGS_FILENAME "/Settings.config"
+#define SETTINGS_FILENAME "Settings.config"
 
 #ifdef DEFAULTS_ON
 

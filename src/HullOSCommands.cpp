@@ -177,6 +177,7 @@ void dumpRunningProgram()
     Serial.print("Program:\n1 : ");
 
     unsigned char b;
+
     while (true)
     {
         b = HullOScodeRunningCode[progPos++];
@@ -188,14 +189,14 @@ void dumpRunningProgram()
 
         if (b == PROGRAM_TERMINATOR)
         {
-            Serial.print(F("Program size: "));
+            Serial.print(F("\nProgram size: "));
             Serial.println(progPos);
             break;
         }
 
         if (progPos >= PROGRAM_SIZE)
         {
-            Serial.println(F("Program end"));
+            Serial.println(F("\nProgram end"));
             break;
         }
     }

@@ -438,6 +438,12 @@ unsigned long millisOfLastWiFiUpdate;
 
 void initWifi()
 {
+	#if defined(ARDUINO_ARCH_ESP32)
+
+	WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector 
+
+	#endif
+
 	WiFiProcessDescriptor.status = WIFI_TURNED_OFF;
 }
 

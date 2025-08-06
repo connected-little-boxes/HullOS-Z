@@ -1029,7 +1029,7 @@ int getProgramFilenameFromCode()
 
 		ch = *bufferPos;
 
-		Serial.printf("  Copying:%d %c\n", ch, ch);
+//		Serial.printf("  Copying:%d %c\n", ch, ch);
 
 		if (ch == 0)
 		{

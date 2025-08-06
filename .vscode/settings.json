@@ -13,7 +13,8 @@
         "span": "cpp",
         "text_encoding": "cpp",
         "regex": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "fstream": "cpp"
     },
     "cSpell.words": [
         "adafruit",

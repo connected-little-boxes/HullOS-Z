@@ -104,6 +104,8 @@ void strip_end(char *str, int n);
 #include "FS.h"
 #endif
 
+File fileOpen(const char * path, char * mode);
+
 bool fileExists(char * path);
 
 void saveToFile(char * path, char * src);

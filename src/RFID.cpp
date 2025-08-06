@@ -1,3 +1,5 @@
+#ifdef SENSOR_RFID
+
 #include <Arduino.h>
 
 #include "utils.h"
@@ -771,3 +773,5 @@ struct sensor RFIDSensor = {
     NULL, // message listeners
     RFIDSensorListenerFunctions,
     sizeof(RFIDSensorListenerFunctions) / sizeof(struct sensorEventBinder)};
+
+#endif
