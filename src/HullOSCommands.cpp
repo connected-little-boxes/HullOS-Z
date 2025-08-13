@@ -2205,7 +2205,7 @@ void measureDistanceAndJump()
 {
 
 #ifdef COMMAND_MEASURE_DEBUG
-    Serial.println(F(".**measure disance and jump to label"));
+    Serial.println(F(".**measure distance and jump to label"));
 #endif
 
     int distance;
@@ -2345,7 +2345,7 @@ void compareAndJump(bool jumpIfTrue)
 
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
-#ifdef DIAGNOSTICS_ACTIVE
+#ifdef DIAGNOSTICS_ACTIVE                                                                                                                                                                                                                                                                                                                                                                             
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
             Serial.println(F("FAIL: mising dest"));

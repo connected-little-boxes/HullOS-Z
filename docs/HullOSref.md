@@ -30,7 +30,9 @@ Some commands, for example conditional jumps, will give additional information.
 * **DUMP_DOWNLOADS 8** 	dumps a downloaded program before executing it
 
 If the corresponding bitfield is set the program will output information as described. Note that these commands can result in significant traffic on the serial connection and are only intended to be used for debugging. 
-When the robot is restarted the message level is set to 0 (i.e. all messages are turned off).
+When the robot is restarted the message level is set to 0 (i.e. all messages are turned off). 
+
+Note that if a program is running you will see a lot of diagnostic output on the console if you enable **STATEMENT_CONFIRMATION**. However you can still enter ***IM0** as the output is being displayed and it will be acted on.
 ```
 *IM9
 ```
@@ -286,7 +288,7 @@ PCNOK
 If any of the values are missing an appropriate message is displayed, for example: 
 
 ```
-PC
+*PC
 ```
 would generate the error:
 
@@ -322,7 +324,7 @@ Note the reply is sent when the command has been received not when the robot has
 The program pauses for the number of ticks given by the decimal value ddd. The number of ticks can be omitted:
 
 ```
-CD
+*CD
 ```
 
 The program repeats the previous delay. If there was no previous delay the program does not delay. The delay starts as soon as the command is received. A tick is a tenth of a second. 
@@ -379,84 +381,94 @@ This statement causes execution of the program to continue from the given label 
 If the label is found and the jump performed:
 
 ```
-CCjump
+*CCjump
 ```
+This would cause execution to branch to the label **jump** half of the time. If the label is found and the jump not performed:
 
-If the label is found and the jump not performed:
-```
-CCcontinue
-```
-
-If the label is missing from the program:
+If the label is missing from the program text an error is displayed on the console. 
 
 ```
 CCFAIL: no dest
 ```
 
 ## Jump when motors inactive
-## *CIccc
+### *CIccc
 
 The program will jump to the given label if the motors are inactive.  The robot replies with:
 
-*CIOK
-Measure Distance: *CM
-*CMddd,cccc
-This statement causes execution of the program to continue from the given label if the distance sensor reading is less than the given distance value. The value is given in centimetres. 
+CIOK
+
+
+## Measure Distance: 
+### *CMddd,cccc
+This statement causes execution of the program to continue from the given label if the distance sensor reading is less than the given distance value. The value is given in millimeters. 
+
 The label can be any number of characters and will be terminated by the end of the statement. The program must contain the label requested, or the program will stop. If the distance measured is greater than the given value, the program continues at the next statement.
-If the STATEMENT_CONFIRMATION flag is set the robot replies with the following messages:
-If the label is not present in the instruction the robot replies with:
-CMFail: missing dest
-If the label is found the robot replies with:
-CMFail: label not found
-If the label is found and the distance is less the robot replies with:
-CMjump
-If the label is found and the distance is greater the robot replies with:
-CMcontinue
-Compare Condition: *CC
-*CCeeee,cccc
-This statement causes execution of the program to continue from the given label if the given expression to True. 
-The label can be any number of characters and will be terminated by the end of the statement. The program must contain the label requested, or the program will stop. If the given expression is false the program continues at the next statement.
-If the STATEMENT_CONFIRMATION flag is set the robot replies with the following messages:
-If the label is not present in the instruction the robot replies with:
-CCFail: missing dest
-If the label is found the robot replies with:
-CCFail: label not found
-If the label is found and the distance is less the robot replies with:
-CCjump
-If the label is found and the distance is greater the robot replies with:
-CCcontinue
-Compare Condition not true: *CN
-*CFeeee,cccc
-This statement causes execution of the program to continue from the given label if the given expression evaluates to True. 
-The label can be any number of characters and will be terminated by the end of the statement. The program must contain the label requested, or the program will stop. If the given expression is false the program continues at the next statement.
+
+```
+*CM100,lowDist
+```
+
+The program will jump to label **lowDist** if the distance sensor reading is less than 100mm.
+
+## Compare Condition True
+### *CTeeee,cccc
+This statement causes execution of the program to continue from the given label if the given expression to **True**. 
+The label can be any number of characters and will be terminated by the end of the statement. The program must contain the label requested, or the program will stop. If the given expression is **False** the program continues at the next statement.
+
 If the STATEMENT_CONFIRMATION flag is set the robot replies with the following messages:
 If the label is not present in the instruction the robot replies with:
 CCFail: missing dest
 If the label is found the robot replies with:
 CCFail: label not found
-If the label is found and the distance is less the robot replies with:
-CCjump
-If the label is found and the distance is greater the robot replies with:
-CCcontinue
 
+```
+*CCx<100,xlow
+```
 
+The statement above would cause the program to jump to label **xlow** if the value in the variable **x** is less than 100. 
 
+## Compare Condition False
+### *CFeeee,cccc
+This statement causes execution of the program to continue from the given label if the given expression evaluates to **False**. 
+The label can be any number of characters and will be terminated by the end of the statement. The program must contain the label requested, or the program will stop. If the given expression is false the program continues at the next statement.
 
-Command	Command Data	Description
-*CA	None	Pause while motors are active
-*CC	Label name	Jump to label with 50% chance (coin toss)
-*CD	Delay time (tenths of second)	Delay in tenths of seconds
-*CF	Condition, Label name	Test condition, jump if false
-*CI	Label name	Jump to label if motors are inactive
-*CJ	Label name	Jump to label
-*CL	Label name	Label (no action, for jump targets)
-*CM	Distance, Label name	Measure distance, jump if below threshold
-*CT	Condition, Label name	Test condition, jump if true
-Remote Management Commands
-Command	Command Data	Description
-*RC	None	Clear stored program
-*RH	None	Halt execution
-*RM	None	Begin remote code download
+```
+*CFx<100,xhigh
+```
+The statement above would cause the program to jump to label **xlow** if the value in the variable **x** is greater than or equal to 100. 
+
+# Remote Management Commands
+
+These commands allow you to send commands to the robot that control program execution and storage. 
+
+## Clear Stored Program
+### *RC
+
+This command clears the stored program in the robot.
+
+```
+*RC
+```
+
+The command above would clear the stored program, making it ready for a new one to be downloaded. Note that the stored program is not the executing program. This makes it possible to enter a new program while one is currently executing. This command is performed at the start of a remote download command (***RM**).
+
+## Halt execution
+*RH
+
+This command halts the currently executing program. The program can be resumed again using the ***RR** command.
+
+```
+*RH
+```
+
+The currently executing program is halted. All variable values are retained (and can be viewed and changed from the console).
+
+## Begin remote code download
+## *RM
+
+This command changes the way that future HullOS statements are  processed by the device. After power on HullOS statements are performed immediately after entry. After an ***RM** command 
+
 *RP	None	Pause execution
 *RR	None	Resume execution
 *RS	None	Start program execution

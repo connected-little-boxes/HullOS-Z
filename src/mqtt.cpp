@@ -3,6 +3,7 @@
 #include "mqtt.h"
 #include "controller.h"
 #include "HullOS.h"
+#include "console.h"
 
 #include <PubSubClient.h>
 
@@ -217,8 +218,9 @@ void handleIncomingMQTTMessage()
 	if (receivedIncomingMQTTMessage())
 	{
 		displayMessage("Received from MQTT: %s\n", mqtt_receive_buffer);
+
 		if((mqtt_receive_buffer[0]=='*') && (mqtt_receive_buffer[1]=='*')){
-			sendMessageToHullOS(&mqtt_receive_buffer[2]);
+			sendMessageToConsole(mqtt_receive_buffer+2);
 		}
 		else {
 			act_onJson_message(mqtt_receive_buffer, mqtt_deliver_command_result);

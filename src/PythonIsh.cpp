@@ -1403,6 +1403,11 @@ int pythonIshdecodeScriptLine(char *input)
 	Serial.printf("PythonIsh got line to decode: %s %d\n", input, strlen(input));
 #endif
 
+	if (*input == '#'){
+		// lines starting with # are comments - ignore them
+		return ERROR_OK;
+	}
+	
 	// Set the shared buffer pointer to point to the statement being decoded
 	bufferPos = input;
 

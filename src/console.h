@@ -40,6 +40,7 @@ struct consoleCommand * findCommand(char * commandLine,consoleCommand * commands
 char * skipCommand(char * commandLine);
 int performCommand(char * commandLine, consoleCommand * commands, int noOfCommands);
 void performRemoteCommand(char * commandLine);
-void actOnSerialCommand(char * buffer);
 int actOnConsoleCommandText(char * buffer);
+void sendMessageToConsole(char * message);
+
 

@@ -855,12 +855,20 @@ void bufferSerialChar(char ch)
 
 void checkSerialBuffer()
 {
-	// console is disabled when the robot is connected
-
 	while (Serial.available())
 	{
 		bufferSerialChar(Serial.read());
 	}
+}
+
+void sendMessageToConsole(char * message)
+{
+	alwaysDisplayMessage("Acting on received command\n");
+	while(*message){
+		bufferSerialChar(*message);
+		message++;
+	}
+	alwaysDisplayMessage("Recived command complete\n");
 }
 
 void initConsole()
