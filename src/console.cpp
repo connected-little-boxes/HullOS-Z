@@ -872,7 +872,8 @@ void sendMessageToConsole(char * message)
 		bufferSerialChar(*message);
 		message++;
 	}
-	alwaysDisplayMessage("Recived command complete\n");
+	bufferSerialChar('\r');
+	alwaysDisplayMessage("Received command complete\n");
 }
 
 void initConsole()
