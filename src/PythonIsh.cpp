@@ -960,23 +960,23 @@ int compileStop()
 const char clearCommand[] = "RC";
 const char beginCommand[] = "RM";
 
+void startCompiling()
+{
+	beginCompilingStatements();
+	sendCommand(clearCommand);
+	endCommand();
+	sendCommand(beginCommand);
+}
+
 int compileBegin()
 {
 	// Not allowed to indent after a begin
 	previousStatementStartedBlock = false;
 
-	if (storingProgram())
-	{
-		return ERROR_BEGIN_WHEN_COMPILING_PROGRAM;
-	}
+	startCompiling();
 
-	beginCompilingStatements();
-	sendCommand(clearCommand);
-	endCommand();
-	sendCommand(beginCommand);
 	return ERROR_OK;
 }
-
 int compileEnd()
 {
 	// Not allowed to indent after a end

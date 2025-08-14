@@ -381,6 +381,12 @@ void endProgramReceive()
 #endif
         saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
     }
+    else {
+#ifdef PROGRAM_DEBUG
+		Serial.printf("Storing the program in:%s\n", RUNNING_PROGRAM_FILENAME);
+#endif
+        saveToFile(RUNNING_PROGRAM_FILENAME, HullOScodeCompileOutput);
+    }
 
     // enable immediate command receipt
 
@@ -2571,7 +2577,7 @@ void remoteDownloadCommand()
     }
     else
     {
-        Serial.printf("No filename supplied");
+        Serial.printf("No filename supplied\n");
         clearHullOSFilename();
     }
     startDownloadingCode();
@@ -2592,7 +2598,11 @@ void startProgramCommand()
     }
     else
     {
-        Serial.printf("No filename supplied");
+        Serial.printf("Starting default program:%s\n", RUNNING_PROGRAM_FILENAME);
+        if (loadFromFile(RUNNING_PROGRAM_FILENAME, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
+        {
+            dumpRunningProgram();
+        }
     }
 
     startProgramExecution();

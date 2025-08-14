@@ -15,6 +15,7 @@
 #include "utils.h"
 #include <LittleFS.h>
 #include "RFID.h"
+#include "PythonIsh.h"
 
 struct ConsoleSettings consoleSettings;
 
@@ -583,7 +584,7 @@ void doFirmwareUpgradeReset(char *commandLine)
 
 void doStartPythonIsh(char *commandLine)
 {
-	HullOSStartLanguage(commandLine);
+	HullOSStartLanguage("PythonIsh");
 }
 
 void doStartRockstar(char *commandLine)
@@ -600,6 +601,9 @@ void doStartHullOS(char *commandLine)
 
 struct consoleCommand userCommands[] =
 	{
+#ifdef PROCESS_HULLOS
+		{"begin", "begin receiving a PythonIsh program", doStartPythonIsh},
+#endif
 #ifdef SENSOR_BUTTON
 		{"buttontest", "test the button sensor", doTestButtonSensor},
 #endif

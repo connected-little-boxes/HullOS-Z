@@ -1,6 +1,22 @@
 # HullOS Reference
 
-A command is preceded by the * character to distinguish it from a setting value. Each command is comprised of two characters. The first is the command family, and the second is the command in that family. A command is then followed by an amount of extra data which varies from one command to another. Note that there is no need to put a space between the second command character and a data item. Note also that some data items are optional (indicated by [ ] in the documentation below).
+HullOS commands control the robot hardware. They can instigate movement and display values.
+
+The format of the commands is as follows:-
+```
+*cmd[parameters]
+```
+
+Each *cmd* consists of two letters and can be followed by optional parameters seperated by commas (,).
+
+For example the following command will cause the robot motors to attempt to drive the robot forward 100mm in 10 tenths of a second.
+
+```
+*MF100,10
+```
+
+See below for an explanation of all available commands.
+
 
 # Information Commands
 
@@ -170,6 +186,10 @@ MFOK
 ```
 
 Note that this does not meant that the move command has been completed, rather that the robot has received and understood the command and has started moving. If the time requested is not possible because the robot cannot move that quickly (for example move 100 mm in 1 tick) the move will not take place. If the **STATEMENT_CONFIRMATION** flag is set the robot replies with an error message:
+
+### Program execution and the move command 
+
+When a move command is performed in a program it will start the robot moving and then move onto the next statement. It will not wait for the move to complete. This means that if you want create a sequence of moves you will find that the first moves will seem to be ignored. The way to resolve this issue, and make a program pause while a move is taking place, is to use the **CA** command which pauses a program while a move completes. If you want your program to do something else (perhaps check a sensor) while a move is completing you can use the **CI** command which lets a program branch if the motors are moving. 
 
 ```
 MFFail
@@ -396,8 +416,9 @@ CCFAIL: no dest
 
 The program will jump to the given label if the motors are inactive.  The robot replies with:
 
+```
 CIOK
-
+```
 
 ## Measure Distance: 
 ### *CMddd,cccc
@@ -465,24 +486,104 @@ This command halts the currently executing program. The program can be resumed a
 The currently executing program is halted. All variable values are retained (and can be viewed and changed from the console).
 
 ## Begin remote code download
-## *RM
+```
+*RM[filename]
+```
 
-This command changes the way that future HullOS statements are  processed by the device. After power on HullOS statements are performed immediately after entry. After an ***RM** command 
+This command changes the way that future HullOS statements are  processed by the device. After power on HullOS statements are performed immediately after entry. After an ***RM** command statements are not performed, instead they are stored in memory. You can specify a filename which will be used to store the commands as a HullOS program. If a filename is not supplied the compiled statements will be written into the default program which is loaded and executed when the robot is powered on. 
 
-*RP	None	Pause execution
-*RR	None	Resume execution
-*RS	None	Start program execution
-Sound Commands
-Command	Command Data	Description
-*ST	Frequency, duration, wait (W/N)	Play tone: frequency, duration, wait[n/w]
-Variable Management Commands
-Command	Command Data	Description
-*VC	None	Clear all variables
-*VS	Variable name, value	Set a variable
-*VV	Variable name	View a variable
-Write Output Commands
-Command	Command Data	Description
-*WL	None	Print newline
-*WT	Text	Print text
-*WV	Variable name	Print variable value
+Any currently running program will continue to execute as the new program is downloaded. 
+
+## End Remote code download 
+```
+*RX
+```
+This ends a remote download session started by the **RM** command. If the **RM** command specified a filename the downloaded code is stored in that file. If no filename was specified the code is stored in the default program which is executed when the robot starts. 
+
+## Pause execution
+	
+```
+*RP
+```
+The statement causes a program to pause. If you put it in a program the program will stop at that point. 
+
+## Resume execution
+```
+*RR
+```
+The statement causes a paused program to resume execution. If there is no paused program the statement has no effect. 
+
+## Run stored program
+```
+*Rffilename
+```
+This starts the specified file running. If no filename is supplied or the specified file is not found the command will display an error message on the console. 
+
+## Start program execution
+```
+*RS[filename]
+```
+This starts the specified file running. If no filename is supplied the default program will be started. 
+
+## List stored program files 
+```
+*RL
+```
+This lists on the console all the files stored in the robot.
+
+## Display the contents of a file 
+```
+*RDfilename
+```
+The command is followed by the name of a stored file. The contents of this file will be displayed on the console. If the file is not found an error is displayed.
+
+## Write a compiled program to a file
+```
+*RWfilename
+```
+The command is followed by a filename. The currently compiled program (i.e. one stored by an RX command) is written to the file.
+
+# Sound Commands
+
+## Play tone
+```
+*ST<freq>,<duration>[,<wait>]
+```
+<freq> is the frequncy in Hertz for the tone
+<duration> is in 10ths of a second
+<wait> tells the robot to wait till the note has finished
+
+# Variable Management Commands 
+## Clear all variables
+```
+*VC
+```
+## Set a variable
+```
+*VS<variable name>,<value>
+```
+Creates a variable which can be accessed from pythonish
+
+## View variable
+```
+*VV<variable name>
+```
+Displays the value of the variable on the serial output stream.
+
+# Write Output Commands
+These commands send output to the serial output stream.
+
+## Print a newline
+```
+*WL
+```
+## Print text
+```
+*WT<text message>
+```
+## Print variable value
+```
+*WV<variable name>
+```
+
 
