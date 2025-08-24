@@ -82,6 +82,8 @@
 #define ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING 71
 #define ERROR_FILE_DUMP_FAILED 72
 #define ERROR_TOKEN_TOO_LARGE_FOR_BUFFER 73
+#define ERROR_MISSING_CLOSE_QUOTE_ON_SEND 74
+
 
 #define COMMAND_SYSTEM_COMMAND 100
 #define COMMAND_EMPTY_LINE 101
@@ -191,5 +193,6 @@ int compileAngry();
 int compileHappy();
 int compilePrintln();
 int compilePrint();
+int compileSend();
 
 #endif

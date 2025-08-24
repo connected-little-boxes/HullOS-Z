@@ -65,6 +65,8 @@ const char pythonishcommandNames[] =
 	"save#"		  // COMMAND_SAVE       41
 	"load#"		  // COMMAND_LOAD       42
 	"dump#"		  // COMMAND_DUMP       43
+	"chain#"	  // COMMAND_CHAIN      44
+	"send#"	      // COMMAND_SEND       45
 	;
 
 
@@ -1081,9 +1083,9 @@ int compileProgramSave()
 	return ERROR_OK;
 }
 
-int compileProgramLoad()
+int compileProgramLoad(bool clearVariablesBeforeRun)
 {
-	Serial.println("Compiling program load command");
+	Serial.println("Compiling program load or chain command");
 
 	if (storingProgram())
 	{
@@ -1101,8 +1103,15 @@ int compileProgramLoad()
 	{
 		return ERROR_FILE_LOAD_FAILED;
 	}
+	
+	if(clearVariablesBeforeRun){
+		sendCommand("RF");
+	}
+	else 
+	{
+		sendCommand("RE");
+	}
 
-	sendCommand("RS");
 	sendCommand(HullOScommandsFilenameBuffer);
 
 	return ERROR_OK;
@@ -1214,6 +1223,9 @@ int processCommand(byte commandNo)
 	case COMMAND_PRINT:
 		return compilePrint();
 
+	case COMMAND_SEND:
+		return compileSend();
+
 	case COMMAND_PRINTLN:
 		return compilePrintln();
 
@@ -1233,7 +1245,10 @@ int processCommand(byte commandNo)
 		return compileProgramSave();
 
 	case COMMAND_LOAD:
-		return compileProgramLoad();
+		return compileProgramLoad(true);
+
+	case COMMAND_CHAIN:
+		return compileProgramLoad(false);
 
 	case COMMAND_DUMP:
 		return compileProgramDump();

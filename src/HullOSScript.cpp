@@ -611,6 +611,47 @@ int compilePrint()
 	}
 }
 
+int compileSend()
+{
+	// Not allowed to indent after a send
+	previousStatementStartedBlock = false;
+
+	// first character of the send command
+	// The command is in the "remote" family
+
+	HullOSProgramoutputFunction('R');
+
+	skipInputSpaces();
+
+	if (*bufferPos == '"')
+	{
+		// start of a message - just drop out the string of text
+		HullOSProgramoutputFunction('T');
+
+		bufferPos++; // skip the starting double quote
+		while (*bufferPos != 0 && *bufferPos != '"')
+		{
+			HullOSProgramoutputFunction(*bufferPos);
+			bufferPos++;
+		}
+		if (*bufferPos == 0)
+		{
+			return ERROR_MISSING_CLOSE_QUOTE_ON_SEND;
+		}
+		else
+		{
+			return ERROR_OK;
+		}
+	}
+	else
+	{
+		// start of a value - just drop out the expression
+		HullOSProgramoutputFunction('V');
+		// dropping a value - just process it
+		return processValue();
+	}
+}
+
 const char newlineCommand[] = "WL";
 
 int compilePrintln()

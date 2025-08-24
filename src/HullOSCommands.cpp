@@ -205,15 +205,18 @@ void dumpRunningProgram()
 
 // Starts a program running 
 
-void startProgramExecution()
+void startProgramExecution(bool clearVariablesBeforeRun)
 {
 
 #ifdef PROGRAM_DEBUG
     Serial.println(F("Starting program execution"));
 #endif
 
-    clearVariables();
-    setAllLightsOff();
+    if(clearVariablesBeforeRun) {
+        clearVariables();
+        setAllLightsOff();
+    }
+
     programCounter = 0;
     resetCommand();
     programState = PROGRAM_ACTIVE;
@@ -2584,7 +2587,7 @@ void remoteDownloadCommand()
     startDownloadingCode();
 }
 
-void startProgramCommand()
+void startProgramCommand(bool clearVariablesBeforeRun)
 {
 
 //    Serial.printf("Start program command decode pos:%s\n", decodePos);
@@ -2606,7 +2609,7 @@ void startProgramCommand()
         }
     }
 
-    startProgramExecution();
+    startProgramExecution(clearVariablesBeforeRun);
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
@@ -2641,7 +2644,7 @@ void clearProgramStoreCommand()
 #endif
 }
 
-void runProgramFromFileCommand()
+void runProgramFromFileCommand(bool clearVariablesBeforeRun)
 {
 
     Serial.printf("Running program from file\n");
@@ -2674,7 +2677,7 @@ void runProgramFromFileCommand()
     Serial.printf("\n\n");
     dumpRunningProgram();
 
-    startProgramExecution();
+    startProgramExecution(clearVariablesBeforeRun);
 }
 
 void saveCompiledProgramToFileCommand()
@@ -2721,12 +2724,41 @@ void listFilesCommand()
 }
 
 
-void transmitMQTTCommand()
+char messageBuffer[MQTT_TEXT_BUFFER_SIZE+1];
+
+void transmitMQTTmessage()
 {
     Serial.printf("Transmit MQTT message\n");
-    publishBufferToMQTT("HEllo");
+
+    int messageBufferPos = 0;
+
+    while (*decodePos != STATEMENT_TERMINATOR & decodePos != decodeLimit)
+    {
+        messageBuffer[messageBufferPos]=*decodePos;
+        decodePos++;
+        messageBufferPos++;
+        if(messageBufferPos==MQTT_TEXT_BUFFER_SIZE){
+            break;
+        }
+    }
+
+     messageBuffer[messageBufferPos]=0;
+
+    publishBufferToMQTT(messageBuffer);
 }
 
+void transmitMQTTvalue()
+{
+    Serial.printf("Transmit MQTT value\n");
+
+    int valueToTransmit;
+
+    if (getValue(&valueToTransmit))
+    {
+        snprintf(messageBuffer,MQTT_TEXT_BUFFER_SIZE,"%d",valueToTransmit);
+        publishBufferToMQTT(messageBuffer);
+    }
+}
 
 void remoteManagement()
 {
@@ -2761,9 +2793,13 @@ void remoteManagement()
     case 'd':
         dumpFileCommand();
         break;
+    case 'E':
+    case 'e':
+        runProgramFromFileCommand(false);
+        break;
     case 'F':
     case 'f':
-        runProgramFromFileCommand();
+        runProgramFromFileCommand(true);
         break;
     case 'H':
     case 'h':
@@ -2783,15 +2819,19 @@ void remoteManagement()
         break;
     case 'S':
     case 's':
-        startProgramCommand();
+        startProgramCommand(true);
         break;
     case 'R':
     case 'r':
         resumeProgramExecution();
         break;
-
     case 't':
     case 'T':
+        transmitMQTTmessage();
+        break;
+    case 'V':
+    case 'v':
+        transmitMQTTvalue();
         break;
     case 'W':
     case 'w':
@@ -3246,7 +3286,6 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     case 'S':
         remoteSoundPlay();
         break;
-
     case 'w':
     case 'W':
         remoteWriteOutput();

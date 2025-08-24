@@ -41,6 +41,9 @@ enum InterpreterState
 	STORE_PROGRAM
 };
 
+
+#define MQTT_TEXT_BUFFER_SIZE 100
+
 bool storingProgram ();
 
 #define COMMAND_BUFFER_SIZE 60
@@ -78,7 +81,7 @@ extern char * compiledLimit;
 int CharsAvailable();
 
 void dumpRunningProgram(int EEPromStart);
-void startProgramExecution();
+void startProgramExecution(bool clearVariablesBeforeRun);
 
 // RH - remote halt
 void haltProgramExecution();

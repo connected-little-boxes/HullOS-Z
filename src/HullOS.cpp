@@ -295,7 +295,7 @@ void HullOSStartProgramOnReset()
             if (hullosSettings.runProgramOnStart)
             {
                 Serial.printf("Starting execution\n");
-                startProgramExecution();
+                startProgramExecution(true);
             }
         }
     }
@@ -389,7 +389,7 @@ int doSetState(char *destination, unsigned char *settingBase)
 
     if (strcasecmp(command, "yes") == 0)
     {
-        startProgramExecution();
+        startProgramExecution(true);
         commandPerformed = true;
     }
 

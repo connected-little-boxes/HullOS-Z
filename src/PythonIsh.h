@@ -51,4 +51,6 @@ int pythonIshdecodeScriptLine(char *input);
 #define COMMAND_SAVE 41
 #define COMMAND_LOAD 42
 #define COMMAND_DUMP 43
+#define COMMAND_CHAIN 44
+#define COMMAND_SEND 45
 

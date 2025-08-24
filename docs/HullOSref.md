@@ -515,10 +515,15 @@ The statement causes a paused program to resume execution. If there is no paused
 
 ## Run stored program
 ```
-*Rffilename
+*RFfilename
 ```
-This starts the specified file running. If no filename is supplied or the specified file is not found the command will display an error message on the console. 
+This starts the specified file running. If no filename is supplied or the specified file is not found the command will display an error message on the console. Before the program runs all variables are cleared and the pixel display is reset. 
 
+## Run stored program without clearing variables
+```
+*REfilename
+```
+This is used in the same way as the ***RF** command but does not clear any existing variables and leaves the pixel display unchanged. 
 ## Start program execution
 ```
 *RS[filename]
@@ -542,6 +547,25 @@ The command is followed by the name of a stored file. The contents of this file 
 *RWfilename
 ```
 The command is followed by a filename. The currently compiled program (i.e. one stored by an RX command) is written to the file.
+
+## Send a text string to MQTT
+
+```
+*RTmessage
+```
+The command is followed by a text message. The destination topic for the MQTT message is made up of two internal settings in the following form: **mqttpub\mqttdevicename**. If you use the default settings the topic will look like this:
+
+```
+data\CLB-E661385283457925
+```
+
+The device name is set from the ID of the processor and will be different for each device.
+
+## Send a value to MQTT
+```
+*RVexpression
+```
+The command is followed by a arithmetic expression. The value of the expression is sent to the same MQTT topic as that used for the ***RT** command. If the expression cannot be parsed the message is not sent. 
 
 # Sound Commands
 
