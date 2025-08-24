@@ -22,6 +22,7 @@
 #include "otaupdate.h"
 #include "utils.h"
 #include "version.h"
+#include "mqtt.h"
 
 //#define DIAGNOSTICS_ACTIVE
 //#define PROGRAM_DEBUG
@@ -2720,6 +2721,13 @@ void listFilesCommand()
 }
 
 
+void transmitMQTTCommand()
+{
+    Serial.printf("Transmit MQTT message\n");
+    publishBufferToMQTT("HEllo");
+}
+
+
 void remoteManagement()
 {
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -2780,6 +2788,10 @@ void remoteManagement()
     case 'R':
     case 'r':
         resumeProgramExecution();
+        break;
+
+    case 't':
+    case 'T':
         break;
     case 'W':
     case 'w':
