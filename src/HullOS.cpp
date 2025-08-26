@@ -48,8 +48,18 @@ struct LanguageHandler hullOSLanguage = {
     "HullOS",
     hullOSDecoderStart,
     hullOSdecodeScriptLine,
-    "H>"
+    HullOSShowPrompt
 };
+
+void HullOSShowPrompt()
+{
+	if (storingProgram()){
+		alwaysDisplayMessage("H*>");
+	}
+	else {
+		alwaysDisplayMessage("H>");
+	}
+}
 
 struct LanguageHandler *allLanguages[] =
     {
@@ -103,8 +113,8 @@ bool processLanguageLine(char *line)
             printError(result);
         }
     }
-    
-    Serial.print(currentLanguageHandler->prompt);
+
+    currentLanguageHandler->displayPrompt();
 
     return true;
 }
@@ -273,7 +283,7 @@ bool HullOSStartLanguage(char *languageName)
     {
         currentLanguageHandler = handler;
         handler->setup();
-        Serial.printf("%s", handler->prompt);
+        handler->displayPrompt();
         resetCommand();
         return true;
     }

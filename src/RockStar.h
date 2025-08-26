@@ -4,6 +4,9 @@
 
 extern struct LanguageHandler RockstarLanguage;
 
+void rockstarShowPrompt();
+
+
 #define ROCKSTAR_COMMAND_ANGRY 0
 #define ROCKSTAR_COMMAND_HAPPY 1
 #define ROCKSTAR_COMMAND_MOVE 2

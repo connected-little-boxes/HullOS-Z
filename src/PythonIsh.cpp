@@ -6,6 +6,7 @@
 #include "PythonIsh.h"
 #include "console.h"
 #include "HullOS.h"
+#include "messages.h"
 
 int pythonIshdecodeScriptLine(char *input);
 
@@ -18,7 +19,18 @@ struct LanguageHandler PythonIshLanguage = {
 	"PythonIsh",
 	pythonIshDecoderStart,
 	pythonIshdecodeScriptLine,
-	"P>"};
+	pythonIshShowPrompt
+};
+
+void pythonIshShowPrompt()
+{
+	if (storingProgram()){
+		alwaysDisplayMessage("P*>");
+	}
+	else {
+		alwaysDisplayMessage("P>");
+	}
+}
 
 const char pythonishcommandNames[] =
 	"angry#"	  // COMMAND_ANGRY       0

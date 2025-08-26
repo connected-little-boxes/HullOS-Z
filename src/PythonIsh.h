@@ -6,6 +6,7 @@
 extern struct LanguageHandler PythonIshLanguage;
 
 int pythonIshdecodeScriptLine(char *input);
+void pythonIshShowPrompt();
 
 #define COMMAND_ANGRY 0
 #define COMMAND_HAPPY 1

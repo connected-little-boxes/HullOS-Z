@@ -475,7 +475,7 @@ This command clears the stored program in the robot.
 The command above would clear the stored program, making it ready for a new one to be downloaded. Note that the stored program is not the executing program. This makes it possible to enter a new program while one is currently executing. This command is performed at the start of a remote download command (***RM**).
 
 ## Halt execution
-*RH
+### *RH
 
 This command halts the currently executing program. The program can be resumed again using the ***RR** command.
 
@@ -486,73 +486,102 @@ This command halts the currently executing program. The program can be resumed a
 The currently executing program is halted. All variable values are retained (and can be viewed and changed from the console).
 
 ## Begin remote code download
-```
-*RM[filename]
-```
-
+### *RM[filename]
 This command changes the way that future HullOS statements are  processed by the device. After power on HullOS statements are performed immediately after entry. After an ***RM** command statements are not performed, instead they are stored in memory. You can specify a filename which will be used to store the commands as a HullOS program. If a filename is not supplied the compiled statements will be written into the default program which is loaded and executed when the robot is powered on. 
 
-Any currently running program will continue to execute as the new program is downloaded. 
+Any currently running program will continue to execute as the new program is downloaded. One of the pixels in the display will turn white to indicate that a program is being entered. The white pixel will move around the ring as each statement is entered. 
+
+```
+*RMtest.txt
+```
+The above statement begin the download of the program **test.txt** 
 
 ## End Remote code download 
+### *RX
+
+This ends a remote download session started by the **RM** command. If the **RM** command specified a filename the downloaded code is stored in that file. If no filename was specified the code is stored in the default program which is executed when the robot starts. Note that this command is only valid if an ***RM** command has been issued previously. 
+
 ```
+*RMGREEN.TXT
+*PNG
 *RX
 ```
-This ends a remote download session started by the **RM** command. If the **RM** command specified a filename the downloaded code is stored in that file. If no filename was specified the code is stored in the default program which is executed when the robot starts. 
-
+This would create a tiny program in the file **GREEN.TXT**. Note that if an existing program is running this will continue to run as the new program is downloaded. 
 ## Pause execution
-	
+### *RP	
+The statement causes a program to pause. If you put it in a program the program will stop at that point. 
 ```
 *RP
 ```
-The statement causes a program to pause. If you put it in a program the program will stop at that point. 
-
+This pauses the current program. The program can be resumed by using the ***RR** command. 
 ## Resume execution
+### *RR
+The statement causes a paused program to resume execution. If there is no paused program the statement has no effect. 
 ```
 *RR
 ```
-The statement causes a paused program to resume execution. If there is no paused program the statement has no effect. 
-
+The line above would be entered from the console to resume a paused program. All the variables created by the program would retain their previous values. 
 ## Run stored program
-```
-*RFfilename
-```
+### *RFfilename
 This starts the specified file running. If no filename is supplied or the specified file is not found the command will display an error message on the console. Before the program runs all variables are cleared and the pixel display is reset. 
-
+```
+*RFGREEN.TXT
+```
+The statement above would start the program in the file **GREEN.TXT**. 
 ## Run stored program without clearing variables
-```
-*REfilename
-```
+### *REfilename
 This is used in the same way as the ***RF** command but does not clear any existing variables and leaves the pixel display unchanged. 
+```
+*RERETURN.TXT
+```
+The above statement starts running a program in the file **RETURN.TXT**
 ## Start program execution
-```
-*RS[filename]
-```
+### *RS[filename]
 This starts the specified file running. If no filename is supplied the default program will be started. 
+```
+*RSGREEN.TXT
+```
+The above statement would run the program in the file **GREEN.TXT**. If this file is not found in the filestore the default program will be loaded and run. 
 
 ## List stored program files 
-```
-*RL
-```
+### *RL
 This lists on the console all the files stored in the robot.
 
+```
+*rl
+List all files
+Listing LittleFS contents:
+File: PNg - Size: 0
+File: Settings.config - Size: 2126
+File: active.txt - Size: 70
+File: blue.txt - Size: 4
+File: GREEN.TXT - Size: 24
+```
+Above you can see the files saved on a robot. 
+
 ## Display the contents of a file 
-```
-*RDfilename
-```
+### *RDfilename
 The command is followed by the name of a stored file. The contents of this file will be displayed on the console. If the file is not found an error is displayed.
 
+```
+*RDGREEN.TXT
+Dump named file
+  Got dump filename:GREEN.TXT
+Contents of GREEN.TXT:
+PNG
+```
+Above you can see the command being used to view the contents of the file **GREEN.TXT**.
+
 ## Write a compiled program to a file
-```
-*RWfilename
-```
+### *RWfilename
 The command is followed by a filename. The currently compiled program (i.e. one stored by an RX command) is written to the file.
-
+```
+*rwprog.txt
+```
+The above statement would write the currently compiled program into a file called **prog.txt**
 ## Send a text string to MQTT
+### *RTmessage
 
-```
-*RTmessage
-```
 The command is followed by a text message. The destination topic for the MQTT message is made up of two internal settings in the following form: **mqttpub\mqttdevicename**. If you use the default settings the topic will look like this:
 
 ```
@@ -560,20 +589,26 @@ data\CLB-E661385283457925
 ```
 
 The device name is set from the ID of the processor and will be different for each device.
+```
+*RTMove complete
+```
+The above statement would send the message "Move complete" to MQTT. 
 
 ## Send a value to MQTT
-```
-*RVexpression
-```
+### *RVexpression
 The command is followed by a arithmetic expression. The value of the expression is sent to the same MQTT topic as that used for the ***RT** command. If the expression cannot be parsed the message is not sent. 
-
+```
+*VSfred=99
+*RVfred
+```
+The above statements would send the message "99" to the MQTT data topic for this device. 
 # Sound Commands
+### *ST<freq>,<duration>[,<wait>]
 
 ## Play tone
 ```
-*ST<freq>,<duration>[,<wait>]
 ```
-<freq> is the frequncy in Hertz for the tone
+<freq> is the frequency in Hertz for the tone
 <duration> is in 10ths of a second
 <wait> tells the robot to wait till the note has finished
 

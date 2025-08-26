@@ -6,6 +6,7 @@
 #include "HullOSCommands.h"
 #include "console.h"
 #include "Utils.h"
+#include "messages.h"
 
 #define MAX_TOKENS 10
 #define MAX_TOKEN_LENGTH 20
@@ -25,7 +26,14 @@ struct LanguageHandler RockstarLanguage = {
     "Rockstar",
     rockstarDecoderStart,
     RockstarIshDecodeScriptLine,
-    "R>"};
+    rockstarShowPrompt
+};
+
+void rockstarShowPrompt()
+{
+	alwaysDisplayMessage("R>");
+}
+
 
 const char rockstarCommandNames[] =
     "angry,cross,mad#"                // ROCKSTAR_COMMAND_ANGRY       0
