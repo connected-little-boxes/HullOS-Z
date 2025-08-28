@@ -12,6 +12,7 @@
 #include "registration.h"
 #include "HullOSCommands.h"
 #include "HullOSVariables.h"
+#include "Motors.h" // BNN
 
 #ifdef SENSOR_DISTANCE
 #include "distance.h"
@@ -179,11 +180,14 @@ struct reading distanceReading = { (char*)"distance", readDistance };
 
 #endif
 
+struct reading movingReading = { (char*)"moving", motorsMoving }; // BNN
+
 struct reading * readers[] = { 	
 #ifdef SENSOR_DISTANCE
 	&distanceReading,
 #endif
 	&randomReading, 
+	&movingReading, // BNN
 	&test };
 
 bool validReading(char * text)
