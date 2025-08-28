@@ -113,10 +113,12 @@ int handleInTime()
 		}
 	}
 
-	// always send a wait command
+	// always send a wait command  // no, don't
 
 	endCommand(); // end the movement command
-	sendCommand(completeAwaitCommand);
+	
+	// this prevents the pythonish from being able to use if @moving==1 etc
+	//sendCommand(completeAwaitCommand);
 
 	previousStatementStartedBlock = false;
 
