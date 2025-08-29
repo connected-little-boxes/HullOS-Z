@@ -54,4 +54,5 @@ void pythonIshShowPrompt();
 #define COMMAND_DUMP 43
 #define COMMAND_CHAIN 44
 #define COMMAND_SEND 45
+#define COMMAND_MWAIT 46
 

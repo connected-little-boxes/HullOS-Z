@@ -1,6 +1,8 @@
 # HullOS Python-ish 
 
-HullOS programs can be written at two levels. At the high level you can use HullOS scripting commands in a language we called “Python-ish”. At the low level you can use HullOS "star" commands. Each star command equates to a single low-level command that is interpreted when the device runs the program. A scripting command may be comprised of one or more "star" commands. A star (*) command provides access to low level programming features. Star commands are pre-ceded by the * character. They can be used at any point in a program. HullOS programs support the following programming constructions
+HullOS programs can be written at two levels. 
+At the high level you can use HullOS scripting commands in a language we called “Python-ish”. 
+At the low level you can use HullOS "star" commands. see (HullOSRef.md) Each star command equates to a single low-level command that is interpreted when the device runs the program. A scripting command may be comprised of one or more "star" commands. A star (*) command provides access to low level programming features. Star commands are pre-ceded by the * character. They can be used at any point in a program. HullOS programs support the following programming constructions
 
 * named variables and simple expressions
 * conditional execution using if – else
@@ -45,7 +47,10 @@ happy
 
 This tells the robot to go into "happy" mode. The pixel flashing will slow down as the robot becomes more relaxed. If you want to create even more subtle robot moods, take a look at the *PF command. 
 ## Move the robot
-The **move** command can be used to start the robot moving, and to set a distance for the move. Move commands can also be configured to move in a particular time. 
+The **move** command can be used to start the robot moving, and to set a distance for the move. Move commands can also be configured to move in a particular time which, effectively, sets the speed of the motion.
+
+
+
 ### Starting moving 
 ```
 move
@@ -113,8 +118,37 @@ The **arc** command can be followed with an **intime** value to give the number 
 arc 1000 angle 360 intime 600
 ```
 This statement would cause the robot to describe a complete circle of 1000mm radius, and take a minute to do this. 
+
+### Waiting for motion to complete
+
+If you want your pythonish program to wait until the motion has completed before executing the next program statement use the command *mwait* for example:-
+```
+begin
+println "moving"
+move 1000
+mwait
+println "stopped"
+end
+```
+
+To get on with something else whilst a motion is taking place use the built-in variable @moving. For example:-
+```
+begin
+move 1000
+while @moving==1
+ if @distance < 100
+   red
+   move -50
+   turn 90
+   move 50
+ else
+   green
+end
+```
+
 ## Make a sound
 The robot can be fitted with a small speaker that can produce quite annoying sounds. You can use the **sound** command to make these:
+
 ```
 sound 1000
 ```
@@ -328,7 +362,7 @@ red
 end
 ```
 The **continue** statement will cause the loop to be restarted, meaning that the sound is only made when the distance value is less than 100. 
-## Entering 
+## Entering Commands
 You can enter a PythonIsh program from a terminal connected to the serial port on the robot
 
 HullOS Star commands
