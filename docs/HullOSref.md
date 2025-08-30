@@ -1,6 +1,9 @@
 # HullOS Reference
 
-HullOS commands control the robot hardware. They can instigate movement and display values.
+HullOS commands control the underlying robot hardware. They can instigate movement and display values.
+
+Pythonish programs are compiled down to HullOS star commands when the pythonish program is uploaded.
+
 
 The format of the commands is as follows:-
 ```
