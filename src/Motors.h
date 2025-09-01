@@ -57,7 +57,7 @@ int fastMoveDistanceInMM(float leftMMs, float rightMMs);
 void rightStop();
 void leftStop();
 void motorStop();
-bool motorsMoving();
+int motorsMoving(); // was bool
 void waitForMotorsStop();
 void fastRotateRobot(float angle);
 int timedRotateRobot(float angle, float timeToMoveInSeconds);

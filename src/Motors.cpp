@@ -917,13 +917,13 @@ void motorStop()
   rightStop();
 }
 
-bool motorsMoving()
+int motorsMoving()
 {
   if (rightMotorWaveformDelta != 0)
-    return true;
+    return 1;
   if (leftMotorWaveformDelta != 0)
-    return true;
-  return false;
+    return 1;
+  return 0;
 }
 
 void waitForMotorsStop()

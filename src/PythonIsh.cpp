@@ -79,10 +79,11 @@ const char pythonishcommandNames[] =
 	"dump#"		  // COMMAND_DUMP       43
 	"chain#"	  // COMMAND_CHAIN      44
 	"send#"	      // COMMAND_SEND       45
+	"mwait#"	  // COMMAND_MWAIT 		46 - wait for motors
 	;
 
 
-const char completeAwaitCommand[] = "CA";
+
 
 int handleInTime()
 {
@@ -113,10 +114,12 @@ int handleInTime()
 		}
 	}
 
-	// always send a wait command
+	// always send a wait command  // no, don't
 
 	endCommand(); // end the movement command
-	sendCommand(completeAwaitCommand);
+	
+	// this prevents the pythonish from being able to use if @moving==1 etc
+	//sendCommand(completeAwaitCommand); see WAIT command
 
 	previousStatementStartedBlock = false;
 
@@ -168,6 +171,17 @@ int compileMove()
 	skipInputSpaces();
 
 	return handleValueIntimeAndBackground();
+}
+
+// see MWAIT command
+const char completeAwaitCommand[] = "CA";
+
+int compileWait()
+{   // wait for motors to stop
+	// just put CA into the compiled output
+	sendCommand(completeAwaitCommand); 
+
+	return ERROR_OK;
 }
 
 const char danceCommand[] = "MF100\rCA\rMF-100\rCA";
@@ -942,14 +956,14 @@ int runProgram()
 	return ERROR_OK;
 }
 
-const char waitCommand[] = "CA";
+const char mwaitCommand[] = "CA";
 
-int compileWait()
+int compileMwait()
 {
 	// Not allowed to indent after a wait
 	previousStatementStartedBlock = false;
 
-	sendCommand(waitCommand);
+	sendCommand(mwaitCommand);
 
 	return ERROR_OK;
 }
@@ -1168,6 +1182,9 @@ int processCommand(byte commandNo)
 
 	case COMMAND_MOVE: // move
 		return compileMove();
+
+	case COMMAND_MWAIT: // wait for motors to stop
+		return compileMwait();
 
 	case COMMAND_TURN: // turn
 		return compileTurn();
