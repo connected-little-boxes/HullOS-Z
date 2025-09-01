@@ -24,10 +24,9 @@
 #include "version.h"
 #include "mqtt.h"
 
-//#define DIAGNOSTICS_ACTIVE
-//#define PROGRAM_DEBUG
-//#define HullOS_DEBUG
-
+// #define DIAGNOSTICS_ACTIVE
+// #define PROGRAM_DEBUG
+// #define HullOS_DEBUG
 
 char HullOScodeRunningCode[HULLOS_PROGRAM_SIZE];
 char *decodePos;
@@ -52,7 +51,7 @@ int HullOSOutputBufferPos;
 
 void resetHullOSOutputBuffer()
 {
-    HullOSOutputBufferPos=0;
+    HullOSOutputBufferPos = 0;
 }
 
 void HullOSProgramoutputFunction(char ch)
@@ -60,45 +59,48 @@ void HullOSProgramoutputFunction(char ch)
 
 #ifdef HullOS_DEBUG
 
-    Serial.printf("Got a HullOS program ch %c\n",ch);
+    Serial.printf("Got a HullOS program ch %c\n", ch);
 
-    if (ch==STATEMENT_TERMINATOR){
+    if (ch == STATEMENT_TERMINATOR)
+    {
         Serial.printf("Writing a line terminator\n");
     }
-    else {
+    else
+    {
         Serial.printf("Writing a %c %d\n", ch, ch);
     }
 
 #endif
 
-    if (HullOSOutputBufferPos>=HULLOS_PROGRAM_COMMAND_LENGTH-2){
+    if (HullOSOutputBufferPos >= HULLOS_PROGRAM_COMMAND_LENGTH - 2)
+    {
         Serial.printf("HullOS command too long - ignoring\n");
         resetHullOSOutputBuffer();
         return;
     }
 
-    if(ch == STATEMENT_TERMINATOR)
+    if (ch == STATEMENT_TERMINATOR)
     {
-        HullOSOutputBuffer[HullOSOutputBufferPos++]=STATEMENT_TERMINATOR;
-        HullOSOutputBuffer[HullOSOutputBufferPos++]=0;
+        HullOSOutputBuffer[HullOSOutputBufferPos++] = STATEMENT_TERMINATOR;
+        HullOSOutputBuffer[HullOSOutputBufferPos++] = 0;
 
 #ifdef HullOS_DEBUG
-        Serial.printf("Got a statement to perform: %s\n",HullOSOutputBuffer);
+        Serial.printf("Got a statement to perform: %s\n", HullOSOutputBuffer);
 #endif
-        hullOSActOnStatement(HullOSOutputBuffer,HullOSOutputBuffer+HullOSOutputBufferPos);
+        hullOSActOnStatement(HullOSOutputBuffer, HullOSOutputBuffer + HullOSOutputBufferPos);
         resetHullOSOutputBuffer();
         return;
     }
-    HullOSOutputBuffer[HullOSOutputBufferPos++]=ch;
+    HullOSOutputBuffer[HullOSOutputBufferPos++] = ch;
 }
 
 ProgramState programState = PROGRAM_STOPPED;
 
 InterpreterState interpreterState = EXECUTE_IMMEDIATELY;
 
-bool storingProgram ()
+bool storingProgram()
 {
-    return interpreterState==STORE_PROGRAM;
+    return interpreterState == STORE_PROGRAM;
 }
 
 unsigned char diagnosticsOutputLevel = 0;
@@ -203,7 +205,7 @@ void dumpRunningProgram()
     }
 }
 
-// Starts a program running 
+// Starts a program running
 
 void startProgramExecution(bool clearVariablesBeforeRun)
 {
@@ -212,7 +214,8 @@ void startProgramExecution(bool clearVariablesBeforeRun)
     Serial.println(F("Starting program execution"));
 #endif
 
-    if(clearVariablesBeforeRun) {
+    if (clearVariablesBeforeRun)
+    {
         clearVariables();
         setAllLightsOff();
     }
@@ -385,9 +388,10 @@ void endProgramReceive()
 #endif
         saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
     }
-    else {
+    else
+    {
 #ifdef PROGRAM_DEBUG
-		Serial.printf("Storing the program in:%s\n", RUNNING_PROGRAM_FILENAME);
+        Serial.printf("Storing the program in:%s\n", RUNNING_PROGRAM_FILENAME);
 #endif
         saveToFile(RUNNING_PROGRAM_FILENAME, HullOScodeCompileOutput);
     }
@@ -465,32 +469,17 @@ void storeReceivedByte(byte b)
 
             return;
 
-        case 'F':
-        case 'f':
-            // F is a special case - we let it through to allow program chaining
-#ifdef PROGRAM_DEBUG
-            Serial.println("RF");
-#endif
-            storeProgramByte('r');
-            lineStoreState = STORING;
-            break;
-
         default:
 
-            // Not an X jor A - but we never store R commands
-            // skip to the next line
-            lineStoreState = SKIPPING;
+            // Other commands don't affect remote download and can be handled as normal
+            // write out the r
+            storeProgramByte('r');
+
+            // store everything which follows the command as normal
+            lineStoreState = STORING;
+            break;
         }
 
-        break;
-
-    case SKIPPING:
-        // we are skipping an R command - look for a statement terminator
-        if (b == STATEMENT_TERMINATOR)
-        {
-            // Got a terminator, look for the command character
-            lineStoreState = LINE_START;
-        }
         break;
 
     case STORING:
@@ -1910,7 +1899,7 @@ int findNextStatement(int programPosition)
 // This is always the start of a statement, and usually the start of the program, to allow
 // branches up the code.
 
-//#define FIND_LABEL_IN_PROGRAM_DEBUG
+// #define FIND_LABEL_IN_PROGRAM_DEBUG
 
 int findLabelInProgram(char *label, int programPosition)
 {
@@ -2355,7 +2344,7 @@ void compareAndJump(bool jumpIfTrue)
 
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
-#ifdef DIAGNOSTICS_ACTIVE                                                                                                                                                                                                                                                                                                                                                                             
+#ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
             Serial.println(F("FAIL: mising dest"));
@@ -2590,7 +2579,7 @@ void remoteDownloadCommand()
 void startProgramCommand(bool clearVariablesBeforeRun)
 {
 
-//    Serial.printf("Start program command decode pos:%s\n", decodePos);
+    //    Serial.printf("Start program command decode pos:%s\n", decodePos);
 
     if (getHullOSFileNameFromCode())
     {
@@ -2723,8 +2712,7 @@ void listFilesCommand()
     listLittleFSContents();
 }
 
-
-char messageBuffer[MQTT_TEXT_BUFFER_SIZE+1];
+char messageBuffer[MQTT_TEXT_BUFFER_SIZE + 1];
 
 void transmitMQTTmessage()
 {
@@ -2734,15 +2722,16 @@ void transmitMQTTmessage()
 
     while (*decodePos != STATEMENT_TERMINATOR & decodePos != decodeLimit)
     {
-        messageBuffer[messageBufferPos]=*decodePos;
+        messageBuffer[messageBufferPos] = *decodePos;
         decodePos++;
         messageBufferPos++;
-        if(messageBufferPos==MQTT_TEXT_BUFFER_SIZE){
+        if (messageBufferPos == MQTT_TEXT_BUFFER_SIZE)
+        {
             break;
         }
     }
 
-     messageBuffer[messageBufferPos]=0;
+    messageBuffer[messageBufferPos] = 0;
 
     publishBufferToMQTT(messageBuffer);
 }
@@ -2755,7 +2744,7 @@ void transmitMQTTvalue()
 
     if (getValue(&valueToTransmit))
     {
-        snprintf(messageBuffer,MQTT_TEXT_BUFFER_SIZE,"%d",valueToTransmit);
+        snprintf(messageBuffer, MQTT_TEXT_BUFFER_SIZE, "%d", valueToTransmit);
         publishBufferToMQTT(messageBuffer);
     }
 }
@@ -3234,8 +3223,9 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     dumpRunningProgram();
 
     Serial.print(F(".**processCommand:"));
-    char * dump_pos=commandDecodePos;
-    while(dump_pos != comandDecodeLimit){
+    char *dump_pos = commandDecodePos;
+    while (dump_pos != comandDecodeLimit)
+    {
         Serial.printf("%c", *dump_pos);
         dump_pos++;
     }
@@ -3364,7 +3354,7 @@ bool executeProgramStatement()
     }
 #endif
 
-    char * statementStart = HullOScodeRunningCode + programCounter;
+    char *statementStart = HullOScodeRunningCode + programCounter;
     int statementLength = 0;
 
     while (true)
@@ -3376,22 +3366,27 @@ bool executeProgramStatement()
         Serial.println(programByte);
 #endif
 
-        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR){
-            if(statementLength>0){
-                hullOSExecuteStatement(statementStart, statementStart+statementLength);
+        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
+        {
+            if (statementLength > 0)
+            {
+                hullOSExecuteStatement(statementStart, statementStart + statementLength);
             }
             haltProgramExecution();
             return false;
         }
 
-        if (programByte == STATEMENT_TERMINATOR){
-            hullOSExecuteStatement(statementStart, statementStart+statementLength);
+        if (programByte == STATEMENT_TERMINATOR)
+        {
+            hullOSExecuteStatement(statementStart, statementStart + statementLength);
             return true;
         }
 
-        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR){
-            if(statementLength>0){
-                hullOSExecuteStatement(statementStart, statementStart+statementLength);
+        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
+        {
+            if (statementLength > 0)
+            {
+                hullOSExecuteStatement(statementStart, statementStart + statementLength);
             }
             haltProgramExecution();
             return false;

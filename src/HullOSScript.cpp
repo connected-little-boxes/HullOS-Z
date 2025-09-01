@@ -79,6 +79,7 @@ const char* getErrorMessage(int code) {
 		case ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING: return "Dump not available when compiling. End compile before dumping";
 		case ERROR_FILE_DUMP_FAILED: return "File dump failed";
 		case ERROR_TOKEN_TOO_LARGE_FOR_BUFFER: return "Token too large for buffer";
+		case ERROR_MISSING_CLOSE_QUOTE_ON_SEND: return "Missing close quote on send";
         default: return "Unknown error.";
     }
 }

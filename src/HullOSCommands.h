@@ -96,8 +96,7 @@ enum lineStorageState
 {
 	LINE_START,
 	GOT_R,
-	STORING,
-	SKIPPING
+	STORING
 };
 
 void resetLineStorageState();
