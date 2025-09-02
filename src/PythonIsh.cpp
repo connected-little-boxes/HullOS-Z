@@ -64,7 +64,7 @@ const char pythonishcommandNames[] =
 	"cyan#"		  // COMMAND_CYAN       28
 	"white#"	  // COMMAND_WHITE      29
 	"black#"	  // COMMAND_BLACK      30
-	"wait#"		  // COMMAND_WAIT       31
+	"wait#"       // COMMAND_WAIT       31
 	"stop#"		  // COMMAND_STOP       32
 	"begin#"	  // COMMAND_BEGIN      33
 	"end#"		  // COMMAND_END        34
@@ -79,20 +79,33 @@ const char pythonishcommandNames[] =
 	"dump#"		  // COMMAND_DUMP       43
 	"chain#"	  // COMMAND_CHAIN      44
 	"send#"	      // COMMAND_SEND       45
-	"mwait#"	  // COMMAND_MWAIT 		46 - wait for motors
+	"nowait#"     // COMMAND_NO_WAIT    46
 	;
 
 
-
+const char completeAwaitCommand[] = "CA";
 
 int handleInTime()
 {
-	skipInputSpaces(); // find the next character
+	bool wantWait=true;
 
-	if (*bufferPos != 0)
+	while (*bufferPos != 0)
 	{
+
+		skipInputSpaces(); // find the next character
+
 		// Spin further down the commands looking for an intime command
 		int command = decodeCommandName(pythonishcommandNames);
+
+		if (command == COMMAND_NO_WAIT){
+			if(*bufferPos){
+				return ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE;
+			}
+			else {
+				wantWait=false;
+			}
+			break;
+		}
 
 		if (command == COMMAND_INTIME) // 13 is the offset in the command names of the intime word
 		{
@@ -114,12 +127,10 @@ int handleInTime()
 		}
 	}
 
-	// always send a wait command  // no, don't
-
-	endCommand(); // end the movement command
-	
-	// this prevents the pythonish from being able to use if @moving==1 etc
-	//sendCommand(completeAwaitCommand); see WAIT command
+	if(wantWait){
+		endCommand(); // end the movement command
+		sendCommand(completeAwaitCommand);
+	}
 
 	previousStatementStartedBlock = false;
 
@@ -171,17 +182,6 @@ int compileMove()
 	skipInputSpaces();
 
 	return handleValueIntimeAndBackground();
-}
-
-// see MWAIT command
-const char completeAwaitCommand[] = "CA";
-
-int compileWait()
-{   // wait for motors to stop
-	// just put CA into the compiled output
-	sendCommand(completeAwaitCommand); 
-
-	return ERROR_OK;
 }
 
 const char danceCommand[] = "MF100\rCA\rMF-100\rCA";
@@ -423,7 +423,7 @@ int compileSound()
 
 	HullOSProgramoutputFunction(',');
 
-	bool gotWait = false;
+	bool doWait = true;
 
 	if (*bufferPos == 0)
 	{
@@ -436,12 +436,12 @@ int compileSound()
 
 		int command = decodeCommandName(pythonishcommandNames);
 
-		if (command == COMMAND_WAIT)
+		if (command == COMMAND_NO_WAIT)
 		{
 			// send the default duration
 			sendCommand(defaultSoundDuration);
-			// need to wait for the command to finish
-			gotWait = true;
+			// continue running while the sound is playing
+			doWait = false;
 		}
 		else
 		{
@@ -464,13 +464,13 @@ int compileSound()
 				// Now look for a wait
 				command = decodeCommandName(pythonishcommandNames);
 
-				if (command == COMMAND_WAIT)
+				if (command == COMMAND_NO_WAIT)
 				{
-					gotWait = true;
+					doWait = false;
 				}
 				else
 				{
-					return ERROR_INVALID_COMMAND_AFTER_DURATION_SHOULD_BE_WAIT;
+					return ERROR_INVALID_COMMAND_AFTER_DURATION_SHOULD_BE_NO_WAIT;
 				}
 			}
 		}
@@ -478,7 +478,7 @@ int compileSound()
 
 	HullOSProgramoutputFunction(',');
 
-	if (gotWait)
+	if (doWait)
 		HullOSProgramoutputFunction('W');
 	else
 		HullOSProgramoutputFunction('N');
@@ -956,14 +956,16 @@ int runProgram()
 	return ERROR_OK;
 }
 
-const char mwaitCommand[] = "CA";
+const char waitCommand[] = "CA";
 
-int compileMwait()
+int compileWait()
 {
 	// Not allowed to indent after a wait
 	previousStatementStartedBlock = false;
 
-	sendCommand(mwaitCommand);
+	
+
+	sendCommand(waitCommand);
 
 	return ERROR_OK;
 }
@@ -1003,33 +1005,6 @@ int compileBegin()
 
 	startCompiling();
 
-	return ERROR_OK;
-}
-int compileEnd()
-{
-	// Not allowed to indent after a end
-	previousStatementStartedBlock = false;
-
-	if (!storingProgram())
-	{
-		return ERROR_END_WHEN_NOT_COMPILING_PROGRAM;
-	}
-
-	endCompilingStatements();
-
-	return ERROR_OK;
-}
-
-int compileDirectCommand()
-{
-	// Not allowed to indent after a sound
-	previousStatementStartedBlock = false;
-
-	while (*bufferPos)
-	{
-		HullOSProgramoutputFunction(*bufferPos);
-		bufferPos++;
-	}
 	return ERROR_OK;
 }
 
@@ -1084,6 +1059,41 @@ int getProgramFilenameFromCode()
 	return ERROR_OK;
 }
 
+int compileEnd()
+{
+	// Not allowed to indent after a end
+	previousStatementStartedBlock = false;
+
+	if (!storingProgram())
+	{
+		return ERROR_END_WHEN_NOT_COMPILING_PROGRAM;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		clearHullOSFilename();
+	}
+
+	endCompilingStatements();
+
+	return ERROR_OK;
+}
+
+int compileDirectCommand()
+{
+	// Not allowed to indent after a sound
+	previousStatementStartedBlock = false;
+
+	while (*bufferPos)
+	{
+		HullOSProgramoutputFunction(*bufferPos);
+		bufferPos++;
+	}
+	return ERROR_OK;
+}
+
 int compileProgramSave()
 {
 
@@ -1112,11 +1122,6 @@ int compileProgramSave()
 int compileProgramLoad(bool clearVariablesBeforeRun)
 {
 	Serial.println("Compiling program load or chain command");
-
-	if (storingProgram())
-	{
-		return ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING;
-	}
 
 	int result = getProgramFilenameFromCode();
 
@@ -1182,9 +1187,6 @@ int processCommand(byte commandNo)
 
 	case COMMAND_MOVE: // move
 		return compileMove();
-
-	case COMMAND_MWAIT: // wait for motors to stop
-		return compileMwait();
 
 	case COMMAND_TURN: // turn
 		return compileTurn();

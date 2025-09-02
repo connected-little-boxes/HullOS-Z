@@ -58,7 +58,7 @@ const char* getErrorMessage(int code) {
         case ERROR_ELSE_MUST_BE_PART_OF_AN_INDENTED_BLOCK: return "'else' must be indented.";
         case ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_BREAK: return "'break' without enclosing loop.";
         case ERROR_BREAK_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'break' outside a program.";
-        case ERROR_INVALID_COMMAND_AFTER_DURATION_SHOULD_BE_WAIT: return "Expected 'wait' after 'duration'.";
+        case ERROR_INVALID_COMMAND_AFTER_DURATION_SHOULD_BE_NO_WAIT: return "Expected 'nowait' after 'duration'.";
         case ERROR_SECOND_COMMAND_IN_SOUND_IS_NOT_DURATION: return "Second command in 'sound' is not 'duration'.";
         case ERROR_CONTINUE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'continue' outside a program.";
         case ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_CONTINUE: return "'continue' without enclosing loop.";
@@ -80,6 +80,7 @@ const char* getErrorMessage(int code) {
 		case ERROR_FILE_DUMP_FAILED: return "File dump failed";
 		case ERROR_TOKEN_TOO_LARGE_FOR_BUFFER: return "Token too large for buffer";
 		case ERROR_MISSING_CLOSE_QUOTE_ON_SEND: return "Missing close quote on send";
+		case ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE: return "Nowait should be the last thing on the line";
         default: return "Unknown error.";
     }
 }

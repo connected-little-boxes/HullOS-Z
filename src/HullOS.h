@@ -28,6 +28,8 @@ extern struct LanguageHandler hullOSLanguage;
 
 bool processLanguageLine(char * line);
 void stopLanguageDecoding();
+bool displayLanguagePrompt();
+
 
 void hullosOff();
 

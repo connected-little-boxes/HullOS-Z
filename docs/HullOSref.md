@@ -316,7 +316,7 @@ If any of the values are missing an appropriate message is displayed, for exampl
 would generate the error:
 
 ```
-FAIL: mising colour in set colour by name
+FAIL: missing colour in set colour by name
 ```
 
 Note that this message is only output if the **STATEMENT_CONFIRMATION** flag is set. If the colour selection character is invalid the following message is displayed. 
@@ -510,6 +510,10 @@ This ends a remote download session started by the **RM** command. If the **RM**
 *RX
 ```
 This would create a tiny program in the file **GREEN.TXT**. Note that if an existing program is running this will continue to run as the new program is downloaded. 
+## Abort Remote code download
+### *RA
+
+This aborts a remote download session started by the **RM** command. No files are created, the program area is cleared and no files are stored. 
 ## Pause execution
 ### *RP	
 The statement causes a program to pause. If you put it in a program the program will stop at that point. 

@@ -368,7 +368,7 @@ void dumpProgram(char *start)
     }
 }
 
-void endProgramReceive()
+void endProgramReceive(bool save)
 {
 
 #ifdef PROGRAM_DEBUG
@@ -381,19 +381,22 @@ void endProgramReceive()
 
     stopBusyPixel();
 
-    if (HullOSFilenameSet())
+    if (save)
     {
-#ifdef PROGRAM_DEBUG
-        Serial.printf("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
-#endif
-        saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
+
+        if (HullOSFilenameSet())
+        {
+            alwaysDisplayMessage("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+            saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
+        }
+        else
+        {
+            alwaysDisplayMessage("Storing the program in:%s\n", RUNNING_PROGRAM_FILENAME);
+            saveToFile(RUNNING_PROGRAM_FILENAME, HullOScodeCompileOutput);
+        }
     }
-    else
-    {
-#ifdef PROGRAM_DEBUG
-        Serial.printf("Storing the program in:%s\n", RUNNING_PROGRAM_FILENAME);
-#endif
-        saveToFile(RUNNING_PROGRAM_FILENAME, HullOScodeCompileOutput);
+    else {
+        alwaysDisplayMessage("Program download aborted\n");
     }
 
     // enable immediate command receipt
@@ -446,7 +449,7 @@ void storeReceivedByte(byte b)
 
             storeProgramByte(PROGRAM_TERMINATOR);
 
-            endProgramReceive();
+            endProgramReceive(true);
 
 #ifdef DIAGNOSTICS_ACTIVE
 
@@ -465,7 +468,7 @@ void storeReceivedByte(byte b)
 #endif
             storeProgramByte(PROGRAM_TERMINATOR);
 
-            endProgramReceive();
+            endProgramReceive(false);
 
             return;
 
@@ -1232,7 +1235,7 @@ void remoteMoveControl()
 
 #ifdef DIAGNOSTICS_ACTIVE
 
-        Serial.println(F("FAIL: mising move control command character"));
+        Serial.println(F("FAIL: missing move control command character"));
 
 #endif
 
@@ -1318,7 +1321,7 @@ bool readColour(byte *r, byte *g, byte *b)
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("FAIL: mising colour values in readColor"));
+            Serial.println(F("FAIL: missing colour values in readColor"));
         }
 
 #endif
@@ -1740,7 +1743,7 @@ void remotePixelControl()
     {
 
 #ifdef DIAGNOSTICS_ACTIVE
-        Serial.println(F("FAIL: mising pixel control command character"));
+        Serial.println(F("FAIL: missing pixel control command character"));
 #endif
         return;
     }
@@ -2231,7 +2234,7 @@ void measureDistanceAndJump()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("FAIL: mising dest"));
+            Serial.println(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2244,7 +2247,7 @@ void measureDistanceAndJump()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("FAIL: mising dest"));
+            Serial.println(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2334,7 +2337,7 @@ void compareAndJump(bool jumpIfTrue)
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("FAIL: mising dest"));
+            Serial.println(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2347,7 +2350,7 @@ void compareAndJump(bool jumpIfTrue)
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("FAIL: mising dest"));
+            Serial.println(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2425,7 +2428,7 @@ void jumpWhenMotorsInactive()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            Serial.println(F("FAIL: mising dest"));
+            Serial.println(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2566,11 +2569,11 @@ void remoteDownloadCommand()
 #endif
     if (getHullOSFileNameFromCode())
     {
-        Serial.printf("Got filename:%s\n", HullOScommandsFilenameBuffer);
+        Serial.printf("Storing in file:%s\n", HullOScommandsFilenameBuffer);
     }
     else
     {
-        Serial.printf("No filename supplied\n");
+        Serial.printf("Storing in %s\n", RUNNING_PROGRAM_FILENAME);
         clearHullOSFilename();
     }
     startDownloadingCode();
@@ -2644,7 +2647,7 @@ void runProgramFromFileCommand(bool clearVariablesBeforeRun)
     }
     else
     {
-        Serial.printf("No filename supplied\n");
+        Serial.printf("No filename supplied to run\n");
         clearHullOSFilename();
         return;
     }
@@ -2662,10 +2665,7 @@ void runProgramFromFileCommand(bool clearVariablesBeforeRun)
     }
 
     Serial.printf("Running program in %s\n", HullOScommandsFilenameBuffer);
-    dumpProgram(HullOScodeRunningCode);
-    Serial.printf("\n\n");
     dumpRunningProgram();
-
     startProgramExecution(clearVariablesBeforeRun);
 }
 
@@ -2679,7 +2679,7 @@ void saveCompiledProgramToFileCommand()
     }
     else
     {
-        Serial.printf("No filename supplied\n");
+        Serial.printf("No filename supplied to save\n");
         clearHullOSFilename();
         return;
     }
@@ -2697,7 +2697,7 @@ void dumpFileCommand()
     }
     else
     {
-        Serial.printf("  No filename supplied\n");
+        Serial.printf("  No filename supplied to dump\n");
         clearHullOSFilename();
         return;
     }

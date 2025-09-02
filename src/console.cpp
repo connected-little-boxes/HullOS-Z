@@ -846,7 +846,9 @@ void bufferSerialChar(char ch)
 			}
 
 			reset_serial_buffer();
+			displayLanguagePrompt();
 		}
+
 		return;
 	}
 

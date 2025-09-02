@@ -18,47 +18,49 @@ struct HullOSSettings hullosSettings;
 
 int hullOSdecodeScriptLine(char *input)
 {
-//    Serial.printf("Hullos decoding: %s\n", input);
+    //    Serial.printf("Hullos decoding: %s\n", input);
 
-    if(strcasecmp(input,"exit")==0){
+    if (strcasecmp(input, "exit") == 0)
+    {
         stopLanguageDecoding();
         return ERROR_OK;
     }
 
     // put a terminator on the end
 
-    int len=strlen(input);
-    input[len]=STATEMENT_TERMINATOR;
+    int len = strlen(input);
+    input[len] = STATEMENT_TERMINATOR;
     len++;
 
-    hullOSActOnStatement(input,input+len);
+    hullOSActOnStatement(input, input + len);
 
     return ERROR_OK;
 }
 
 void HullOSStartProgramOnReset();
 
-void hullOSDecoderStart(){
-    Serial.printf("Starting HullOS decoder");    
+void hullOSDecoderStart()
+{
+    Serial.printf("Starting HullOS decoder");
     HullOSStartProgramOnReset();
 }
-
 
 struct LanguageHandler hullOSLanguage = {
     "HullOS",
     hullOSDecoderStart,
     hullOSdecodeScriptLine,
-    HullOSShowPrompt
-};
+    HullOSShowPrompt};
 
 void HullOSShowPrompt()
 {
-	if (storingProgram()){
-		alwaysDisplayMessage("H*>");
-	}
-	else {
-		alwaysDisplayMessage("H>");
-	}
+    if (storingProgram())
+    {
+        alwaysDisplayMessage("H*>");
+    }
+    else
+    {
+        alwaysDisplayMessage("H>");
+    }
 }
 
 struct LanguageHandler *allLanguages[] =
@@ -90,22 +92,38 @@ void stopLanguageDecoding()
     currentLanguageHandler = NULL;
 }
 
-bool processLanguageLine(char *line)
+bool displayLanguagePrompt()
 {
-    if (currentLanguageHandler == NULL){
+    if (currentLanguageHandler == NULL)
+    {
         return false;
     }
 
-    if (strcasecmp(line, "Exit") == 0){
+    currentLanguageHandler->displayPrompt();
+
+    return true;
+}
+
+bool processLanguageLine(char *line)
+{
+    if (currentLanguageHandler == NULL)
+    {
+        return false;
+    }
+
+    if (strcasecmp(line, "Exit") == 0)
+    {
         Serial.printf("%s session ended\n", currentLanguageHandler->hullosLanguage);
         stopLanguageDecoding();
         return true;
     }
 
-    if (*line == '!'){
+    if (*line == '!')
+    {
         actOnConsoleCommandText(line + 1);
     }
-    else {
+    else
+    {
         int result = currentLanguageHandler->consoleInputHandler(line);
 
         if (result != ERROR_OK)
@@ -113,8 +131,6 @@ bool processLanguageLine(char *line)
             printError(result);
         }
     }
-
-    currentLanguageHandler->displayPrompt();
 
     return true;
 }
@@ -196,43 +212,50 @@ void startHullOS()
     clearVariables();
 }
 
-char * programTextPos;
+char *programTextPos;
 
 #define PROGRAM_TEXT_LINE_BUFFER_SIZE 100
-char programTextLineBuffer[PROGRAM_TEXT_LINE_BUFFER_SIZE+1];
+char programTextLineBuffer[PROGRAM_TEXT_LINE_BUFFER_SIZE + 1];
 
-bool getProgramTextLine(){
+bool getProgramTextLine()
+{
 
     // return false if we are at the end of the string
 
-    if(!*programTextPos){
+    if (!*programTextPos)
+    {
         return false;
     }
 
     int chCount = 0;
 
-    while(true){
+    while (true)
+    {
 
         char ch = *programTextPos;
-//        Serial.printf("Got a: %d %c\n", ch, ch);
+        //        Serial.printf("Got a: %d %c\n", ch, ch);
 
-        if(ch==0){
+        if (ch == 0)
+        {
             // end of the input string
-            if(chCount==0){
+            if (chCount == 0)
+            {
                 return false;
             }
-            programTextLineBuffer[chCount]=0;
+            programTextLineBuffer[chCount] = 0;
             return true;
         }
 
-        if(ch==STATEMENT_TERMINATOR){
-//            Serial.printf("Reached the end of the string\n");
-            programTextLineBuffer[chCount]=0;
+        if (ch == STATEMENT_TERMINATOR)
+        {
+            //            Serial.printf("Reached the end of the string\n");
+            programTextLineBuffer[chCount] = 0;
             programTextPos++;
             return true;
         }
 
-        if(ch<' '){
+        if (ch < ' ')
+        {
             programTextPos++;
             continue;
         }
@@ -242,15 +265,16 @@ bool getProgramTextLine(){
         chCount++;
         programTextPos++;
     }
-} 
+}
 
 void sendMessageToHullOS(char *programText)
 {
     Serial.printf("Got command via MQTT from the server: %s\n", programText);
 
-    if(programText[0]=='*'){
+    if (programText[0] == '*')
+    {
         Serial.printf("Performing HullOS command\n ");
-        hullOSdecodeScriptLine(programText+1);
+        hullOSdecodeScriptLine(programText + 1);
         return;
     }
 
@@ -260,7 +284,8 @@ void sendMessageToHullOS(char *programText)
 
     programTextPos = programText;
 
-    while(getProgramTextLine()){
+    while (getProgramTextLine())
+    {
         Serial.printf("   got a line:%s\n", programTextLineBuffer);
         pythonIshdecodeScriptLine(programTextLineBuffer);
     }
@@ -270,7 +295,6 @@ void sendMessageToHullOS(char *programText)
     pythonIshdecodeScriptLine("save \"active.txt\"");
 
     pythonIshdecodeScriptLine("load \"active.txt\"");
-    
 }
 
 bool HullOSStartLanguage(char *languageName)
@@ -283,7 +307,6 @@ bool HullOSStartLanguage(char *languageName)
     {
         currentLanguageHandler = handler;
         handler->setup();
-        handler->displayPrompt();
         resetCommand();
         return true;
     }
@@ -299,9 +322,10 @@ void HullOSStartProgramOnReset()
     {
         Serial.printf("HullOS Enabled\n");
 
-        if(loadFromFile(RUNNING_PROGRAM_FILENAME,HullOScodeRunningCode, HULLOS_PROGRAM_SIZE)){
-            Serial.printf("Got code:%s\n",HullOScodeRunningCode);
+        if (loadFromFile(RUNNING_PROGRAM_FILENAME, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
+        {
             Serial.printf("HullOS program loaded\n");
+            dumpProgram(HullOScodeRunningCode);
             if (hullosSettings.runProgramOnStart)
             {
                 Serial.printf("Starting execution\n");
@@ -346,7 +370,7 @@ void hullosStatusMessage(char *buffer, int bufferLength)
     switch (hullosProcess.status)
     {
     case HULLOS_OK:
-        programStatus(buffer,bufferLength);
+        programStatus(buffer, bufferLength);
         break;
     case HULLOS_STOPPED:
         snprintf(buffer, bufferLength, "HullOS stopped");

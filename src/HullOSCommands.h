@@ -182,3 +182,6 @@ bool executeProgramStatement();
 void updateHullOS();
 
 void HullOSProgramoutputFunction(char ch);
+
+void clearHullOSFilename();
+

@@ -67,7 +67,7 @@ const char rockstarCommandNames[] =
     "cyan#"                           // ROCKSTAR_COMMAND_CYAN       28
     "white#"                          // ROCKSTAR_COMMAND_WHITE      29
     "black#"                          // ROCKSTAR_COMMAND_BLACK      30
-    "wait#"                           // ROCKSTAR_COMMAND_WAIT       31
+    "wait#"                           // ROCKSTAR_COMMAND_NO_WAIT       31
     "stop#"                           // ROCKSTAR_COMMAND_STOP       32
     "begin#"                          // ROCKSTAR_COMMAND_BEGIN      33
     "end#"                            // ROCKSTAR_COMMAND_END        34
@@ -333,7 +333,7 @@ int processRockstarCommand(int commandNo)
             case ROCKSTAR_COMMAND_BLACK:
                 return compileBlack();
 
-            case ROCKSTAR_COMMAND_WAIT:
+            case ROCKSTAR_COMMAND_NO_WAIT:
                 return compileWait();
 
             case ROCKSTAR_COMMAND_STOP:

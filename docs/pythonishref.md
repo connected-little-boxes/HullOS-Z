@@ -48,9 +48,6 @@ happy
 This tells the robot to go into "happy" mode. The pixel flashing will slow down as the robot becomes more relaxed. If you want to create even more subtle robot moods, take a look at the *PF command. 
 ## Move the robot
 The **move** command can be used to start the robot moving, and to set a distance for the move. Move commands can also be configured to move in a particular time which, effectively, sets the speed of the motion.
-
-
-
 ### Starting moving 
 ```
 move
@@ -77,6 +74,44 @@ move 100 intime 100
 The value following the **intime** keyword is a number of tenths of a second that the move should take to complete. The above statement should cause the robot to take ten seconds to move 100 mm. 
 
 Note that if you give a silly time, for example move 1000 millimetres in a one tenth of a second, the robot will not move. 
+
+### Performing statements while the robot is moving
+Unless you specify otherwise, a Pythonish program will wait for a robot move to complete:
+```
+green
+move 100
+red
+```
+The statements above set the pixel to green, move the robot 100mm and then set the pixel to red. When you run the program the pixel will remain green while the robot is moving and then turn red when the robot stops. If you want your program to keep running while the robot moves you can add the **nowait** option to the move command:
+```
+green
+move 100 nowait
+red
+```
+The **move** statement above will not wait for the move to finish, so that the pixel will turn red as soon as the move has begun. The **nowait** option is very useful, but it can cause confusion.Consider the code below:
+```
+move 1000
+move 500 intime 1000 
+```
+The code above would move the robot 1000mm at full speed and then 500mm in 10 seconds. But what about this code?
+```
+move 1000 nowait
+move 500 intime 1000 
+```
+The first **move** statement has been given the **nowait** option. So the program will go on to the next statement as soon as the robot has started moving. The second **move** statement is performed immediately, so the first **move** is overridden and the 1000mm **move** will not complete. 
+
+### Waiting for a move to complete
+
+The command **wait** will cause a running program to pause until the robot has finished moving. 
+```
+move 5000 nowait
+red
+wait
+move -5000
+```
+The code above would tell the robot to start moving, turn the pixel red, wait for the move to complete and then perform a second, backwards move. 
+
+You can use the **nowait** option on the **turn** and **arc** commands. 
 
 ## Turn the robot
 The **turn** command can be used to make the robot turn. It turns by moving one-wheel forwards and the other backwards, so that it rotates on the spot. If you want the robot to follow a curved trajectory, take a look at the **arc** command, which is next. 
@@ -158,13 +193,13 @@ If you want to play a note in a tune you can follow the **sound** frequency with
 ```
 sound 2000 duration 1000
 ```
-This statement would play a note of 2000 Hz for a second. 
-### Play a note and wait
-The **sound** command will start a note playing. It will not wait for the note to finish. This can make it hard to play tunes, because you want your program to wait for a note to finish before playing the next one. You can add a **wait** command to the end of a sound command to tell the program to wait for this note to finish playing before the next statement in a program is performed.
+This statement would play a note of 2000 Hz for a second. The program pauses while the sound is played. 
+### Play a note and continue running the program
+The **sound** command waits for a note to finish, which makes it easy to play tunes by just stringing **sound** statements together. However, if you want your program to run while the sound is being played you can add a **nowait** option to the end of a sound command to tell the program to wait for this note to finish playing before the next statement in a program is performed.
 ```
-sound 1500 duration 500 wait
+sound 1500 duration 500 nowait
 ```
-This statement would play a note of 1500 Hz for half a second. It would then move on to the next statement in the program. 
+This statement would start playing a note of 1500 Hz for half a second. It would then move on to the next statement in the program. 
 ## Delay
 The delay statement is frequently used in programs to, er, delay them. The delay statement is followed by the size of the delay, in tenths of a second.
 ```
@@ -235,7 +270,9 @@ move @random*10
 ```
 This statement make the robot move a random distance between 10 and 120 mm. 
 # HullOS Scripting
-Individual commands can be sent to robots at any time, but you can also enter a program into a device controlled by HullOS. HullOS programs are expressed as a series of statements. Each statement must be given on a single line. A HullOS script is enclosed in the keywords **begin** and **end**. Programs can contain comments which are expressed using the # character at the start of the line:
+Individual commands can be sent to robots at any time, but you can also enter a program into a device controlled by HullOS. HullOS programs are expressed as a series of statements. Each statement must be given on a single line. 
+
+A HullOS script is enclosed in the keywords **begin** and **end**. Programs can contain comments which are expressed using the # character at the start of the line:
 ```
 begin
 # This is an empty program
@@ -247,6 +284,30 @@ BEGIN
 # This is a shouty empty program
 END
 ```
+## Program files
+Programs are stored in files in the device. The file **active.txt** is loaded and executed when the device starts. When you create a new program this is automatically stored in **active.txt**. If you want to store the program in a different file you can enter the filename after the end statement.
+```
+begin
+red
+end "makered.txt"
+```
+The program is stored in the file **makered.txt**
+###
+The command **load** loads and runs a program. This loads the program, clears the internal variables and runs the program. 
+```
+load "makered.txt"
+```
+The statement above loads and runs the program from the file **makered.txt**. If you want to switch to another program but retain the internal variables you can use the chain command:
+```
+chain "makered.txt"
+```
+The program **makered.txt** would start with all the previously created variables intact. 
+
+**NOTE:** When you use **load** or **chain** the currently executing program is abandoned and you cannot return to it. Another program could however chain back to the original code.
+
+The **run** command can be used to run a program. It behaves differently from the **load** or **chain** commands in that if the specified file is not found the program in **active.txt** is loaded. If **run** is issued without a filename the active program is also loaded. 
+
+The **dump** command dumps the contents of a given program file. Not that these will not be the PythonIsh statements, they will be the result of the compilation process. 
 ## Conditional Statements
 A program can make decisions using an **if** construction. The **if** construction is followed by a Boolean expression which can be either **true** or **false**. If the condition is **true** the statement following the **if** condition is performed. The conditional statement can be followed by an **else** element which is obeyed if the statement is false
 ```
