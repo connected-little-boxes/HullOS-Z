@@ -586,6 +586,7 @@ void doPythonIshBegin (char *commandLine)
 {
 	HullOSStartLanguage("PythonIsh");
 	startCompiling();
+	endCommand();
 }
 
 void doStartPythonIsh(char *commandLine)

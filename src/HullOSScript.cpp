@@ -142,7 +142,7 @@ int currentIndentLevel;
 
 bool displayErrors = true;
 
-bool previousStatementStartedBlock;
+bool previousStatementStartedBlock = false;
 
 void resetScriptLine()
 {
