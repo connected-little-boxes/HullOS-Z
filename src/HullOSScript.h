@@ -196,4 +196,46 @@ int compilePrintln();
 int compilePrint();
 int compileSend();
 
+void beginCompilingStatements();
+void startCompiling();
+void dropValue(int value);
+void push_operation(byte type, byte count);
+bool operation_stack_empty();
+byte top_operation_type();
+int top_operation_label();
+byte top_operation_indent_level();
+int pop_operation_count();
+void dropLabel(int labelCounter);
+void dropLabelStatement(int labelCounter);
+void pushLabel(byte labelType);
+void dropJump(int labelCounter);
+void dropJumpCommand(int labelCounter);
+void endCompilingStatements();
+int dropComparisonStatement(int labelNo, bool trueTest);
+int compileIf();
+int compileElse();
+int compileWhile();
+int compileForever();
+int findTopLoopConstructionLabel();
+int compileBreak();
+int compileContinue();
+int clearProgram();
+int runProgram();
+int compileWait();
+int compileStop();
+int compileBegin();
+int getProgramFilenameFromCode();
+int compileEnd();
+int compileDirectCommand();
+int compileProgramSave();
+int compileProgramLoad(bool clearVariablesBeforeRun);
+int compileProgramDump();
+
+#define EMPTY_STACK -1
+#define IF_CONSTRUCTION_STACK_ITEM 1
+#define WHILE_CONSTRUCTION_STACK_ITEM 3
+#define FOREVER_CONSTRUCTION_STACK_ITEM 4
+
+
+
 #endif

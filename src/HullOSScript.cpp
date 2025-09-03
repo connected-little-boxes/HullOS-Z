@@ -2,6 +2,7 @@
 #include "HullOSScript.h"
 #include "HullOSCommands.h"
 #include "HullOSVariables.h"
+#include "utils.h"
 
 const char* getErrorMessage(int code) {
     switch (code) {
@@ -670,4 +671,642 @@ int compilePrintln()
 	return ERROR_OK;
 }
 
+const char clearCommand[] = "RC";
+const char beginCommand[] = "RM";
 
+struct stackItem
+{
+	byte constructionType;
+	int count;
+	byte indentLevel;
+};
+
+#define STACK_SIZE 10
+
+struct stackItem operation[STACK_SIZE];
+
+int operationStackPointer;
+
+int labelCounter;
+
+void beginCompilingStatements()
+{
+	currentIndentLevel = 0;
+	previousStatementStartedBlock = false;
+	operationStackPointer = 0;
+	labelCounter = 0;
+	resetScriptLine();
+	scriptLineNumber = 1; // start at the first line
+	programError = false; // indicate that no errors were detected
+}
+
+void startCompiling()
+{
+	beginCompilingStatements();
+	sendCommand(clearCommand);
+	endCommand();
+	sendCommand(beginCommand);
+}
+
+void dropValue(int value)
+{
+	while (true)
+	{
+		char ch = '0' + (value % 10);
+		HullOSProgramoutputFunction(ch);
+		value = value / 10;
+		if (value == 0)
+			break;
+	}
+	return;
+}
+
+// Push an operation onto the operation stack.
+// This manages the if, do and while constructions
+//
+void push_operation(byte type, byte count)
+{
+	operation[operationStackPointer].constructionType = type;
+	operation[operationStackPointer].count = count;
+	operation[operationStackPointer].indentLevel = currentIndentLevel;
+	operationStackPointer++;
+}
+
+// Get the type of the top operation without removing anything from the stack
+// We need to use this to check to make sure that the end element of a construction
+// matches the start element.
+
+bool operation_stack_empty()
+{
+	return operationStackPointer == 0;
+}
+
+byte top_operation_type()
+{
+	if (operationStackPointer == 0)
+		return EMPTY_STACK;
+
+	return operation[operationStackPointer - 1].constructionType;
+}
+
+int top_operation_label()
+{
+	if (operationStackPointer == 0)
+		return EMPTY_STACK;
+
+	return operation[operationStackPointer - 1].count;
+}
+
+byte top_operation_indent_level()
+{
+	if (operationStackPointer == 0)
+		return EMPTY_STACK;
+
+	return operation[operationStackPointer - 1].indentLevel;
+}
+
+// Get the top value on the operation stack
+int pop_operation_count()
+{
+	operationStackPointer--;
+	return operation[operationStackPointer].count;
+}
+
+const char labelCommand[] = "CLl";
+
+void dropLabel(int labelCounter)
+{
+	// first character of the label
+	sendCommand(labelCommand);
+	dropValue(labelCounter);
+}
+
+void dropLabelStatement(int labelCounter)
+{
+	dropLabel(labelCounter);
+	endCommand();
+}
+
+void pushLabel(byte labelType)
+{
+	labelCounter++; // move on to the next construction
+	push_operation(labelType, labelCounter);
+	dropLabel(labelCounter);
+}
+
+const char jumpCommand[] = "CJl";
+
+void dropJump(int labelCounter)
+{
+	sendCommand(jumpCommand);
+	dropValue(labelCounter);
+}
+
+void dropJumpCommand(int labelCounter)
+{
+	dropJump(labelCounter);
+	endCommand();
+}
+
+const char endCommandText[] = "RX";
+
+const char failedCommandText[] = "RA";
+
+void endCompilingStatements()
+{
+	if (programError)
+	{
+		sendCommand(failedCommandText);
+		Serial.println("Errors");
+	}
+	else
+	{
+		sendCommand(endCommandText);
+		Serial.println("OK");
+	}
+}
+
+// Drops a comparison statement
+int dropComparisonStatement(int labelNo, bool trueTest)
+{
+	HullOSProgramoutputFunction('C');
+
+	if (trueTest)
+		HullOSProgramoutputFunction('T');
+	else
+		HullOSProgramoutputFunction('F');
+
+	skipInputSpaces();
+
+	// Get the first value in the logical expression
+	int result = processSingleValue();
+
+	if (result != ERROR_OK)
+		return result;
+
+	// Skip to the logical operator
+	skipInputSpaces();
+
+	// Get the logical operator
+	struct logicalOp *ifOp = findLogicalOp(bufferPos);
+
+	// Abandon if there is no matching logical operator
+	if (ifOp == NULL)
+	{
+		// no logical operator
+		return ERROR_MISSING_OPERATOR_IN_COMPARE;
+	}
+
+	// Write out the logical operator
+	writeMatchingStringFromBuffer(ifOp->operatorCh);
+
+	// Skip to the second operand
+	skipInputSpaces();
+
+	// process the second operand
+	result = processSingleValue();
+
+	if (result != ERROR_OK)
+		return result;
+
+	// if we get here the condition is valid and we need to drop out the destination label
+	// for the branch past the
+
+	HullOSProgramoutputFunction(','); // write the comma
+
+	// Drop out the first character of the label (which is l)
+	HullOSProgramoutputFunction('l');
+	// drop the label counter value
+	dropValue(labelNo);
+
+	return ERROR_OK;
+}
+
+int compileIf()
+{
+
+	if (!storingProgram())
+	{
+		return ERROR_IF_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
+	}
+
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Compiling if: "));
+#endif // SCRIPT_DEBUG
+
+	labelCounter++; // move on to the next label
+
+	// Add the start of the if to the operation stack
+
+	push_operation(IF_CONSTRUCTION_STACK_ITEM, labelCounter);
+
+	int result = dropComparisonStatement(labelCounter, false);
+
+	labelCounter++; // reserve a label for use by else - if any
+
+	previousStatementStartedBlock = true;
+
+	return result;
+}
+
+int compileElse()
+{
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Compiling else: "));
+#endif // SCRIPT_DEBUG
+	if (!storingProgram())
+	{
+		return ERROR_ELSE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
+	}
+
+	return ERROR_OK;
+}
+
+int compileWhile()
+{
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Compiling while: "));
+#endif // SCRIPT_DEBUG
+
+	if (!storingProgram())
+	{
+		return ERROR_WHILE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
+	}
+
+	// First drop out a label so that
+	// we can branch back to the top
+
+	pushLabel(WHILE_CONSTRUCTION_STACK_ITEM);
+
+	// Going to follow this command with another
+	endCommand();
+
+	labelCounter++; // move on to the next label
+
+	// Now insert the branch past the loop
+
+	previousStatementStartedBlock = true;
+
+	return dropComparisonStatement(labelCounter, false);
+}
+
+int compileForever()
+{
+
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Compiling forever: "));
+#endif // SCRIPT_DEBUG
+
+	if (!storingProgram())
+	{
+		return ERROR_FOREVER_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
+	}
+
+	// First drop out a label so that
+	// we can branch back to the top
+
+	pushLabel(FOREVER_CONSTRUCTION_STACK_ITEM);
+
+	labelCounter++; // move on to the next label
+
+	// Now insert the branch past the loop
+
+	previousStatementStartedBlock = true;
+
+	return ERROR_OK;
+}
+
+// finds the most recent loop construction on the
+// operation stack. Returns -1 if no suitable construction found
+//
+
+#define NO_LABEL_FOR_LOOP_ON_STACK -1
+
+int findTopLoopConstructionLabel()
+{
+	// Start the search at the top of the stack
+	// Remember that
+	int searchStackPointer = operationStackPointer;
+
+	// If the operation stack pointer is zero there is nothing
+	// on the stack
+	while (searchStackPointer > 0)
+	{
+		searchStackPointer--; // climb down the stack
+							  // pointer aways points to next free location
+		byte constructionType = operation[searchStackPointer].constructionType;
+
+		if ((constructionType == WHILE_CONSTRUCTION_STACK_ITEM) || (constructionType == FOREVER_CONSTRUCTION_STACK_ITEM))
+		{
+			// found a loop construction
+			// return the label from that loop
+			return operation[searchStackPointer].count;
+		}
+	}
+
+	// If we get here there is no loop construction available - which is an error
+
+	return NO_LABEL_FOR_LOOP_ON_STACK;
+}
+
+int compileBreak()
+{
+
+	// Not allowed to indent after a break
+	previousStatementStartedBlock = false;
+
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Compiling break: "));
+#endif // SCRIPT_DEBUG
+
+	if (!storingProgram())
+	{
+		return ERROR_BREAK_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
+	}
+
+	int operation_label = findTopLoopConstructionLabel();
+
+	if (operation_label == NO_LABEL_FOR_LOOP_ON_STACK)
+		return ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_BREAK;
+
+	// first label value is the jump for the loop repeat
+	// next label value is the label after the end of the loop
+
+	dropJump(operation_label + 1);
+	return ERROR_OK;
+}
+
+int compileContinue()
+{
+
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Compiling break: "));
+#endif // SCRIPT_DEBUG
+
+	// Not allowed to indent after a continue
+	previousStatementStartedBlock = false;
+
+	if (!storingProgram())
+	{
+		return ERROR_CONTINUE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM;
+	}
+
+	int operation_label = findTopLoopConstructionLabel();
+
+	if (operation_label == NO_LABEL_FOR_LOOP_ON_STACK)
+		return ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_CONTINUE;
+
+	// first label value is the jump for the loop repeat
+
+	dropJump(operation_label);
+
+	return ERROR_OK;
+}
+
+/// Program control commands - not part of the script
+//
+
+const char clearVariablesCommand[] = "VC";
+
+int clearProgram()
+{
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Performing clear program: "));
+#endif // SCRIPT_DEBUG
+
+	if (storingProgram())
+	{
+		return ERROR_CLEAR_WHEN_COMPILING_PROGRAM;
+	}
+
+	sendCommand(clearVariablesCommand);
+
+	return ERROR_OK;
+}
+
+const char runCommand[] = "RS";
+
+int runProgram()
+{
+#ifdef SCRIPT_DEBUG
+	Serial.print(F("Performing run program: "));
+#endif // SCRIPT_DEBUG
+
+	if (storingProgram())
+	{
+		return ERROR_RUN_WHEN_COMPILING_PROGRAM;
+	}
+
+	sendCommand(runCommand);
+
+	return ERROR_OK;
+}
+
+const char waitCommand[] = "CA";
+
+int compileWait()
+{
+	// Not allowed to indent after a wait
+	previousStatementStartedBlock = false;
+
+	
+
+	sendCommand(waitCommand);
+
+	return ERROR_OK;
+}
+
+const char stopCommand[] = "RH";
+
+int compileStop()
+{
+
+	// Not allowed to indent after a sound
+	previousStatementStartedBlock = false;
+
+	if (storingProgram())
+	{
+		return ERROR_STOP_WHEN_COMPILING_PROGRAM;
+	}
+
+	sendCommand(stopCommand);
+	return ERROR_OK;
+}
+
+
+int compileBegin()
+{
+	// Not allowed to indent after a begin
+	previousStatementStartedBlock = false;
+
+	startCompiling();
+
+	return ERROR_OK;
+}
+
+int getProgramFilenameFromCode()
+{
+
+	skipInputSpaces();
+
+	char ch = *bufferPos;
+
+	if (ch != '"')
+	{
+		return ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START;
+	}
+
+	// move past the quote
+	bufferPos++;
+
+	// Now copy the filename into the buffer
+
+	int pos = 0;
+
+	while (true)
+	{
+
+		ch = *bufferPos;
+
+//		Serial.printf("  Copying:%d %c\n", ch, ch);
+
+		if (ch == 0)
+		{
+			return ERROR_MISSING_QUOTE_IN_FILENAME_STRING_END;
+		}
+
+		if (ch == '"')
+		{
+			// terminate the output filename
+			HullOScommandsFilenameBuffer[pos] = 0;
+			break;
+		}
+
+		if (pos >= REMOTE_FILENAME_BUFFER_SIZE - 1)
+		{
+			return ERROR_FILENAME_TOO_LONG;
+		}
+
+		HullOScommandsFilenameBuffer[pos] = ch;
+		bufferPos++;
+		pos++;
+	}
+
+	return ERROR_OK;
+}
+
+int compileEnd()
+{
+	// Not allowed to indent after a end
+	previousStatementStartedBlock = false;
+
+	if (!storingProgram())
+	{
+		return ERROR_END_WHEN_NOT_COMPILING_PROGRAM;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		clearHullOSFilename();
+	}
+
+	endCompilingStatements();
+
+	return ERROR_OK;
+}
+
+int compileDirectCommand()
+{
+	// Not allowed to indent after a sound
+	previousStatementStartedBlock = false;
+
+	while (*bufferPos)
+	{
+		HullOSProgramoutputFunction(*bufferPos);
+		bufferPos++;
+	}
+	return ERROR_OK;
+}
+
+int compileProgramSave()
+{
+
+	Serial.println("Compiling program save command");
+
+	if (storingProgram())
+	{
+		return ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		return result;
+	}
+
+	// If we get here the filename is valid
+
+	Serial.printf("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+	saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
+
+	return ERROR_OK;
+}
+
+int compileProgramLoad(bool clearVariablesBeforeRun)
+{
+	Serial.println("Compiling program load or chain command");
+
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		return result;
+	}
+
+	if (!fileExists(HullOScommandsFilenameBuffer))
+	{
+		return ERROR_FILE_LOAD_FAILED;
+	}
+	
+	if(clearVariablesBeforeRun){
+		sendCommand("RF");
+	}
+	else 
+	{
+		sendCommand("RE");
+	}
+
+	sendCommand(HullOScommandsFilenameBuffer);
+
+	return ERROR_OK;
+}
+
+int compileProgramDump()
+{
+	Serial.println("Compiling program dump command");
+
+	if (storingProgram())
+	{
+		return ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING;
+	}
+
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		return result;
+	}
+
+	if (!fileExists(HullOScommandsFilenameBuffer))
+	{
+		return ERROR_FILE_DUMP_FAILED;
+	}
+
+	sendCommand("RD");
+	sendCommand(HullOScommandsFilenameBuffer);
+
+	return ERROR_OK;
+}
