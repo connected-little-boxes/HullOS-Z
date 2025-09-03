@@ -322,11 +322,8 @@ void ARDUINO_ISR_ATTR onRight()
   }
 }
 
-void initMotors()
+void initMotorHardware()
 {
-  loadActiveWheelSettings();
-  setupWheelSettings();
-
   pinMode(motorSettings.lpin1, OUTPUT);
   pinMode(motorSettings.lpin2, OUTPUT);
   pinMode(motorSettings.lpin3, OUTPUT);
@@ -344,22 +341,6 @@ void initMotors()
   timerAttachInterrupt(rightTimer, &onRight, true);
 }
 
-pinMode(motorSettings.lpin1, OUTPUT);
-pinMode(motorSettings.lpin2, OUTPUT);
-pinMode(motorSettings.lpin3, OUTPUT);
-pinMode(motorSettings.lpin4, OUTPUT);
-
-pinMode(motorSettings.rpin1, OUTPUT);
-pinMode(motorSettings.rpin2, OUTPUT);
-pinMode(motorSettings.rpin3, OUTPUT);
-pinMode(motorSettings.rpin4, OUTPUT);
-
-leftTimer = timerBegin(0, 80, true);
-timerAttachInterrupt(leftTimer, &onLeft, true);
-
-rightTimer = timerBegin(1, 80, true);
-timerAttachInterrupt(rightTimer, &onRight, true);
-}
 
 MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds)
 {
@@ -432,6 +413,19 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
 #endif
 
 #ifdef PICO_TIMER_MOTOR
+
+void initMotorHardware()
+{
+    pinMode(motorSettings.lpin1, OUTPUT);
+    pinMode(motorSettings.lpin2, OUTPUT);
+    pinMode(motorSettings.lpin3, OUTPUT);
+    pinMode(motorSettings.lpin4, OUTPUT);
+
+    pinMode(motorSettings.rpin1, OUTPUT);
+    pinMode(motorSettings.rpin2, OUTPUT);
+    pinMode(motorSettings.rpin3, OUTPUT);
+    pinMode(motorSettings.rpin4, OUTPUT);
+}
 
 struct repeating_timer leftTimer;
 struct repeating_timer rightTimer;
@@ -563,6 +557,19 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
 #endif
 
 #ifdef PICO_CORE_MOTOR
+
+void initMotorHardware()
+{
+    pinMode(motorSettings.lpin1, OUTPUT);
+    pinMode(motorSettings.lpin2, OUTPUT);
+    pinMode(motorSettings.lpin3, OUTPUT);
+    pinMode(motorSettings.lpin4, OUTPUT);
+
+    pinMode(motorSettings.rpin1, OUTPUT);
+    pinMode(motorSettings.rpin2, OUTPUT);
+    pinMode(motorSettings.rpin3, OUTPUT);
+    pinMode(motorSettings.rpin4, OUTPUT);
+}
 
 unsigned long lastMicros;
 
@@ -1037,16 +1044,7 @@ void initMotors()
   if (motorSettings.motorsActive)
   {
     setupWheelSettings();
-
-    pinMode(motorSettings.lpin1, OUTPUT);
-    pinMode(motorSettings.lpin2, OUTPUT);
-    pinMode(motorSettings.lpin3, OUTPUT);
-    pinMode(motorSettings.lpin4, OUTPUT);
-
-    pinMode(motorSettings.rpin1, OUTPUT);
-    pinMode(motorSettings.rpin2, OUTPUT);
-    pinMode(motorSettings.rpin3, OUTPUT);
-    pinMode(motorSettings.rpin4, OUTPUT);
+    initMotorHardware();
 }
   else
   {

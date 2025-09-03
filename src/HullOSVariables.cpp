@@ -180,14 +180,18 @@ struct reading distanceReading = { (char*)"distance", readDistance };
 
 #endif
 
+#ifdef PROCESS_MOTOR
 struct reading movingReading = { (char*)"moving", motorsMoving }; // BNN
+#endif
 
 struct reading * readers[] = { 	
 #ifdef SENSOR_DISTANCE
 	&distanceReading,
 #endif
 	&randomReading, 
+#ifdef PROCESS_MOTOR
 	&movingReading, // BNN
+#endif
 	&test };
 
 bool validReading(char * text)
