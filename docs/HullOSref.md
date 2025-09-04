@@ -20,7 +20,6 @@ For example the following command will cause the robot motors to attempt to driv
 
 See below for an explanation of all available commands.
 
-
 # Information Commands
 
 These commands display information to the output terminal. They all start with the character I.
@@ -476,6 +475,21 @@ This command clears the stored program in the robot.
 ```
 
 The command above would clear the stored program, making it ready for a new one to be downloaded. Note that the stored program is not the executing program. This makes it possible to enter a new program while one is currently executing. This command is performed at the start of a remote download command (***RM**).
+
+## Kill stored program
+
+### *RKfilename
+
+Removes a stored file.
+
+filename must be identical to the output from the **RL** command, and may require double or single quotes.
+
+```
+*RKfilename
+```
+Note filename MUST be specified.
+
+Be careful. The file **Settings.config** is a system file do not kill it.
 
 ## Halt execution
 ### *RH

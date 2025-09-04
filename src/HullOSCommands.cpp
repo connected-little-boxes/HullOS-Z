@@ -197,7 +197,7 @@ void dumpRunningProgram()
             break;
         }
 
-        if (progPos >= PROGRAM_SIZE)
+        if (progPos >= HULLOS_PROGRAM_SIZE)
         {
             Serial.println(F("\nProgram end"));
             break;
@@ -1878,13 +1878,13 @@ int findNextStatement(int programPosition)
     {
         char ch = HullOScodeRunningCode[programPosition];
 
-        if (ch == PROGRAM_TERMINATOR | programPosition == PROGRAM_SIZE)
+        if (ch == PROGRAM_TERMINATOR | programPosition == HULLOS_PROGRAM_SIZE)
             return -1;
 
         if (ch == STATEMENT_TERMINATOR)
         {
             programPosition++;
-            if (programPosition == PROGRAM_SIZE)
+            if (programPosition == HULLOS_PROGRAM_SIZE)
                 return -1;
             else
                 return programPosition;
@@ -1990,7 +1990,7 @@ int findLabelInProgram(char *label, int programPosition)
 
         // Now spin down the label looking for a match
 
-        while (*labelTest != STATEMENT_TERMINATOR & programPosition < PROGRAM_SIZE)
+        while (*labelTest != STATEMENT_TERMINATOR & programPosition < HULLOS_PROGRAM_SIZE)
         {
             programByte = HullOScodeRunningCode[programPosition];
 
@@ -2712,6 +2712,24 @@ void listFilesCommand()
     listLittleFSContents();
 }
 
+void removeFileCommand()
+{
+    Serial.printf("Remove named file\n");
+
+    if (getHullOSFileNameFromCode())
+    {
+        Serial.printf("  Got filename:%s\n", HullOScommandsFilenameBuffer);
+    }
+    else
+    {
+        Serial.printf("  No filename supplied to remove\n");
+        clearHullOSFilename();
+        return;
+    }
+
+    removeFile(HullOScommandsFilenameBuffer);
+}
+
 char messageBuffer[MQTT_TEXT_BUFFER_SIZE + 1];
 
 void transmitMQTTmessage()
@@ -2793,6 +2811,10 @@ void remoteManagement()
     case 'H':
     case 'h':
         haltProgramExecutionCommand();
+        break;
+    case 'k': 
+    case 'K':
+        removeFileCommand();
         break;
     case 'l':
     case 'L':
@@ -3211,6 +3233,12 @@ void remoteWriteOutput()
     }
 }
 
+void absorbCommandResult(char *resultText)
+{
+	alwaysDisplayMessage(resultText);
+}
+
+
 void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 {
     decodePos = commandDecodePos;
@@ -3243,6 +3271,10 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 
     switch (commandCh)
     {
+    case '{':
+        // It's a JSON formatted command
+        act_onJson_message(commandDecodePos,absorbCommandResult);
+        break;
     case '#':
         // Ignore comments
         break;
@@ -3319,7 +3351,6 @@ void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit)
     case STORE_PROGRAM:
         // This might change the interpreter state to EXECUTE_IMMEDIATELY
         hullOSStoreStatement(commandDecodePos, comandDecodeLimit);
-
         break;
     default:
         Serial.println("Invalid interpreter state");
@@ -3366,7 +3397,7 @@ bool executeProgramStatement()
         Serial.println(programByte);
 #endif
 
-        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
+        if (programCounter >= HULLOS_PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
         {
             if (statementLength > 0)
             {
@@ -3380,16 +3411,6 @@ bool executeProgramStatement()
         {
             hullOSExecuteStatement(statementStart, statementStart + statementLength);
             return true;
-        }
-
-        if (programCounter >= PROGRAM_SIZE || programByte == PROGRAM_TERMINATOR)
-        {
-            if (statementLength > 0)
-            {
-                hullOSExecuteStatement(statementStart, statementStart + statementLength);
-            }
-            haltProgramExecution();
-            return false;
         }
     }
 }

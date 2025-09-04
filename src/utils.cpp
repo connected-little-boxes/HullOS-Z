@@ -279,6 +279,24 @@ bool fileExists(char * path)
     return true;
 }
 
+bool removeFile(char *path){
+    TRACELOG("remove a file:");
+	TRACELOGLN(path);
+    if (fileExists(path))
+        {
+        LittleFS.remove(path);
+        if (fileExists(path)) 
+            {
+                Serial.print("Failed to delete:");Serial.println(path);
+                return false;
+            }
+        Serial.print("Deleted:");Serial.println(path);
+        return true;
+        }
+    Serial.print(path);Serial.println(" does not exist");
+    return false;
+}
+
 bool loadFromFile(char * path, char * dest, int length){
 
 	TRACELOG("Loading from a file:");

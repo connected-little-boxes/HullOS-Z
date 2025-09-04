@@ -184,19 +184,6 @@ int compileMove()
 	return handleValueIntimeAndBackground();
 }
 
-const char danceCommand[] = "MF100\rCA\rMF-100\rCA";
-
-int compileDance()
-{
-	// Not allowed to indent after a move
-	previousStatementStartedBlock = false;
-
-	// send dance moves
-	sendCommand(danceCommand);
-
-	return ERROR_OK;
-}
-
 const char turnCommand[] = "MR";
 
 int compileTurn()
@@ -810,6 +797,18 @@ int pythonIshdecodeScriptLine(char *input)
 		return ERROR_OK;
 	}
 	
+	if (*input == '{'){
+		// lines starting with { are json commands - just send them through to the compiled output
+		while (*input != 0)
+		{
+			HullOSProgramoutputFunction(*input);
+			input++;
+		}
+		endCommand();
+		return ERROR_OK;
+	}
+
+
 	// Set the shared buffer pointer to point to the statement being decoded
 	bufferPos = input;
 

@@ -115,3 +115,5 @@ bool loadFromFile(char * path, char * dest, int length);
 void listLittleFSContents();
 
 void printFileContents(const char *filename);
+
+bool removeFile(char *path);

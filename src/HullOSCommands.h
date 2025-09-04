@@ -12,8 +12,6 @@
 #define ECHO_DOWNLOADS 4
 #define DUMP_DOWNLOADS 8
 
-#define PROGRAM_SIZE 10000
-
 #define REMOTE_FILENAME_BUFFER_SIZE 40
 
 extern char HullOScommandsFilenameBuffer[REMOTE_FILENAME_BUFFER_SIZE];

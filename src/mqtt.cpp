@@ -169,7 +169,7 @@ unsigned long mqtt_timer_start;
 PubSubClient *mqttPubSubClient = NULL;
 
 #define MQTT_RECEIVE_BUFFER_SIZE 1000
-#define NO_OF_MQTT_RECEIVE_BUFFERS 3
+#define NO_OF_MQTT_RECEIVE_BUFFERS 1
 
 char mqtt_receive_buffers[NO_OF_MQTT_RECEIVE_BUFFERS][MQTT_RECEIVE_BUFFER_SIZE];
 
