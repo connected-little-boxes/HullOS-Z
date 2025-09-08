@@ -143,3 +143,4 @@ boolean validateDevName(void* dest, const char* newValueStr);
 
 boolean validateServerName(void* dest, const char* newValueStr);
 
+void validateSettings();

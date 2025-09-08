@@ -83,6 +83,8 @@ void Leds::dump()
 	displayMessage("\n");
 	}
 
+
+
 void Leds::renderLight(float sourceX, float sourceY, Colour colour, float brightness, float opacity)
 {
 
@@ -156,3 +158,68 @@ void Leds::renderLight(float sourceX, float sourceY, Colour colour, float bright
 	}
 	return;
 }
+#ifdef OLD_CODE
+
+static uint16_t W3[256][3]; // Q0.16 weights for phases 0..255, taps -1,0,+1
+static bool w3Built = false;
+
+static void buildW3() {
+    if (w3Built) return;
+    for (int t = 0; t < 256; ++t) {
+        float u = t / 255.0f;
+        auto k = [](float x){ x=fabsf(x); return (x<=1.f) ? 0.5f*(1.f+cosf((float)M_PI*x)) : 0.f; };
+        float w0 = k(1.0f - u); // i-1
+        float w1 = k(u);        // i
+        float w2 = k(1.0f + u); // i+1
+        float sum = w0 + w1 + w2; if (sum <= 0) { w1 = 1; w0 = w2 = 0; sum = 1; }
+        uint32_t q0 = (uint32_t)lrintf((w0/sum)*65536.f);
+        uint32_t q1 = (uint32_t)lrintf((w1/sum)*65536.f);
+        uint32_t q2 = (uint32_t)lrintf((w2/sum)*65536.f);
+        // fix rounding to sum exactly to 65536
+        int32_t fix = 65536 - (int32_t)(q0 + q1 + q2);
+        q1 += fix;
+        W3[t][0] = (uint16_t)q0; W3[t][1] = (uint16_t)q1; W3[t][2] = (uint16_t)q2;
+    }
+    w3Built = true;
+}
+
+
+void Leds::renderLight(float sourceX, float sourceY, Colour colour, float brightness, float opacity)
+{
+    buildW3();
+
+    // Clamp to panel (wrap on write below)
+    if (ledWidth  > 1) { if (sourceX < 0) sourceX = 0; else if (sourceX > ledWidth  - 1e-6f) sourceX = ledWidth  - 1e-6f; }
+    if (ledHeight > 1) { if (sourceY < 0) sourceY = 0; else if (sourceY > ledHeight - 1e-6f) sourceY = ledHeight - 1e-6f; }
+
+    int ix = (int)floorf(sourceX);
+    int iy = (int)floorf(sourceY);
+    int px = (int)lrintf((sourceX - ix) * 255.0f);  // 0..255
+    int py = (int)lrintf((sourceY - iy) * 255.0f);  // 0..255
+    const uint16_t* Wx = W3[px]; // Q0.16 weights [-1,0,+1]
+    const uint16_t* Wy = W3[py];
+
+    // Pre-multiply once
+    float r = colour.Red   * brightness;
+    float g = colour.Green * brightness;
+    float b = colour.Blue  * brightness;
+
+    for (int dy = -1; dy <= +1; ++dy) {
+        int y = iy + dy;
+        if (y < 0) y += ledHeight; else if (y >= ledHeight) y -= ledHeight;
+        uint32_t wy = Wy[dy+1]; // Q0.16
+        for (int dx = -1; dx <= +1; ++dx) {
+            int x = ix + dx;
+            if (x < 0) x += ledWidth; else if (x >= ledWidth) x -= ledWidth;
+            uint32_t wx = Wx[dx+1]; // Q0.16
+            // combined weight in Q0.16
+            uint32_t w = (uint32_t)(((uint64_t)wx * (uint64_t)wy) >> 16); // Q0.16
+
+            // Convert to float just once per write (still cheap on RP2040)
+            float wf = (float)w / 65536.0f;
+
+            leds[x][y].AddColourValues(r * wf, g * wf, b * wf, opacity);
+        }
+    }
+}
+#endif

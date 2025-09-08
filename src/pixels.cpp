@@ -98,6 +98,54 @@ boolean validateNoOfYPixels(void *dest, const char *newValueStr)
 	return true;
 }
 
+void setDefaultPanelWidth(void *dest)
+{
+	int *destInt = (int *)dest;
+	*destInt = 8;
+}
+
+void setDefaultPanelHeight(void *dest)
+{
+	int *destInt = (int *)dest;
+	*destInt = 8;
+}
+
+boolean validatePanelWidth(void *dest, const char *newValueStr)
+{
+	int value;
+
+	if (!validateInt(&value, newValueStr))
+	{
+		return false;
+	}
+
+	if (value < 1)
+	{
+		return false;
+	}
+
+	*(int *)dest = value;
+	return true;
+}
+
+boolean validatePanelHeight(void *dest, const char *newValueStr)
+{
+	int value;
+
+	if (!validateInt(&value, newValueStr))
+	{
+		return false;
+	}
+
+	if (value < 1)
+	{
+		return false;
+	}
+
+	*(int *)dest = value;
+	return true;
+}
+
 struct SettingItem pixelNoOfXPixelsSetting = {"Number of X pixels (0 for pixels not fitted)",
 											  "noofxpixels",
 											  &pixelSettings.noOfXPixels,
@@ -113,6 +161,22 @@ struct SettingItem pixelNoOfYPixelsSetting = {"Number of Y pixels (at least 1 ro
 											  integerValue,
 											  setDefaultNoOfYPixels,
 											  validateNoOfYPixels};
+
+struct SettingItem pixelPanelWidth = {"Width of a pixel panel",
+									  "pixelpanelwidth",
+									  &pixelSettings.panelWidth,
+									  NUMBER_INPUT_LENGTH,
+									  integerValue,
+									  setDefaultPanelWidth,
+									  validatePanelWidth};
+
+struct SettingItem pixelPanelHeight = {"Height of a pixel panel",
+									   "pixelpanelheight",
+									   &pixelSettings.panelHeight,
+									   NUMBER_INPUT_LENGTH,
+									   integerValue,
+									   setDefaultPanelHeight,
+									   validatePanelHeight};
 
 void setDefaultPixelBrightness(void *dest)
 {
@@ -162,7 +226,7 @@ boolean validatePixelConfig(void *dest, const char *newValueStr)
 	if (!validConfig)
 		return false;
 
-	if (config < 1 || config > 2)
+	if (config < 1 || config > 4)
 		return false;
 
 	int *intDest = (int *)dest;
@@ -172,7 +236,7 @@ boolean validatePixelConfig(void *dest, const char *newValueStr)
 	return true;
 }
 
-struct SettingItem pixelPixelConfig = {"Pixel config(1=ring 2=strand)",
+struct SettingItem pixelPixelConfig = {"Pixel config(1=ring[NEO_GRB + NEO_KHZ800] 2=strand[NEO_KHZ400 + NEO_RGB],3=single panel[NEO_GRB + NEO_KHZ800],4=multi-panel[NEO_GRB + NEO_KHZ800])",
 									   "pixelconfig",
 									   &pixelSettings.pixelConfig,
 									   NUMBER_INPUT_LENGTH,
@@ -185,6 +249,8 @@ struct SettingItem *pixelSettingItemPointers[] =
 		&pixelControlPinSetting,
 		&pixelNoOfXPixelsSetting,
 		&pixelNoOfYPixelsSetting,
+		&pixelPanelWidth,
+		&pixelPanelHeight,
 		&pixelPixelConfig,
 		&pixelBrightnessSetting,
 		&pixelNameSetting};
@@ -201,34 +267,41 @@ int *rasterLookup = NULL;
 
 int noOfPixels;
 
-void startPixelStrip()
+bool buildDecodeArray()
 {
-	// return if the strip is already setup
-	if(strip != NULL){
-		return;
-	}
+	int noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
+	int lookupDest;
 
-	noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
-
-	if (noOfPixels == 0)
+	switch (pixelSettings.pixelConfig)
+	// 1=ring 2=strand,3=single panel,4=multi-panel
 	{
-		return;
-	}
+	case 1: // ring of pixels
+	case 2: // line of pixels
+		if (pixelSettings.noOfYPixels != 1)
+		{
+			alwaysDisplayMessage("Invalid pixel setup: a pixel ring or line must have a y height of 1\n");
+			return false;
+		}
 
-	rasterLookup = new int[noOfPixels];
+		rasterLookup = new int[noOfPixels];
 
-	// if we have a string of pixels just build a flat decode array
-
-	if (pixelSettings.noOfYPixels == 1)
-	{
-		for (int i = 0; i < pixelSettings.noOfXPixels; i++)
+		for (int i = 0; i < noOfPixels; i++)
 		{
 			rasterLookup[i] = i;
 		}
-	}
-	else
-	{
-		int dest = (pixelSettings.noOfYPixels * pixelSettings.noOfXPixels) - 1;
+
+		return true;
+
+	case 3: // Single panel
+		if (pixelSettings.noOfYPixels == 1)
+		{
+			alwaysDisplayMessage("Invalid pixel setup: a pixel panel must have a y height of more than 1\n");
+			return false;
+		}
+
+		rasterLookup = new int[noOfPixels];
+
+		lookupDest = (pixelSettings.noOfYPixels * pixelSettings.noOfXPixels) - 1;
 
 		for (int y = 0; y < pixelSettings.noOfYPixels; y++)
 		{
@@ -241,26 +314,80 @@ void startPixelStrip()
 				{
 					// even row - ascending order
 					pos = rowStart + x;
-					rasterLookup[dest] = pos;
+					rasterLookup[lookupDest] = pos;
 				}
 				else
 				{
 					// odd row - descending order
 					pos = rowStart + (pixelSettings.noOfXPixels - x - 1);
 				}
-				rasterLookup[dest] = pos;
-				dest--;
+				rasterLookup[lookupDest] = pos;
+				lookupDest--;
 			}
 		}
+
+		return true;
+		break;
+
+	case 4: // Multiple panels
+		if (pixelSettings.noOfYPixels < pixelSettings.panelHeight || pixelSettings.noOfXPixels < pixelSettings.panelWidth)
+		{
+			alwaysDisplayMessage("Invalid pixel setup: in a multiple panel configuration sizes must be larger than panel dimensions\n");
+			return false;
+		}
+
+		int xPanels = int(pixelSettings.noOfXPixels / pixelSettings.panelWidth);
+		int yPanels = int(pixelSettings.noOfYPixels / pixelSettings.panelHeight);
+
+		int panelRowPixels = (pixelSettings.panelWidth * pixelSettings.panelHeight) * xPanels;
+		int topLeft = panelRowPixels * (yPanels - 1) + pixelSettings.panelHeight - 1;
+
+		rasterLookup = new int[noOfPixels];
+
+		int pos = 0;
+
+		for (int y = 0; y < pixelSettings.noOfYPixels; y++)
+		{
+			for (int x = 0; x < pixelSettings.noOfXPixels; x++)
+			{
+				int rowNo = y / pixelSettings.panelHeight;
+				int p = topLeft - (rowNo * panelRowPixels);
+				int py = y - (rowNo * pixelSettings.panelHeight);
+				p = p + (pixelSettings.panelWidth * x) - y;
+				rasterLookup[pos] = p;
+				pos++;
+			}
+		}
+		return true;
 	}
+	return false;
+}
+
+bool startPixelStrip()
+{
+	if (!buildDecodeArray())
+	{
+		displayMessage("********* Pixel dimensions invalid\n");
+		return false;
+	}
+
+	int noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
 
 	switch (pixelSettings.pixelConfig)
 	{
+	// 1=ring 2=strand,3=single panel,4=multi-panel
 	case 1:
+		// ring using standard
+	case 3:
+		// panel
+	case 4:
+		// multi-panel
 		strip = new Adafruit_NeoPixel(noOfPixels, pixelSettings.pixelControlPinNo,
 									  NEO_GRB + NEO_KHZ800);
+
 		break;
 	case 2:
+		// strand
 		strip = new Adafruit_NeoPixel(noOfPixels, pixelSettings.pixelControlPinNo,
 									  NEO_KHZ400 + NEO_RGB);
 		break;
@@ -270,11 +397,13 @@ void startPixelStrip()
 
 	if (strip == NULL)
 	{
-		displayMessage("********* Pixel setup invalid");
-		return;
+		displayMessage("********* Pixel config invalid");
+		return false;
 	}
 
 	strip->begin();
+
+	return true;
 }
 
 /// commands
@@ -457,14 +586,12 @@ struct CommandItem *setColourItems[] =
 
 int doSetPixelColor(char *destination, unsigned char *settingBase);
 
-struct Command setPixelColourCommand
-{
+struct Command setPixelColourCommand{
 	"setcolour",
-		"Sets the colour of the pixels",
-		setColourItems,
-		sizeof(setColourItems) / sizeof(struct CommandItem *),
-		doSetPixelColor
-};
+	"Sets the colour of the pixels",
+	setColourItems,
+	sizeof(setColourItems) / sizeof(struct CommandItem *),
+	doSetPixelColor};
 
 int doSetPixelColor(char *destination, unsigned char *settingBase)
 {
@@ -476,11 +603,11 @@ int doSetPixelColor(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	// sets the pixel colour - caller has set the r,g and b values
 
 	float red = (float)getUnalignedFloat(settingBase + RED_PIXEL_COMMAND_OFFSET);
@@ -489,13 +616,13 @@ int doSetPixelColor(char *destination, unsigned char *settingBase)
 	int steps = (int)getUnalignedInt(settingBase + SPEED_PIXEL_COMMAND_OFFSET);
 	int time = (int)getUnalignedInt(settingBase + COMMAND_PIXEL_TIMEOUT_OFFSET);
 
-	if(time==0)
+	if (time == 0)
 	{
 		frame->fadeToColour({red, green, blue}, steps);
 	}
 	else
 	{
-		frame->overlayColour({red, green, blue},time);
+		frame->overlayColour({red, green, blue}, time);
 	}
 
 	return WORKED_OK;
@@ -506,19 +633,16 @@ struct CommandItem *setBackgroundColourItems[] =
 		&redCommandItem,
 		&blueCommandItem,
 		&greenCommandItem,
-		&pixelChangeStepsCommandItem
-	};
+		&pixelChangeStepsCommandItem};
 
 int doSetBackColor(char *destination, unsigned char *settingBase);
 
-struct Command setBackColourCommand
-{
+struct Command setBackColourCommand{
 	"setbackground",
-		"Sets the colour of the background",
-		setBackgroundColourItems,
-		sizeof(setBackgroundColourItems) / sizeof(struct CommandItem *),
-		doSetBackColor
-};
+	"Sets the colour of the background",
+	setBackgroundColourItems,
+	sizeof(setBackgroundColourItems) / sizeof(struct CommandItem *),
+	doSetBackColor};
 
 int doSetBackColor(char *destination, unsigned char *settingBase)
 {
@@ -530,11 +654,11 @@ int doSetBackColor(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	// sets the pixel colour - caller has set the r,g and b values
 
 	float red = (float)getUnalignedFloat(settingBase + RED_PIXEL_COMMAND_OFFSET);
@@ -542,7 +666,7 @@ int doSetBackColor(char *destination, unsigned char *settingBase)
 	float green = (float)getUnalignedFloat(settingBase + GREEN_PIXEL_COMMAND_OFFSET);
 	int steps = (int)getUnalignedInt(settingBase + SPEED_PIXEL_COMMAND_OFFSET);
 
-	frame->fadeBackToColour({red,green,blue}, steps);
+	frame->fadeBackToColour({red, green, blue}, steps);
 	return WORKED_OK;
 }
 
@@ -554,14 +678,12 @@ struct CommandItem *setNamedPixelColourItems[] =
 
 int doSetNamedColour(char *destination, unsigned char *settingBase);
 
-struct Command setPixelsToNamedColour
-{
+struct Command setPixelsToNamedColour{
 	"setnamedcolour",
-		"Sets the pixels to a named colour",
-		setNamedPixelColourItems,
-		sizeof(setNamedPixelColourItems) / sizeof(struct CommandItem *),
-		doSetNamedColour
-};
+	"Sets the pixels to a named colour",
+	setNamedPixelColourItems,
+	sizeof(setNamedPixelColourItems) / sizeof(struct CommandItem *),
+	doSetNamedColour};
 
 int doSetNamedColour(char *destination, unsigned char *settingBase)
 {
@@ -573,11 +695,11 @@ int doSetNamedColour(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	struct colourNameLookup *col;
 
 	char *colourName = (char *)(settingBase + COLOURNAME_PIXEL_COMMAND_OFFSET);
@@ -590,7 +712,7 @@ int doSetNamedColour(char *destination, unsigned char *settingBase)
 	{
 		int time = (int)getUnalignedInt(settingBase + COMMAND_PIXEL_TIMEOUT_OFFSET);
 
-		if(time==0)
+		if (time == 0)
 		{
 			frame->fadeToColour(col->col, steps);
 		}
@@ -606,23 +728,19 @@ int doSetNamedColour(char *destination, unsigned char *settingBase)
 	}
 }
 
-
 struct CommandItem *setNamedBackgroundColourItems[] =
 	{
 		&colourCommandName,
-		&pixelChangeStepsCommandItem
-	};
+		&pixelChangeStepsCommandItem};
 
 int doSetNamedBackgroundColour(char *destination, unsigned char *settingBase);
 
-struct Command setBackgroundToNamedColour
-{
+struct Command setBackgroundToNamedColour{
 	"setnamedbackground",
-		"Sets the background to a named colour",
-		setNamedBackgroundColourItems,
-		sizeof(setNamedBackgroundColourItems) / sizeof(struct CommandItem *),
-		doSetNamedBackgroundColour
-};
+	"Sets the background to a named colour",
+	setNamedBackgroundColourItems,
+	sizeof(setNamedBackgroundColourItems) / sizeof(struct CommandItem *),
+	doSetNamedBackgroundColour};
 
 int doSetNamedBackgroundColour(char *destination, unsigned char *settingBase)
 {
@@ -634,11 +752,11 @@ int doSetNamedBackgroundColour(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	struct colourNameLookup *col;
 
 	char *colourName = (char *)(settingBase + COLOURNAME_PIXEL_COMMAND_OFFSET);
@@ -665,14 +783,12 @@ struct CommandItem *setRandomPixelColourItems[] =
 
 int doSetRandomColour(char *destination, unsigned char *settingBase);
 
-struct Command setPixelsToRandomColour
-{
+struct Command setPixelsToRandomColour{
 	"setrandomcolour",
-		"Sets all the pixels to a random colour",
-		setRandomPixelColourItems,
-		sizeof(setRandomPixelColourItems) / sizeof(struct CommandItem *),
-		doSetRandomColour
-};
+	"Sets all the pixels to a random colour",
+	setRandomPixelColourItems,
+	sizeof(setRandomPixelColourItems) / sizeof(struct CommandItem *),
+	doSetRandomColour};
 
 void seedRandomFromClock()
 {
@@ -706,11 +822,11 @@ int doSetRandomColour(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	char *option = (char *)(settingBase + COMMAND_PIXEL_OPTION_OFFSET);
 
 	if (strcasecmp(option, "timed") == 0)
@@ -730,19 +846,16 @@ int doSetRandomColour(char *destination, unsigned char *settingBase)
 struct CommandItem *setPixelTwinkleItems[] =
 	{
 		&pixelChangeStepsCommandItem,
-		&colourCommandOptionItem
-	};
+		&colourCommandOptionItem};
 
 int doSetTwinkle(char *destination, unsigned char *settingBase);
 
-struct Command setPixelsToTwinkle
-{
+struct Command setPixelsToTwinkle{
 	"twinkle",
-		"Sets the pixels to twinkle random colours",
-		setPixelTwinkleItems,
-		sizeof(setPixelTwinkleItems) / sizeof(struct CommandItem *),
-		doSetTwinkle
-};
+	"Sets the pixels to twinkle random colours",
+	setPixelTwinkleItems,
+	sizeof(setPixelTwinkleItems) / sizeof(struct CommandItem *),
+	doSetTwinkle};
 
 int doSetTwinkle(char *destination, unsigned char *settingBase)
 {
@@ -754,11 +867,11 @@ int doSetTwinkle(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	char *option = (char *)(settingBase + COMMAND_PIXEL_OPTION_OFFSET);
 
 	if (strcasecmp(option, "timed") == 0)
@@ -780,14 +893,12 @@ struct CommandItem *setPixelBrightnessItems[] =
 
 int doSetBrightness(char *destination, unsigned char *settingBase);
 
-struct Command setPixelBrightness
-{
+struct Command setPixelBrightness{
 	"brightness",
-		"Sets the pixel brightness",
-		setPixelBrightnessItems,
-		sizeof(setPixelBrightnessItems) / sizeof(struct CommandItem *),
-		doSetBrightness
-};
+	"Sets the pixel brightness",
+	setPixelBrightnessItems,
+	sizeof(setPixelBrightnessItems) / sizeof(struct CommandItem *),
+	doSetBrightness};
 
 int doSetBrightness(char *destination, unsigned char *settingBase)
 {
@@ -799,11 +910,11 @@ int doSetBrightness(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	float brightness = getUnalignedFloat(settingBase + FLOAT_VALUE_OFFSET);
 
 	int steps = getUnalignedInt(settingBase + SPEED_PIXEL_COMMAND_OFFSET);
@@ -821,14 +932,12 @@ struct CommandItem *setPixelPatternItems[] =
 
 int doSetPattern(char *destination, unsigned char *settingBase);
 
-struct Command setPixelPattern
-{
+struct Command setPixelPattern{
 	"pattern",
-		"Sets the pixel pattern",
-		setPixelPatternItems,
-		sizeof(setPixelPatternItems) / sizeof(struct CommandItem *),
-		doSetPattern
-};
+	"Sets the pixel pattern",
+	setPixelPatternItems,
+	sizeof(setPixelPatternItems) / sizeof(struct CommandItem *),
+	doSetPattern};
 
 int doSetPattern(char *destination, unsigned char *settingBase)
 {
@@ -840,11 +949,11 @@ int doSetPattern(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	char *colourMask = (char *)(settingBase + COLOURNAME_PIXEL_COMMAND_OFFSET);
 	char *pattern = (char *)(settingBase + COMMAND_PIXEL_PATTERN_OFFSET);
 	int steps = getUnalignedInt(settingBase + SPEED_PIXEL_COMMAND_OFFSET);
@@ -873,14 +982,12 @@ struct CommandItem *setPixelValueInColourMapItems[] =
 
 int doPixelMapValue(char *destination, unsigned char *settingBase);
 
-struct Command setPixelValueInColourMap
-{
+struct Command setPixelValueInColourMap{
 	"map",
-		"Maps a value into a colour map",
-		setPixelValueInColourMapItems,
-		sizeof(setPixelValueInColourMapItems) / sizeof(struct CommandItem *),
-		doPixelMapValue
-};
+	"Maps a value into a colour map",
+	setPixelValueInColourMapItems,
+	sizeof(setPixelValueInColourMapItems) / sizeof(struct CommandItem *),
+	doPixelMapValue};
 
 int doPixelMapValue(char *destination, unsigned char *settingBase)
 {
@@ -894,11 +1001,11 @@ int doPixelMapValue(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	if(pixelProcess.status != PIXEL_OK)
+	if (pixelProcess.status != PIXEL_OK)
 	{
 		return JSON_MESSAGE_PIXELS_NOT_ENABLED;
 	}
-	
+
 	float value = getUnalignedFloat(settingBase + FLOAT_VALUE_OFFSET);
 
 	TRACELOG("Value:");
@@ -986,18 +1093,18 @@ struct CommandItemCollection pixelCommands =
 		pixelCommandList,
 		sizeof(pixelCommandList) / sizeof(struct Command *)};
 
-
 //////////////////////////////////////////////////////////////////////////
 //// BUSY PIXEL
 //////////////////////////////////////////////////////////////////////////
 
-bool busyPixelActive=false;
+bool busyPixelActive = false;
 byte busyPixelPos = 0;
 byte busyRed, busyGreen, busyBlue;
 
 void updateBusyPixel()
 {
-	if(!busyPixelActive){
+	if (!busyPixelActive)
+	{
 		return;
 	}
 
@@ -1016,26 +1123,26 @@ void setBusyPixelColour(byte red, byte green, byte blue)
 
 void startBusyPixel(byte red, byte green, byte blue)
 {
-	busyPixelActive=true;
+	busyPixelActive = true;
 	setBusyPixelColour(red, green, blue);
 	busyPixelPos = 0;
 }
 
 void stopBusyPixel()
 {
-	busyPixelActive=false;
+	busyPixelActive = false;
 }
 
 void renderBusyPixel()
 {
-	if(!busyPixelActive){
+	if (!busyPixelActive)
+	{
 		return;
 	}
 	strip->setPixelColor(rasterLookup[busyPixelPos], busyRed, busyGreen, busyBlue);
 }
 
-
-		// Called by the the leds in the Frame to draw the display
+// Called by the the leds in the Frame to draw the display
 // We draw the busy pixel on top
 
 void show()
@@ -1046,7 +1153,7 @@ void show()
 
 void setPixel(int no, float r, float g, float b)
 {
-	if(rasterLookup==NULL)
+	if (rasterLookup == NULL)
 	{
 		return;
 	}
@@ -1075,18 +1182,14 @@ void initPixel()
 		return;
 	}
 
-	startPixelStrip();
+	if(!startPixelStrip()){
+		pixelProcess.status = PIXEL_NO_PIXELS;
+	}
 }
 
 void startPixel()
 {
-	// create storage for the pixels
-	
-	int noOfPixels = pixelSettings.noOfXPixels * pixelSettings.noOfYPixels;
-
-	if (noOfPixels == 0)
-	{
-		pixelProcess.status = PIXEL_NO_PIXELS;
+	if(pixelProcess.status == PIXEL_NO_PIXELS){
 		return;
 	}
 
@@ -1102,42 +1205,36 @@ void startPixel()
 	frame->fadeToBrightness(pixelSettings.brightness, 10);
 }
 
-
-void flickeringColouredLights(byte r, byte g, byte b,int steps){
-	frame->fadeToColour({(float)r/256, (float)g/256, (float)b/256}, steps);
+void flickeringColouredLights(byte r, byte g, byte b, int steps)
+{
+	frame->fadeToColour({(float)r / 256, (float)g / 256, (float)b / 256}, steps);
 }
 
 void setFlickerUpdateSpeed(int speed)
 {
-	frame->setSpriteSpeed(speed/10);
+	frame->setSpriteSpeed(speed / 10);
 }
 
 void transitionToColor(byte speed, byte r, byte g, byte b)
 {
-
 }
 
 void setLightColor(byte r, byte g, byte b)
 {
-
 }
 
 void randomiseLights()
 {
 	frame->fadeSpritesToTwinkle(10);
-
 }
 
 void flickerOn()
 {
-
 }
 
 void flickerOff()
 {
-	
 }
-
 
 void showDeviceStatus();	   // declared in control.h
 boolean getInputSwitchValue(); // declared in inputswitch.h

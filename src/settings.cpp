@@ -980,11 +980,28 @@ void resetSettings()
 	saveSettings();
 }
 
-void iterateThroughAllSettings(void (*func)(unsigned char *settings, int size))
+void iterateThroughAllSettings(void (*func)(SettingItem *s))
 {
 	iterateThroughProcessSettings(func);
 
 	iterateThroughSensorSettings(func);
+}
+
+void validateSettingValues(SettingItem * s){
+	if(s->settingType ==password){
+		// do not validate passwords
+		return;
+	}
+	char itemBuffer[SETTING_VALUE_OUTPUT_LENGTH];
+	printSettingValue(s, itemBuffer, SETTING_VALUE_OUTPUT_LENGTH);
+	if(!s->validateValue(s->value,itemBuffer)){
+		alwaysDisplayMessage("Invalid setting %s for:%s\n",itemBuffer, s->formName);
+		s->setDefault(s->value);
+	}
+}
+
+void validateSettings(){
+	iterateThroughAllSettings(validateSettingValues);
 }
 
 void saveSettings()
@@ -1192,6 +1209,7 @@ SettingsSetupStatus setupSettings()
 
 	if (loadSettings())
 	{
+		validateSettings();
 		settingsStoreStatus = SETTING_STATUS_OK;
 		result = SETTINGS_SETUP_OK;
 	}

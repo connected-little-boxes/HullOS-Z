@@ -326,10 +326,12 @@ void Frame::fadeSpritesToWalkingColours(char *colours, int steps)
 		else
 			s->xSpeed = -speed;
 		speed = speed + speedStep;
-		if(random(0,2)==1)
+		if(random(0,2)==1){
 			s->ySpeed = speed;
-		else
+		}
+		else{
 			s->ySpeed = -speed;
+		}
 		speed = speed + speedStep;
 		s->enabled = true;
 		

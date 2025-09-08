@@ -1,7 +1,7 @@
 # Putting HullOS on a PICO-W
 You can load HullOS onto a Raspberry Pi PICO or PICO-W by:
 
-1. Download the image file from here [PICO-W](/binaries/PICO-HullOS-Z.uf2) and store it on your computer. 
+1. Download the image file for [PICOW](/binaries/PICOW-HullOS-Z.uf2) or [PICO2W](/binaries/PICOW2-HullOS-Z.uf2) and store it on your computer. 
 1. Hold down the BOOTSEL button on your PICO. 
 1. Plug the PICO into your PC.
 1. Release the BOOTSEL button.

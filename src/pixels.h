@@ -37,7 +37,9 @@ struct PixelSettings
 	int pixelControlPinNo;
 	int noOfXPixels;
 	int noOfYPixels;
-	int pixelConfig;
+	int pixelConfig; // 1=ring[NEO_GRB + NEO_KHZ800] 2=strand[NEO_KHZ400 + NEO_RGB],3=single panel[NEO_GRB + NEO_KHZ800],4=multi-panel[NEO_GRB + NEO_KHZ800]
+	int panelWidth;
+	int panelHeight;
 	float brightness;
 	char pixelName[MAX_PIXEL_NAME_LENGTH];
 };

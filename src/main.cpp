@@ -210,6 +210,8 @@ void startDevice()
 
   DISPLAY_MEMORY_MONITOR("Populate sensor list");
 
+  Serial.printf("Setup settings complete");
+
   SettingsSetupStatus status = setupSettings();
 
   switch (status)
