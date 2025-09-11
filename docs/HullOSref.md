@@ -665,5 +665,3 @@ These commands send output to the serial output stream.
 ```
 *WV<variable name>
 ```
-
-
