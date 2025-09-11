@@ -7,7 +7,7 @@
 #include "messages.h"
 #include "printer.h"
 
-#ifdef PICO
+#ifdef PICO1
 #include "pico/cyw43_arch.h"
 #endif
 
@@ -75,9 +75,9 @@ void statusLedOff()
     if (!ledLit)
         return;
 
-#ifdef PICO
+#ifdef PICO1
 
-//    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0); // OFF
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0); // OFF
 
 #else
 
@@ -96,9 +96,9 @@ void statusLedOn()
     if (ledLit)
         return;
 
-#ifdef PICO
+#ifdef PICO1
 
-//    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1); // ON
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1); // ON
 
 #else
     if (statusLedSettings.statusLedOutputPinActiveLow)
