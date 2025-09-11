@@ -1,0 +1,7 @@
+adafruit/Adafruit Unified Sensor@^1.1.4
+ropg/ezTime@^0.8.3
+knolleary/PubSubClient@^2.8
+bblanchon/ArduinoTrace @ ^1.2.0
+adafruit/Adafruit BME280 Library@^2.1.2
+miguelbalboa/MFRC522 @ ^1.4.11
+adafruit/Adafruit NeoPixel@^1.7.0

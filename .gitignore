@@ -1,6 +1,29 @@
-.pio
 .vscode/.browse.c_cpp.db*
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
 /src/defaults.hsec
+
+# --- Allow .pio folder but only final firmware files ---
+!.pio/
+!.pio/build/
+
+# RP2040 (Pico, Pico W, Pico 2, Pico 2 W) - final UF2
+!**/firmware.uf2
+
+# ESP8266/ESP32 - final BIN
+!**/firmware.bin
+
+# --- Explicitly ignore all other build artifacts ---
+*.elf
+*.map
+*.lst
+*.bin
+*.uf2
+*.hex
+*.d
+*.o
+
+# But keep only the "firmware" outputs we unignored above
+!.pio/build/**/firmware.uf2
+!.pio/build/**/firmware.bin
