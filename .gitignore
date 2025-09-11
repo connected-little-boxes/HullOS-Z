@@ -23,6 +23,7 @@
 *.hex
 *.d
 *.o
+*.a
 
 # But keep only the "firmware" outputs we unignored above
 !.pio/build/**/firmware.uf2
