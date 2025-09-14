@@ -1,3 +1,5 @@
+#ifdef PROCESS_PIXELS
+
 #include <strings.h>
 
 #include "pixels.h"
@@ -1316,3 +1318,5 @@ struct process pixelProcess = {
 	NULL,
 	NULL,
 	NULL};
+
+#endif

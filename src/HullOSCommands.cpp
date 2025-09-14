@@ -217,7 +217,9 @@ void startProgramExecution(bool clearVariablesBeforeRun)
     if (clearVariablesBeforeRun)
     {
         clearVariables();
+#ifdef PROCESS_PIXELS
         setAllLightsOff();
+#endif
     }
 
     programCounter = 0;
@@ -333,7 +335,9 @@ void startDownloadingCode()
 
     resetLineStorageState();
 
+#ifdef PROCESS_PIXELS
     startBusyPixel(128, 128, 128);
+#endif
 
 #ifdef DIAGNOSTICS_ACTIVE
 
@@ -379,7 +383,9 @@ void endProgramReceive(bool save)
 
 #endif
 
+#ifdef PROCESS_PIXELS
     stopBusyPixel();
+#endif
 
     if (save)
     {
@@ -520,7 +526,9 @@ void storeReceivedByte(byte b)
 #endif
             lineStoreState = LINE_START;
             // look busy
+#ifdef PROCESS_PIXELS
             updateBusyPixel();
+#endif
         }
     }
 }
@@ -1396,6 +1404,7 @@ bool readColour(byte *r, byte *g, byte *b)
 
 void remoteColouredCandle()
 {
+    
 #ifdef PIXEL_COLOUR_DEBUG
     Serial.println(".**remoteColouredCandle: ");
 #endif
@@ -1413,8 +1422,9 @@ void remoteColouredCandle()
 
     if (readColour(&r, &g, &b))
     {
+#ifdef PROCESS_PIXELS
         flickeringColouredLights(r, g, b, 10);
-
+#endif
 #ifdef DIAGNOSTICS_ACTIVE
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
@@ -1513,7 +1523,9 @@ void remoteSetColorByName()
         return;
     }
 
+#ifdef PROCESS_PIXELS
     flickeringColouredLights(r, g, b, 10);
+#endif
 
 #ifdef DIAGNOSTICS_ACTIVE
 
@@ -1628,8 +1640,9 @@ void remoteSetFlickerSpeed()
     Serial.println(no);
 #endif
 
+#ifdef PROCESS_PIXELS
     setFlickerUpdateSpeed(no);
-
+#endif
 #ifdef DIAGNOSTICS_ACTIVE
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
@@ -1694,7 +1707,9 @@ void remoteSetIndividualPixel()
 
     if (readColour(&r, &g, &b))
     {
+#ifdef PROCESS_PIXELS
         setLightColor(r, g, b);
+#endif
 
 #ifdef DIAGNOSTICS_ACTIVE
 
@@ -1719,7 +1734,9 @@ void remoteSetPixelsOff()
 
 #endif
 
+#ifdef PROCESS_PIXELS
     setAllLightsOff();
+#endif
 }
 
 void remoteSetRandomColors()
@@ -1734,7 +1751,9 @@ void remoteSetRandomColors()
 
 #endif
 
+#ifdef PROCESS_PIXELS
     randomiseLights();
+#endif
 }
 
 void remotePixelControl()
@@ -1765,11 +1784,15 @@ void remotePixelControl()
     {
     case 'a':
     case 'A':
+#ifdef PROCESS_PIXELS
         flickerOn();
+#endif
         break;
     case 's':
     case 'S':
+#ifdef PROCESS_PIXELS
         flickerOff();
+#endif
         break;
     case 'i':
     case 'I':
@@ -1789,7 +1812,9 @@ void remotePixelControl()
         break;
     case 'x':
     case 'X':
+#ifdef PROCESS_PIXELS
         remoteFadeToColor();
+#endif
         break;
     case 'r':
     case 'R':
