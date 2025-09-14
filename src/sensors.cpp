@@ -218,17 +218,17 @@ char sensorValueBuffer[SENSOR_VALUE_BUFFER_SIZE];
 
 void startSensors()
 {
-	alwaysDisplayMessage("Starting sensors\n");
+	displayMessage("Starting sensors\n");
 	// start all the sensor managers
 
 	sensor *activeSensorPtr = activeSensorList;
 
 	while (activeSensorPtr != NULL)
 	{
-		alwaysDisplayMessage("   %s: ", activeSensorPtr->sensorName);
+		displayMessage("   %s: ", activeSensorPtr->sensorName);
 		activeSensorPtr->startSensor();
 		activeSensorPtr->getStatusMessage(sensorStatusBuffer, SENSOR_STATUS_BUFFER_SIZE);
-		alwaysDisplayMessage("%s\n", sensorStatusBuffer);
+		displayMessage("%s\n", sensorStatusBuffer);
 		activeSensorPtr->beingUpdated = true;
 		activeSensorPtr = activeSensorPtr->nextAllSensors;
 	}
@@ -236,7 +236,7 @@ void startSensors()
 
 void dumpSensorStatus()
 {
-	alwaysDisplayMessage("Sensors\n");
+	displayMessage("Sensors\n");
 	unsigned long currentMillis = millis();
 
 	sensor *activeSensorPtr = activeSensorList;
@@ -246,11 +246,11 @@ void dumpSensorStatus()
 		activeSensorPtr->getStatusMessage(sensorStatusBuffer, SENSOR_STATUS_BUFFER_SIZE);
 		sensorValueBuffer[0] = 0; // empty the buffer string
 		activeSensorPtr->addReading(sensorValueBuffer, SENSOR_VALUE_BUFFER_SIZE);
-		alwaysDisplayMessage("    %s:%s %s Active time(microsecs): ",
+		displayMessage("    %s:%s %s Active time(microsecs): ",
 					  activeSensorPtr->sensorName, sensorStatusBuffer, sensorValueBuffer);
-		alwaysDisplayMessage("%d",activeSensorPtr->activeTime);
-		alwaysDisplayMessage("  Millis since last reading: ");
-		alwaysDisplayMessage("%lu\n",ulongDiff(currentMillis, activeSensorPtr->millisAtLastReading));
+		displayMessage("%d",activeSensorPtr->activeTime);
+		displayMessage("  Millis since last reading: ");
+		displayMessage("%lu\n",ulongDiff(currentMillis, activeSensorPtr->millisAtLastReading));
 
 		activeSensorPtr = activeSensorPtr->nextActiveSensor;
 	}
@@ -307,13 +307,13 @@ void createSensorJson(char *name, char *buffer, int bufferLength)
 
 void stopSensors()
 {
-	alwaysDisplayMessage("Stopping sensors\n");
+	displayMessage("Stopping sensors\n");
 
 	sensor *activeSensorPtr = activeSensorList;
 
 	while (activeSensorPtr != NULL)
 	{
-		alwaysDisplayMessage("   %s\n", activeSensorPtr->sensorName);
+		displayMessage("   %s\n", activeSensorPtr->sensorName);
 		activeSensorPtr->stopSensor();
 		activeSensorPtr = activeSensorPtr->nextActiveSensor;
 	}

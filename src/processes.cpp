@@ -127,10 +127,10 @@ char processStatusBuffer[PROCESS_STATUS_BUFFER_SIZE];
 
 void startProcess(process *proc)
 {
-	alwaysDisplayMessage("   %s: ", proc->processName);
+	displayMessage("   %s: ", proc->processName);
 	proc->startProcess();
 	proc->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
-	alwaysDisplayMessage(" %s\n", processStatusBuffer);
+	displayMessage(" %s\n", processStatusBuffer);
 	proc->beingUpdated = true; // process only gets updated after it has started
 }
 
@@ -168,7 +168,7 @@ void initialiseAllProcesses()
 
 void startProcesses()
 {
-	alwaysDisplayMessage("Starting processes\n");
+	displayMessage("Starting processes\n");
 
 	struct process *procPtr = activeProcessList;
 
@@ -191,12 +191,12 @@ void updateProcesses()
 	while (procPtr != NULL)
 	{
 		unsigned long startMicros = micros();
-//		Serial.printf("%s\n", procPtr->processName);
+//		displayMessage("%s\n", procPtr->processName);
 		procPtr->udpateProcess();
 		unsigned long runTime = ulongDiff(micros(), startMicros);
 		if(messagesSettings.speedMessagesEnabled) {
 			if(runTime>SLOW_PROCESS_TIME_MICROS){
-				Serial.printf("  %s running slow: %ul\n", procPtr->processName,runTime);
+				displayMessage("  %s running slow: %ul\n", procPtr->processName,runTime);
 			}
 		}
 		procPtr->activeTime = runTime;
@@ -208,7 +208,7 @@ void updateProcesses()
 
 void dumpProcessStatus()
 {
-	alwaysDisplayMessage("Processes\n");
+	displayMessage("Processes\n");
 
 	struct process *procPtr = activeProcessList;
 
@@ -216,12 +216,12 @@ void dumpProcessStatus()
 	{
 		if (procPtr->beingUpdated)
 		{
-			alwaysDisplayMessage("    %s:", procPtr->processName);
+			displayMessage("    %s:", procPtr->processName);
 			procPtr->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
-			alwaysDisplayMessage("%s Active time: ", processStatusBuffer);
-			alwaysDisplayMessage("%lu millisecs",procPtr->activeTime/1000);
-			alwaysDisplayMessage(" Total time: ");
-			alwaysDisplayMessage("%lu millisecs\n",procPtr->totalTime/1000);
+			displayMessage("%s Active time: ", processStatusBuffer);
+			displayMessage("%lu millisecs",procPtr->activeTime/1000);
+			displayMessage(" Total time: ");
+			displayMessage("%lu millisecs\n",procPtr->totalTime/1000);
 		}
 		procPtr = procPtr->nextActiveProcess;
 	}
@@ -252,13 +252,13 @@ void iterateThroughActiveProcesses(void (*func)(process *p))
 
 void stopProcesses()
 {
-	alwaysDisplayMessage("Stopping processes\n");
+	displayMessage("Stopping processes\n");
 
 	struct process *procPtr = activeProcessList;
 
 	while (procPtr != NULL)
 	{
-		alwaysDisplayMessage("   %s\n", procPtr->processName);
+		displayMessage("   %s\n", procPtr->processName);
 		procPtr->stopProcess();
 		procPtr->beingUpdated = false;
 		procPtr = procPtr->nextAllProcesses;

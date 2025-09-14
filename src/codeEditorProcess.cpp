@@ -86,7 +86,7 @@ WebServer server(80);
 
 void handleRoot()
 {
-    Serial.println("Server root hit");
+    displayMessageWithNewline("Server root hit");
 
     server.send(200, "text/html", webPage);
 }
@@ -183,7 +183,7 @@ bool sendTextToPythonIsh(char * text){
         
         if(result != ERROR_OK){
             const char * error = getErrorMessage(result);
-            Serial.printf("%d line:%s\n",lineCount,error);
+            displayMessage("%d line:%s\n",lineCount,error);
             return false;
         }
         lineCount++;
@@ -195,7 +195,7 @@ void sendByteToRobot(byte b)
 {
 #ifdef COMMAND_DEBUG
     Serial.print(F(".**processSerialByte: "));
-    Serial.println((char)b);
+    displayMessageWithNewline((char)b);
 #endif
 }
 
@@ -221,24 +221,24 @@ bool sendStringToCodeBuffer(String str)
 void setupCodeEditorServer()
 {
 
-    alwaysDisplayMessage("Code editor starting\n");
+    displayMessage("Code editor starting\n");
 
     if (MDNS.begin(codeEditorSettings.codeEditorDeviceName))
     {
-        alwaysDisplayMessage("MDNS responder started on %s\n", codeEditorSettings.codeEditorDeviceName);
+        displayMessage("MDNS responder started on %s\n", codeEditorSettings.codeEditorDeviceName);
     }
 
     server.on("/", handleRoot);
 
     server.on("/run", []()
               {
-  alwaysDisplayMessage("Got a run request");
+  displayMessage("Got a run request");
 //  sendLineToRobot("*RS");
   handleRoot(); });
 
     server.on("/stop", []()
               {
-//    Serial.println("Got a stop request");
+//    displayMessageWithNewline("Got a stop request");
 //    sendLineToRobot("*RH");
     handleRoot(); });
 
@@ -248,7 +248,7 @@ void setupCodeEditorServer()
                   String robotCode = server.arg(0);
                   sendStringToCodeBuffer(robotCode);
                   sendTextToPythonIsh(codeEditSource);
-                  // Serial.printf("Source code received from web page: %s\n", codeEditSource);
+                  // displayMessage("Source code received from web page: %s\n", codeEditSource);
                   saveCode();
                   handleRoot(); });
 
@@ -380,7 +380,7 @@ void startcodeEditorProcess()
 
     loadCodeFromFile();
 
-    Serial.printf("Source code: %s\n", codeEditSource);
+    displayMessage("Source code: %s\n", codeEditSource);
 
     millisOfLastCodeEditorUpdate = millis();
 

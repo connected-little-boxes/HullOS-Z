@@ -178,7 +178,7 @@ void startDevice()
   for (int i = 0; i < 10; i++)
   {
     delay(1000);
-    Serial.println(10 - i);
+    displayMessageWithNewline(10 - i);
     if(Serial.available()){
       break;
     }
@@ -186,15 +186,15 @@ void startDevice()
 
 #endif
 
-  alwaysDisplayMessage("\n\n\n\n");
+  displayMessage("\n\nStarting\n\n");
 
   char deviceNameBuffer[DEVICE_NAME_LENGTH];
   PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
-  alwaysDisplayMessage("%s\n", deviceNameBuffer);
-  alwaysDisplayMessage("Connected Little Boxes Device\n");
-  alwaysDisplayMessage("Powered by HULLOS-X\n");
-  alwaysDisplayMessage("www.connectedlittleboxes.com\n");
-  alwaysDisplayMessage("Version %s build date: %s %s\n", Version, __DATE__, __TIME__);
+  displayMessage("%s\n", deviceNameBuffer);
+  displayMessage("Connected Little Boxes Device\n");
+  displayMessage("Powered by HULLOS-X\n");
+  displayMessage("www.connectedlittleboxes.com\n");
+  displayMessage("Version %s build date: %s %s\n", Version, __DATE__, __TIME__);
 
 #ifdef DEBUG
   messageLogf("**** Debug output enabled");
@@ -210,7 +210,7 @@ void startDevice()
 
   DISPLAY_MEMORY_MONITOR("Populate sensor list");
 
-  Serial.printf("Setup settings complete");
+  displayMessage("Setup settings complete");
 
   SettingsSetupStatus status = setupSettings();
 
@@ -303,7 +303,7 @@ void heapMonitor()
     uint32_t newHeap = ESP.getFreeHeap();
     if (newHeap != oldHeap)
     {
-      Serial.print("Heap: ");
+      displayMessage("Heap: ");
       displayMessage("%lu", newHeap);
       oldHeap = newHeap;
     }

@@ -3,6 +3,7 @@
 #include "HullOSCommands.h"
 #include "HullOSVariables.h"
 #include "utils.h"
+#include "messages.h"
 
 const char* getErrorMessage(int code) {
     switch (code) {
@@ -87,10 +88,10 @@ const char* getErrorMessage(int code) {
 }
 
 void printError(int code) {
-    Serial.print("Error ");
-    Serial.print(code);
-    Serial.print(": ");
-    Serial.println(getErrorMessage(code));
+    displayMessage("Error ");
+    displayMessage("%d",code);
+    displayMessage(": ");
+    displayMessageWithNewline(getErrorMessage(code));
 }
 
 int scriptInputBufferPos;
@@ -226,7 +227,7 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 		char ch = commandNames[scriptCommandPos];
 
 #ifdef COMPARE_COMMAND_DEBUG
-		Serial.print(ch);
+		displayMessage(ch);
 #endif
 
 		if (ch == 0)
@@ -244,7 +245,7 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 				// we've found an alias for the command
 				bufferPos = comparePos;
 	#ifdef COMPARE_COMMAND_DEBUG
-				Serial.println("..match with command");
+				displayMessageWithNewline("..match with command");
 	#endif
 				return COMMAND_MATCHED;
 			}			
@@ -261,13 +262,13 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 				// reset the input position to the start
 				comparePos = bufferPos;
 #ifdef COMPARE_COMMAND_DEBUG
-				Serial.println("..separator");
+				displayMessageWithNewline("..separator");
 #endif
 			}
 			else
 			{
 #ifdef COMPARE_COMMAND_DEBUG
-				Serial.println("..fail");
+				displayMessageWithNewline("..fail");
 #endif
 				return COMMAND_NOT_MATCHED;
 			}
@@ -318,14 +319,14 @@ int decodeCommandName(const char * commandNames)
 		switch (result)
 		{
 		case COMMAND_MATCHED:
-//			Serial.printf("Command matched: %d\n", commandNumber);
+//			displayMessage("Command matched: %d\n", commandNumber);
 			return commandNumber;
 
 		case COMMAND_NOT_MATCHED:
 			if (!spinToCommandEnd(commandNames))
 			{
 #ifdef SCRIPT_DEBUG
-				Serial.printf("Command not matched: %d\n", commandNumber);
+				displayMessage("Command not matched: %d\n", commandNumber);
 #endif
 				return -1;
 			}
@@ -334,7 +335,7 @@ int decodeCommandName(const char * commandNames)
 
 		case END_OF_COMMANDS:
 #ifdef SCRIPT_DEBUG
-			Serial.printf("Hit the end\n");
+			displayMessage("Hit the end\n");
 #endif
 			return -1;
 			break;
@@ -384,7 +385,7 @@ boolean addDumpByte(byte b)
 void displayDump()
 {
 	dumpBuffer[dumpBufferPos] = 0;
-	Serial.println(dumpBuffer);
+	displayMessageWithNewline(dumpBuffer);
 	dumpBufferPos = 0;
 }
 
@@ -551,7 +552,7 @@ const char angryCommand[] = "PF20";
 int compileAngry()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.println(F("Compiling angry: "));
+	displayMessageWithNewline(F("Compiling angry: "));
 #endif // SCRIPT_DEBUG
 
 	sendCommand(angryCommand);
@@ -564,7 +565,7 @@ const char happyCommand[] = "PF1";
 int compileHappy()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.println(F("Compiling happy: "));
+	displayMessageWithNewline(F("Compiling happy: "));
 #endif // SCRIPT_DEBUG
 
 	sendCommand(happyCommand);
@@ -817,12 +818,12 @@ void endCompilingStatements()
 	if (programError)
 	{
 		sendCommand(failedCommandText);
-		Serial.println("Errors");
+		displayMessageWithNewline("Errors");
 	}
 	else
 	{
 		sendCommand(endCommandText);
-		Serial.println("OK");
+		displayMessageWithNewline("OK");
 	}
 }
 
@@ -891,7 +892,7 @@ int compileIf()
 	}
 
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling if: "));
+	displayMessage(F("Compiling if: "));
 #endif // SCRIPT_DEBUG
 
 	labelCounter++; // move on to the next label
@@ -912,7 +913,7 @@ int compileIf()
 int compileElse()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling else: "));
+	displayMessage(F("Compiling else: "));
 #endif // SCRIPT_DEBUG
 	if (!storingProgram())
 	{
@@ -925,7 +926,7 @@ int compileElse()
 int compileWhile()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling while: "));
+	displayMessage(F("Compiling while: "));
 #endif // SCRIPT_DEBUG
 
 	if (!storingProgram())
@@ -954,7 +955,7 @@ int compileForever()
 {
 
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling forever: "));
+	displayMessage(F("Compiling forever: "));
 #endif // SCRIPT_DEBUG
 
 	if (!storingProgram())
@@ -1016,7 +1017,7 @@ int compileBreak()
 	previousStatementStartedBlock = false;
 
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling break: "));
+	displayMessage(F("Compiling break: "));
 #endif // SCRIPT_DEBUG
 
 	if (!storingProgram())
@@ -1040,7 +1041,7 @@ int compileContinue()
 {
 
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Compiling break: "));
+	displayMessage(F("Compiling break: "));
 #endif // SCRIPT_DEBUG
 
 	// Not allowed to indent after a continue
@@ -1071,7 +1072,7 @@ const char clearVariablesCommand[] = "VC";
 int clearProgram()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Performing clear program: "));
+	displayMessage(F("Performing clear program: "));
 #endif // SCRIPT_DEBUG
 
 	if (storingProgram())
@@ -1089,7 +1090,7 @@ const char runCommand[] = "RS";
 int runProgram()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.print(F("Performing run program: "));
+	displayMessage(F("Performing run program: "));
 #endif // SCRIPT_DEBUG
 
 	if (storingProgram())
@@ -1168,7 +1169,7 @@ int getProgramFilenameFromCode()
 
 		ch = *bufferPos;
 
-//		Serial.printf("  Copying:%d %c\n", ch, ch);
+//		displayMessage("  Copying:%d %c\n", ch, ch);
 
 		if (ch == 0)
 		{
@@ -1233,7 +1234,7 @@ int compileDirectCommand()
 int compileProgramSave()
 {
 
-	Serial.println("Compiling program save command");
+	displayMessageWithNewline("Compiling program save command");
 
 	if (storingProgram())
 	{
@@ -1249,7 +1250,7 @@ int compileProgramSave()
 
 	// If we get here the filename is valid
 
-	Serial.printf("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+	displayMessage("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
 	saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
 
 	return ERROR_OK;
@@ -1257,7 +1258,7 @@ int compileProgramSave()
 
 int compileProgramLoad(bool clearVariablesBeforeRun)
 {
-	Serial.println("Compiling program load or chain command");
+	displayMessageWithNewline("Compiling program load or chain command");
 
 	int result = getProgramFilenameFromCode();
 
@@ -1286,7 +1287,7 @@ int compileProgramLoad(bool clearVariablesBeforeRun)
 
 int compileProgramDump()
 {
-	Serial.println("Compiling program dump command");
+	displayMessageWithNewline("Compiling program dump command");
 
 	if (storingProgram())
 	{

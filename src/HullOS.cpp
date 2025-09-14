@@ -13,12 +13,13 @@
 #include "Motors.h"
 #include "console.h"
 #include "PythonIsh.h"
+#include "messages.h"
 
 struct HullOSSettings hullosSettings;
 
 int hullOSdecodeScriptLine(char *input)
 {
-    //    Serial.printf("Hullos decoding: %s\n", input);
+    //    displayMessage("Hullos decoding: %s\n", input);
 
     if (strcasecmp(input, "exit") == 0)
     {
@@ -41,7 +42,7 @@ void HullOSStartProgramOnReset();
 
 void hullOSDecoderStart()
 {
-    Serial.printf("Starting HullOS decoder");
+    displayMessage("Starting HullOS decoder");
     HullOSStartProgramOnReset();
 }
 
@@ -55,11 +56,11 @@ void HullOSShowPrompt()
 {
     if (storingProgram())
     {
-        alwaysDisplayMessage("H*>");
+        displayMessage("H*>");
     }
     else
     {
-        alwaysDisplayMessage("H>");
+        displayMessage("H>");
     }
 }
 
@@ -88,7 +89,7 @@ struct LanguageHandler *findLanguage(char *languageName)
 
 void stopLanguageDecoding()
 {
-    Serial.printf("Returning to CLB command prompt\n");
+    displayMessage("Returning to CLB command prompt\n");
     currentLanguageHandler = NULL;
 }
 
@@ -113,7 +114,7 @@ bool processLanguageLine(char *line)
 
     if (strcasecmp(line, "Exit") == 0)
     {
-        Serial.printf("%s session ended\n", currentLanguageHandler->hullosLanguage);
+        displayMessage("%s session ended\n", currentLanguageHandler->hullosLanguage);
         stopLanguageDecoding();
         return true;
     }
@@ -233,7 +234,7 @@ bool getProgramTextLine()
     {
 
         char ch = *programTextPos;
-        //        Serial.printf("Got a: %d %c\n", ch, ch);
+        //        displayMessage("Got a: %d %c\n", ch, ch);
 
         if (ch == 0)
         {
@@ -248,7 +249,7 @@ bool getProgramTextLine()
 
         if (ch == STATEMENT_TERMINATOR)
         {
-            //            Serial.printf("Reached the end of the string\n");
+            //            displayMessage("Reached the end of the string\n");
             programTextLineBuffer[chCount] = 0;
             programTextPos++;
             return true;
@@ -269,16 +270,16 @@ bool getProgramTextLine()
 
 void sendMessageToHullOS(char *programText)
 {
-    Serial.printf("Got command via MQTT from the server: %s\n", programText);
+    displayMessage("Got command via MQTT from the server: %s\n", programText);
 
     if (programText[0] == '*')
     {
-        Serial.printf("Performing HullOS command\n ");
+        displayMessage("Performing HullOS command\n ");
         hullOSdecodeScriptLine(programText + 1);
         return;
     }
 
-    Serial.printf("Processing a PythonIsh program\n");
+    displayMessage("Processing a PythonIsh program\n");
 
     pythonIshdecodeScriptLine("begin");
 
@@ -286,7 +287,7 @@ void sendMessageToHullOS(char *programText)
 
     while (getProgramTextLine())
     {
-        Serial.printf("   got a line:%s\n", programTextLineBuffer);
+        displayMessage("   got a line:%s\n", programTextLineBuffer);
         pythonIshdecodeScriptLine(programTextLineBuffer);
     }
 
@@ -299,7 +300,7 @@ void sendMessageToHullOS(char *programText)
 
 bool HullOSStartLanguage(char *languageName)
 {
-    Serial.printf("Starting %s\n", languageName);
+    displayMessage("Starting %s\n", languageName);
 
     LanguageHandler *handler = findLanguage(languageName);
 
@@ -320,15 +321,15 @@ void HullOSStartProgramOnReset()
 {
     if (hullosSettings.hullosEnabled)
     {
-        Serial.printf("HullOS Enabled\n");
+        displayMessage("HullOS Enabled\n");
 
         if (loadFromFile(RUNNING_PROGRAM_FILENAME, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
         {
-            Serial.printf("HullOS program loaded\n");
+            displayMessage("HullOS program loaded\n");
             dumpProgram(HullOScodeRunningCode);
             if (hullosSettings.runProgramOnStart)
             {
-                Serial.printf("Starting execution\n");
+                displayMessage("Starting execution\n");
                 startProgramExecution(true);
             }
         }
@@ -429,7 +430,7 @@ int doSetState(char *destination, unsigned char *settingBase)
 
     if (strcasecmp(command, "no") == 0)
     {
-        Serial.println("Doing stop");
+        displayMessageWithNewline("Doing stop");
         commandPerformed = true;
     }
 

@@ -31,6 +31,8 @@ enum ProgramState
 	PROGRAM_AWAITING_MOVE_COMPLETION
 };
 
+void displayProgramState();
+
 void programStatus(char *buffer, int bufferLength);
 
 enum InterpreterState

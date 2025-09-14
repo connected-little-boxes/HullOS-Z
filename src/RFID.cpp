@@ -186,7 +186,7 @@ MFRC522 *mfrc522 = NULL; // Create MFRC522 reference
 
 void pollRFID()
 {
-    Serial.println("Polling RFID. Press ESC to exit");
+    displayMessageWithNewline("Polling RFID. Press ESC to exit");
 
     while (true)
     {
@@ -196,7 +196,7 @@ void pollRFID()
             int ch = Serial.read();
             if (ch == ESC_KEY)
             {
-                Serial.println("\nRFID test ended");
+                displayMessageWithNewline("\nRFID test ended");
                 break;
             }
         }
@@ -222,7 +222,7 @@ void pollRFID()
             Serial.print(mfrc522->uid.uidByte[i] < 0x10 ? " 0" : " ");
             Serial.print(mfrc522->uid.uidByte[i], HEX);
         }
-        Serial.println();
+        displayMessage("\n");
 
         // Halt PICC
         mfrc522->PICC_HaltA();
@@ -232,7 +232,7 @@ void pollRFID()
 void testRFID()
 {
 
-    Serial.println("Testing RFID");
+    displayMessageWithNewline("Testing RFID");
 
     SPI.begin();         // Init SPI bus
     mfrc522->PCD_Init(); // Init MFRC522
@@ -319,16 +319,16 @@ void clearInt()
 void consumeRFIDJsonResult(char *resultText)
 {
     // remove the comment to see what the result is - otherwise ignore
-    // Serial.printf("     %s\n", resultText);
+    // displayMessage("     %s\n", resultText);
 }
 
 bool settingDrinksResetCard = false;
 
 void doRFIDSetupDrinksResetCard(char * command)
 {
-    alwaysDisplayMessage("\nSetting up drinks clear card\n");
+    displayMessage("\nSetting up drinks clear card\n");
     if(!RFIDSensorSettings.DrinkMonitorActive){
-        alwaysDisplayMessage("\nTurn on drink monitoring (rfiddrinkmonitor=yes) before using this command\n");
+        displayMessage("\nTurn on drink monitoring (rfiddrinkmonitor=yes) before using this command\n");
         return;
     }
 
@@ -347,7 +347,7 @@ unsigned long rfidLightStart = 0;
 
 void clearCards()
 {
-    Serial.println("Clearing cards\n");
+    displayMessageWithNewline("Clearing cards\n");
 
     for (int cardNo = 0; cardNo < NO_OF_CARDS; cardNo++)
     {
@@ -357,7 +357,7 @@ void clearCards()
 
 void storeID(char *id)
 {
-    Serial.printf("Storing id: %s\n", id);
+    displayMessage("Storing id: %s\n", id);
     for (int cardNo = 0; cardNo < NO_OF_CARDS; cardNo++)
     {
         if (seenCards[cardNo][0] == 0)
@@ -366,19 +366,19 @@ void storeID(char *id)
             return;
         }
     }
-    Serial.println("No room to store card\n");
+    displayMessageWithNewline("No room to store card\n");
 }
 
 bool seenCardBefore(char *id)
 {
-    Serial.printf("Checking id: %s\n", id);
+    displayMessage("Checking id: %s\n", id);
     for (int cardNo = 0; cardNo < NO_OF_CARDS; cardNo++)
     {
         if (seenCards[cardNo][0] == 0)
         {
             break;
         }
-        //        Serial.printf("    Testing: %s\n", seenCards[cardNo]);
+        //        displayMessage("    Testing: %s\n", seenCards[cardNo]);
         if (strcasecmp(id, seenCards[cardNo]) == 0)
         {
             return true;
@@ -403,7 +403,7 @@ void checkRFIDCard(char *id)
                      deviceNameBuffer,
                      id);
 
-            Serial.printf("Sending rfid: %s\n", messageBuffer);
+            displayMessage("Sending rfid: %s\n", messageBuffer);
 
             publishBufferToMQTTTopic(messageBuffer, RFID_MESSAGE_TOPIC);
 
@@ -419,7 +419,7 @@ void checkRFIDCard(char *id)
             strcpy(RFIDSensorSettings.DrinkResetKey,id);
             saveSettings();
             act_onJson_message("{\"process\":\"pixels\",\"command\":\"setnamedcolour\",\"colourname\":\"blue\"}", consumeRFIDJsonResult);
-            alwaysDisplayMessage("\nDrink reset card set\n");
+            displayMessage("\nDrink reset card set\n");
             settingDrinksResetCard=false;
             return;
         }
@@ -541,7 +541,7 @@ void sendRFIDtagToListeners()
             break;
 
         case RFIDSENSOR_SEND_ON_CARD1_SCANNED:
-            Serial.printf("**** Comparing reading %s with stored %s\n",RFIDSensoractiveReading->idString,RFIDSensorSettings.Card1Key );
+            displayMessage("**** Comparing reading %s with stored %s\n",RFIDSensoractiveReading->idString,RFIDSensorSettings.Card1Key );
             if (strcasecmp(RFIDSensoractiveReading->idString, RFIDSensorSettings.Card1Key) == 0)
             {
                 RFIDsendToListener(RFIDSensoractiveReading,pos);
@@ -549,7 +549,7 @@ void sendRFIDtagToListeners()
             break;
 
         case RFIDSENSOR_SEND_ON_CARD2_SCANNED:
-            Serial.printf("**** Comparing reading %s with stored %s\n",RFIDSensoractiveReading->idString,RFIDSensorSettings.Card2Key );
+            displayMessage("**** Comparing reading %s with stored %s\n",RFIDSensoractiveReading->idString,RFIDSensorSettings.Card2Key );
             if (strcasecmp(RFIDSensoractiveReading->idString, RFIDSensorSettings.Card2Key) == 0)
             {
                 RFIDsendToListener(RFIDSensoractiveReading,pos);
@@ -608,7 +608,7 @@ void updateRFIDSensorReading()
 
             sensorListener *pos = RFIDSensor.listeners;
 
-            Serial.printf("Got a card:%s\n", uidbuffer);
+            displayMessage("Got a card:%s\n", uidbuffer);
 
             checkRFIDCard(uidbuffer);
 
@@ -679,7 +679,7 @@ void updateRFIDSensorReading()
 
                     sendRFIDtagToListeners();
 
-                    Serial.printf("Got a card:%s\n", uidbuffer);
+                    displayMessage("Got a card:%s\n", uidbuffer);
 
                     checkRFIDCard(uidbuffer);
 

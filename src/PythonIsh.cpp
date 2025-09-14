@@ -12,7 +12,7 @@ int pythonIshdecodeScriptLine(char *input);
 
 void pythonIshDecoderStart()
 {
-	Serial.printf("Starting PythonIsh decoder\n");
+	displayMessage("Starting PythonIsh decoder\n");
 }
 
 struct LanguageHandler PythonIshLanguage = {
@@ -25,10 +25,10 @@ struct LanguageHandler PythonIshLanguage = {
 void pythonIshShowPrompt()
 {
 	if (storingProgram()){
-		alwaysDisplayMessage("P*>");
+		displayMessage("P*>");
 	}
 	else {
-		alwaysDisplayMessage("P>");
+		displayMessage("P>");
 	}
 }
 
@@ -171,7 +171,7 @@ const char moveCommand[] = "MF";
 int compileMove()
 {
 #ifdef SCRIPT_DEBUG
-	Serial.println(F("Compiling move: "));
+	displayMessageWithNewline(F("Compiling move: "));
 #endif // SCRIPT_DEBUG
 
 	// Not allowed to indent after a move
@@ -648,24 +648,24 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 	int labelNo;
 
 #ifdef SCRIPT_DEBUG_INDENT_OUT
-	Serial.println("Indent out to new indent level");
+	displayMessageWithNewline("Indent out to new indent level");
 	Serial.print("Indent: ");
 	Serial.print(indent);
 	Serial.print(" Command: ");
 	Serial.print(commandNo);
 	Serial.print(" Current Indent Level: ");
-	Serial.println(currentIndentLevel);
+	displayMessageWithNewline(currentIndentLevel);
 #endif
 
 	while (indent < currentIndentLevel)
 	{
 #ifdef SCRIPT_DEBUG_INDENT_OUT
-		Serial.println("Looping");
+		displayMessageWithNewline("Looping");
 #endif
 		if (operation_stack_empty())
 		{
 #ifdef SCRIPT_DEBUG_INDENT_OUT
-			Serial.println("Operation stack empty");
+			displayMessageWithNewline("Operation stack empty");
 #endif
 			// This should not happen as it is not possible to
 			// indent code without creating an enclosing command
@@ -681,7 +681,7 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 
 #ifdef SCRIPT_DEBUG_INDENT_OUT
 		Serial.print("New Current Indent Level: ");
-		Serial.println(currentIndentLevel);
+		displayMessageWithNewline(currentIndentLevel);
 #endif
 		// Generate the code to match the end of the
 		// enclosing statement
@@ -789,7 +789,7 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 int pythonIshdecodeScriptLine(char *input)
 {
 #ifdef DEBUG_PYTHONISH
-	Serial.printf("PythonIsh got line to decode: %s %d\n", input, strlen(input));
+	displayMessage("PythonIsh got line to decode: %s %d\n", input, strlen(input));
 #endif
 
 	if (*input == '#'){
@@ -830,10 +830,10 @@ int pythonIshdecodeScriptLine(char *input)
 	Serial.print(" Current indent: ");
 	Serial.print(currentIndentLevel);
 	Serial.print("Indent: ");
-	Serial.println(indent);
+	displayMessageWithNewline(indent);
 
 	Serial.print("Compiling: ");
-	Serial.println(input);
+	displayMessageWithNewline(input);
 
 #endif // SCRIPT_DEBUG
 
@@ -899,7 +899,7 @@ int pythonIshdecodeScriptLine(char *input)
 		Serial.print("Error: ");
 		Serial.print(result);
 		Serial.print(" ");
-		Serial.println(input);
+		displayMessageWithNewline(input);
 		printError(result);
 	}
 
@@ -919,9 +919,9 @@ void testScript()
 
 #endif // SCRIPT_DEBUG
 
-	//  Serial.println(decodeCommandName("forward"));
-	//  Serial.println(decodeCommandName("back"));
-	//  Serial.println(decodeCommandName("wallaby"));
+	//  displayMessageWithNewline(decodeCommandName("forward"));
+	//  displayMessageWithNewline(decodeCommandName("back"));
+	//  displayMessageWithNewline(decodeCommandName("wallaby"));
 
 	//  decodeScriptLine("angry", dumpByte);
 	//  decodeScriptLine("happy", dumpByte);

@@ -281,7 +281,7 @@ bool buildDecodeArray()
 	case 2: // line of pixels
 		if (pixelSettings.noOfYPixels != 1)
 		{
-			alwaysDisplayMessage("Invalid pixel setup: a pixel ring or line must have a y height of 1\n");
+			displayMessage("Invalid pixel setup: a pixel ring or line must have a y height of 1\n");
 			return false;
 		}
 
@@ -297,7 +297,7 @@ bool buildDecodeArray()
 	case 3: // Single panel
 		if (pixelSettings.noOfYPixels == 1)
 		{
-			alwaysDisplayMessage("Invalid pixel setup: a pixel panel must have a y height of more than 1\n");
+			displayMessage("Invalid pixel setup: a pixel panel must have a y height of more than 1\n");
 			return false;
 		}
 
@@ -334,7 +334,7 @@ bool buildDecodeArray()
 	case 4: // Multiple panels
 		if (pixelSettings.noOfYPixels < pixelSettings.panelHeight || pixelSettings.noOfXPixels < pixelSettings.panelWidth)
 		{
-			alwaysDisplayMessage("Invalid pixel setup: in a multiple panel configuration sizes must be larger than panel dimensions\n");
+			displayMessage("Invalid pixel setup: in a multiple panel configuration sizes must be larger than panel dimensions\n");
 			return false;
 		}
 

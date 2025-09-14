@@ -287,13 +287,13 @@ bool removeFile(char *path){
         LittleFS.remove(path);
         if (fileExists(path)) 
             {
-                Serial.print("Failed to delete:");Serial.println(path);
+                displayMessage("Failed to delete:");displayMessageWithNewline(path);
                 return false;
             }
-        Serial.print("Deleted:");Serial.println(path);
+        displayMessage("Deleted:");displayMessageWithNewline(path);
         return true;
         }
-    Serial.print(path);Serial.println(" does not exist");
+    displayMessage(path);displayMessageWithNewline(" does not exist");
     return false;
 }
 
@@ -336,25 +336,21 @@ bool loadFromFile(char * path, char * dest, int length){
 
 void listLittleFSContents()
 {
-    Serial.println("Listing LittleFS contents:");
+    displayMessageWithNewline("Listing LittleFS contents:");
     if (!LittleFS.begin()) {
-        Serial.println("Failed to mount LittleFS");
+        displayMessageWithNewline("Failed to mount LittleFS");
         return;
     }
 
     File root = fileOpen("/","r");
     if (!root || !root.isDirectory()) {
-        Serial.println("Failed to open root directory");
+        displayMessageWithNewline("Failed to open root directory");
         return;
     }
 
     File file = root.openNextFile();
     while (file) {
-        Serial.print("File: ");
-        Serial.print(file.name());
-        Serial.print(" - Size: ");
-        Serial.println(file.size());
-
+        displayMessage("File: %s = size %d\n", file.name(), (int)file.size());
         file = root.openNextFile();
     }
 }
@@ -363,20 +359,20 @@ void printFileContents(const char *filename) {
   // Attempt to open the file for reading
   File file = fileOpen(filename, "r");
   if (!file) {
-    Serial.print("Failed to open file: ");
-    Serial.println(filename);
+    displayMessage("Failed to open file: ");
+    displayMessageWithNewline(filename);
     return;
   }
 
-  Serial.print("Contents of ");
-  Serial.print(filename);
-  Serial.println(":");
+  displayMessage("Contents of ");
+  displayMessage(filename);
+  displayMessageWithNewline(":");
 
   // Read and print each character
   while (file.available()) {
     char ch = file.read();
     if(ch==STATEMENT_TERMINATOR){
-        Serial.println();
+        displayMessage("\n");
     }
     else {
         Serial.write(ch);
@@ -384,5 +380,5 @@ void printFileContents(const char *filename) {
   }
 
   file.close();
-  Serial.println(); // Final newline after content
+  displayMessage("\n"); // Final newline after content
 }

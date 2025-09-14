@@ -9,7 +9,12 @@ struct MessagesSettings {
 };
 
 void displayMessage(const char *format, ...);
-void alwaysDisplayMessage(const char *format, ...);
+void displayMessage(const __FlashStringHelper* format, ...);
+void displayMessageWithNewline(const char *format, ...);
+void displayMessageWithNewline(const __FlashStringHelper* format, ...);
+
+
+void displayMessage(const char *format, ...);
 
 
 enum ledFlashBehaviour { ledFlashOn, ledFlashNormalState, ledFlashStartingState,

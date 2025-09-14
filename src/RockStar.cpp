@@ -19,7 +19,7 @@ int RockstarIshDecodeScriptLine(char *input);
 
 void rockstarDecoderStart()
 {
-    Serial.printf("Starting Rockstar decoder");
+    displayMessage("Starting Rockstar decoder");
 }
 
 struct LanguageHandler RockstarLanguage = {
@@ -31,7 +31,7 @@ struct LanguageHandler RockstarLanguage = {
 
 void rockstarShowPrompt()
 {
-	alwaysDisplayMessage("R>");
+	displayMessage("R>");
 }
 
 
@@ -113,8 +113,8 @@ int splitInput(const char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH])
         {
             if (charIndex >= MAX_TOKEN_LENGTH - 1)
             {
-                Serial.print("Error: Token too long at token ");
-                Serial.println(tokenIndex);
+                displayMessage("Error: Token too long at token ");
+                displayMessageWithNewline("%d",tokenIndex);
                 return tokenIndex;
             }
             tokens[tokenIndex][charIndex++] = *input++;
@@ -125,7 +125,7 @@ int splitInput(const char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH])
 
         if (tokenIndex >= MAX_TOKENS)
         {
-            Serial.println("Error: Too many tokens.");
+            displayMessageWithNewline("Error: Too many tokens.");
             return tokenIndex;
         }
     }
@@ -156,7 +156,7 @@ int copyIntoToken(int startPos)
         {
             nextToken[tokenOffset] = 0;
 #ifdef ROCKSTAR_DEBUG
-            Serial.printf("Got next token:%s\n", nextToken);
+            displayMessage("Got next token:%s\n", nextToken);
 #endif
             return ERROR_OK;
         }
@@ -211,7 +211,7 @@ int dropSimpleAssignment(char *variableName)
 {
 
 #ifdef ROCKSTAR_DEBUG
-    Serial.printf("Dropping simple assignment to %s\n", nextToken);
+    displayMessage("Dropping simple assignment to %s\n", nextToken);
 #endif
 
     if (nextToken[0] == 0)
@@ -260,7 +260,7 @@ int processRockstarCommand(int commandNo)
 {
 #ifdef ROCKSTAR_DEBUG
 
-    Serial.printf("Processing Rockstar Command:%d\n", commandNo);
+    displayMessage("Processing Rockstar Command:%d\n", commandNo);
 
 #endif
 
@@ -379,7 +379,7 @@ int RockstarPoeticParse()
 {
 
 #ifdef ROCKSTAR_DEBUG
-    Serial.printf("Poetic parse from here %s\n", bufferPos);
+    displayMessage("Poetic parse from here %s\n", bufferPos);
 #endif
 
     int result = 0;
@@ -416,7 +416,7 @@ int RockstarPoeticParse()
         }
 
 #ifdef ROCKSTAR_DEBUG
-        Serial.printf("ch:%c digit:%d result:%d", ch, digit, result);
+        displayMessage("ch:%c digit:%d result:%d", ch, digit, result);
 #endif
     }
 }
@@ -426,7 +426,7 @@ int RockstarIshDecodeScriptLine(char *input)
     char ch;
 
 #ifdef ROCKSTAR_DEBUG
-    Serial.printf("Got a line of Rockstar to decode %s\n", input);
+    displayMessage("Got a line of Rockstar to decode %s\n", input);
 #endif
 
     bufferPos = input;
@@ -439,7 +439,7 @@ int RockstarIshDecodeScriptLine(char *input)
     if (result != ERROR_OK)
     {
 #ifdef ROCKSTAR_DEBUG
-        Serial.printf("No token found\n");
+        displayMessage("No token found\n");
 #endif
         return result;
     }
@@ -447,7 +447,7 @@ int RockstarIshDecodeScriptLine(char *input)
     if (nextToken[0] == 0)
     {
 #ifdef ROCKSTAR_DEBUG
-        Serial.printf("Empty token found\n");
+        displayMessage("Empty token found\n");
 #endif
         return ERROR_EMPTY_TOKEN;
     }
@@ -455,7 +455,7 @@ int RockstarIshDecodeScriptLine(char *input)
     if (endsWith(nextToken, "'s"))
     {
 #ifdef ROCKSTAR_DEBUG
-        Serial.printf("Possessive assignment 2\n");
+        displayMessage("Possessive assignment 2\n");
 #endif
         strip_end(nextToken, 2);
         resetScriptLine();
@@ -465,7 +465,7 @@ int RockstarIshDecodeScriptLine(char *input)
     if (endsWith(nextToken, "'re"))
     {
 #ifdef ROCKSTAR_DEBUG
-        Serial.printf("Possessive assignment 3\n");
+        displayMessage("Possessive assignment 3\n");
 #endif
         strip_end(nextToken, 3);
         resetScriptLine();
@@ -481,7 +481,7 @@ int RockstarIshDecodeScriptLine(char *input)
     if (commandNo == -1)
     {
 #ifdef ROCKSTAR_DEBUG
-        Serial.printf("No command found. Checking for compound assignment\n");
+        displayMessage("No command found. Checking for compound assignment\n");
 #endif
 
         // no command found - look for an assignment starting with a variable name
@@ -497,7 +497,7 @@ int RockstarIshDecodeScriptLine(char *input)
 
             if (commandNo != ROCKSTAR_IS_OPERATOR){
 #ifdef ROCKSTAR_DEBUG
-            Serial.printf("Space terminated element in variable name. Moved input position to here:%s\n", bufferPos);
+            displayMessage("Space terminated element in variable name. Moved input position to here:%s\n", bufferPos);
 #endif
 
                 // Add a space to the end of the variable name 
@@ -515,7 +515,7 @@ int RockstarIshDecodeScriptLine(char *input)
             }
             else {
     #ifdef ROCKSTAR_DEBUG
-                Serial.printf("Is assignment of possibly poetic number\n");
+                displayMessage("Is assignment of possibly poetic number\n");
     #endif
                 sendCommand("VS");
 
@@ -545,7 +545,7 @@ int RockstarIshDecodeScriptLine(char *input)
                 int val = RockstarPoeticParse();
 
     #ifdef ROCKSTAR_DEBUG
-                Serial.printf("Poetic number to assign:%d\n", val);
+                displayMessage("Poetic number to assign:%d\n", val);
     #endif
                 char numberBuffer[20];
 
@@ -567,15 +567,10 @@ int RockstarIshDecodeScriptLine(char *input)
 
         if (storingProgram())
         {
-            Serial.print("Line:  ");
-            Serial.print(scriptLineNumber);
-            Serial.print(" ");
+            displayMessage("Line:  %d ",scriptLineNumber);
         }
 
-        Serial.print("Error: ");
-        Serial.print(result);
-        Serial.print(" ");
-        Serial.println(input);
+        displayMessage("Error: %d %s\n", result);
         printError(result);
     }
 

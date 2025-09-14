@@ -39,13 +39,13 @@ void setDefaultWheelDiameter(void *dest)
 
 void dumpActiveWheelSettings()
 {
-  Serial.println(F("Wheel settings"));
+  displayMessageWithNewline(F("Wheel settings"));
   Serial.print(F("Left diameter: "));
-  Serial.println(motorSettings.leftWheelDiameter);
+  displayMessageWithNewline(motorSettings.leftWheelDiameter);
   Serial.print(F("Right diameter: "));
-  Serial.println(motorSettings.rightWheelDiameter);
+  displayMessageWithNewline(motorSettings.rightWheelDiameter);
   Serial.print(F("Wheel spacing: "));
-  Serial.println(motorSettings.wheelSpacing);
+  displayMessageWithNewline(motorSettings.wheelSpacing);
 }
 
 void setActiveWheelSettings(int leftDiam, int rightDiam, int spacing)
@@ -345,13 +345,13 @@ void initMotorHardware()
 MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds)
 {
 #ifdef DEBUG_TIMED_MOVE
-  Serial.println("timedMoveSteps");
+  displayMessageWithNewline("timedMoveSteps");
   Serial.print("    Left steps to move: ");
   Serial.print(leftStepsToMove);
   Serial.print(" Right steps to move: ");
   Serial.print(rightStepsToMove);
   Serial.print(" Time to move in seconds: ");
-  Serial.println(timeToMoveInSeconds);
+  displayMessageWithNewline(timeToMoveInSeconds);
 #endif
 
   long leftInterruptIntervalInMicroSeconds;
@@ -360,7 +360,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
   if (leftStepsToMove != 0)
   {
 #ifdef DEBUG_TIMED_MOVE
-    Serial.println("    Moving left steps..");
+    displayMessageWithNewline("    Moving left steps..");
 #endif
     leftInterruptIntervalInMicroSeconds = (long)((timeToMoveInSeconds / (double)absLeftStepsToMove) * 1000000L + 0.5);
     timerAlarmWrite(leftTimer, leftInterruptIntervalInMicroSeconds, true);
@@ -383,7 +383,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
   if (rightStepsToMove != 0)
   {
 #ifdef DEBUG_TIMED_MOVE
-    Serial.println("    Moving right steps..");
+    displayMessageWithNewline("    Moving right steps..");
 #endif
     rightInterruptIntervalInMicroseconds = (long)((timeToMoveInSeconds / (double)absRightStepsToMove) * 1000000L + 0.5);
     timerAlarmWrite(rightTimer, rightInterruptIntervalInMicroseconds, true);
@@ -404,7 +404,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
   Serial.print("    Left interval in microseconds: ");
   Serial.print(leftInterruptIntervalInMicroSeconds);
   Serial.print(" Right interval in microseconds: ");
-  Serial.println(rightInterruptIntervalInMicroseconds);
+  displayMessageWithNewline(rightInterruptIntervalInMicroseconds);
 #endif
 
   return Move_OK;
@@ -487,13 +487,13 @@ bool onRight(struct repeating_timer *t)
 MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds)
 {
 #ifdef DEBUG_TIMED_MOVE
-  Serial.println("timedMoveSteps");
+  displayMessageWithNewline("timedMoveSteps");
   Serial.print("    Left steps to move: ");
   Serial.print(leftStepsToMove);
   Serial.print(" Right steps to move: ");
   Serial.print(rightStepsToMove);
   Serial.print(" Time to move in seconds: ");
-  Serial.println(timeToMoveInSeconds);
+  displayMessageWithNewline(timeToMoveInSeconds);
 #endif
 
   long leftInterruptIntervalInMicroSeconds;
@@ -504,7 +504,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
     cancel_repeating_timer(&leftTimer);
 
 #ifdef DEBUG_TIMED_MOVE
-    Serial.println("    Moving left steps..");
+    displayMessageWithNewline("    Moving left steps..");
 #endif
     leftInterruptIntervalInMicroSeconds = (long)((timeToMoveInSeconds / (double)absLeftStepsToMove) * 1000000L + 0.5);
     leftNumberOfStepsToMove = absLeftStepsToMove;
@@ -526,7 +526,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
   if (rightStepsToMove != 0)
   {
 #ifdef DEBUG_TIMED_MOVE
-    Serial.println("    Moving right steps..");
+    displayMessageWithNewline("    Moving right steps..");
 #endif
     cancel_repeating_timer(&rightTimer);
 
@@ -548,7 +548,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
   Serial.print("    Left interval in microseconds: ");
   Serial.print(leftInterruptIntervalInMicroSeconds);
   Serial.print(" Right interval in microseconds: ");
-  Serial.println(rightInterruptIntervalInMicroseconds);
+  displayMessageWithNewline(rightInterruptIntervalInMicroseconds);
 #endif
 
   return Move_OK;
@@ -638,13 +638,13 @@ void startMotorsCore1(
 MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds)
 {
 #ifdef DEBUG_TIMED_MOVE
-  Serial.println("timedMoveSteps");
+  displayMessageWithNewline("timedMoveSteps");
   Serial.print("    Left steps to move: ");
   Serial.print(leftStepsToMove);
   Serial.print(" Right steps to move: ");
   Serial.print(rightStepsToMove);
   Serial.print(" Time to move in seconds: ");
-  Serial.println(timeToMoveInSeconds);
+  displayMessageWithNewline(timeToMoveInSeconds);
 #endif
 
   long leftInterruptIntervalInMicroSeconds;
@@ -673,7 +673,7 @@ MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float
   Serial.print("    Left interval in microseconds: ");
   Serial.print(leftInterruptIntervalInMicroSeconds);
   Serial.print(" Right interval in microseconds: ");
-  Serial.println(rightInterruptIntervalInMicroseconds);
+  displayMessageWithNewline(rightInterruptIntervalInMicroseconds);
 #endif
 
   // There's a minium gap allowed between intervals. This is set by the top speed of the motors
@@ -774,11 +774,11 @@ float fastMoveSteps(long leftStepsToMove, long rightStepsToMove)
 {
 
 #ifdef DEBUG_FAST_MOVE_STEPS
-  Serial.println("fastMoveSteps");
+  displayMessageWithNewline("fastMoveSteps");
   Serial.print("    Left steps to move: ");
   Serial.print(leftStepsToMove);
   Serial.print(" Right steps to move: ");
-  Serial.println(rightStepsToMove);
+  displayMessageWithNewline(rightStepsToMove);
 #endif
 
   // work out how long it will take to move in seconds
@@ -809,7 +809,7 @@ float fastMoveSteps(long leftStepsToMove, long rightStepsToMove)
   Serial.print("    Left time to move: ");
   Serial.print(timeForLeftMoveInSeconds);
   Serial.print(" Right time to move: ");
-  Serial.println(timeForRightMoveInSeconds);
+  displayMessageWithNewline(timeForRightMoveInSeconds);
 #endif
 
   // Allow time for the slowest mover
@@ -829,13 +829,13 @@ int timedMoveDistanceInMM(float leftMMs, float rightMMs, float timeToMoveInSecon
 {
 
 #ifdef TIMED_MOVE_MM_DEBUG
-  Serial.println("timedMoveDistanceInMM");
+  displayMessageWithNewline("timedMoveDistanceInMM");
   Serial.print("    Left mms to move: ");
   Serial.print(leftMMs);
   Serial.print(" Right mms to move: ");
   Serial.print(rightMMs);
   Serial.print(" Time to move in seconds: ");
-  Serial.println(timeToMoveInSeconds);
+  displayMessageWithNewline(timeToMoveInSeconds);
 #endif
 
   // Do this because rounding errors can lead to different numbers for
@@ -857,7 +857,7 @@ int timedMoveDistanceInMM(float leftMMs, float rightMMs, float timeToMoveInSecon
   Serial.print("    Left steps to move: ");
   Serial.print(leftSteps);
   Serial.print(" Right steps to move: ");
-  Serial.println(rightSteps);
+  displayMessageWithNewline(rightSteps);
 #endif
 
   return timedMoveSteps(leftSteps, rightSteps, timeToMoveInSeconds);
@@ -867,15 +867,15 @@ int fastMoveDistanceInMM(float leftMMs, float rightMMs)
 {
 
 #ifdef FAST_MOVE_MM_DEBUG
-  Serial.println("fastMoveDistanceInMM");
+  displayMessageWithNewline("fastMoveDistanceInMM");
   Serial.print("    Left mms to move: ");
   Serial.print(leftMMs);
   Serial.print(" Right mms to move: ");
-  Serial.println(rightMMs);
+  displayMessageWithNewline(rightMMs);
   Serial.print("    Left mms per step: ");
   Serial.print(leftStepsPerMM);
   Serial.print(" Right mms per step: ");
-  Serial.println(rightStepsPerMM);
+  displayMessageWithNewline(rightStepsPerMM);
 
 #endif
 
@@ -896,7 +896,7 @@ int fastMoveDistanceInMM(float leftMMs, float rightMMs)
   Serial.print("    Left steps to move: ");
   Serial.print(leftSteps);
   Serial.print(" Right steps to move: ");
-  Serial.println(rightSteps);
+  displayMessageWithNewline(rightSteps);
 #endif
 
   int result = fastMoveSteps(leftSteps, rightSteps);
@@ -954,7 +954,7 @@ void fastRotateRobot(float angle)
   Serial.print(" noOfTurns: ");
   Serial.print(noOfTurns);
   Serial.print(" distanceToRotate: ");
-  Serial.println(distanceToRotate);
+  displayMessageWithNewline(distanceToRotate);
 #endif
 }
 
@@ -971,7 +971,7 @@ int timedRotateRobot(float angle, float timeToMoveInSeconds)
   Serial.print(" time: ");
   Serial.print(timeToMoveInSeconds);
   Serial.print(" distanceToRotate: ");
-  Serial.println(distanceToRotate);
+  displayMessageWithNewline(distanceToRotate);
 #endif
 
   return timedMoveDistanceInMM(distanceToRotate, -distanceToRotate, timeToMoveInSeconds);
@@ -986,7 +986,7 @@ void fastMoveArcRobot(float radius, float angle)
   float rightDistanceToMove = noOfTurns * ((absRadius - (motorSettings.wheelSpacing / 2.0)) * 2.0 * PI);
 
 #ifdef DEBUG_FAST_ARC
-  Serial.println("fastMoveArcRobot");
+  displayMessageWithNewline("fastMoveArcRobot");
   Serial.print(" radius: ");
   Serial.print(radius);
   Serial.print(" angle: ");
@@ -994,7 +994,7 @@ void fastMoveArcRobot(float radius, float angle)
   Serial.print(" leftDistanceToMove: ");
   Serial.print(leftDistanceToMove);
   Serial.print(" rightDistanceToMove: ");
-  Serial.println(rightDistanceToMove);
+  displayMessageWithNewline(rightDistanceToMove);
 #endif
 
   if (radius >= 0)
@@ -1016,7 +1016,7 @@ int timedMoveArcRobot(float radius, float angle, float timeToMoveInSeconds)
   float rightDistanceToMove = noOfTurns * ((absRadius - (motorSettings.wheelSpacing / 2.0)) * 2.0 * PI);
 
 #ifdef DEBUG_TIMED_ARC
-  Serial.println("timedMoveArcRobot");
+  displayMessageWithNewline("timedMoveArcRobot");
   Serial.print(" radius: ");
   Serial.print(radius);
   Serial.print(" angle: ");
@@ -1026,7 +1026,7 @@ int timedMoveArcRobot(float radius, float angle, float timeToMoveInSeconds)
   Serial.print(" leftDistanceToMove: ");
   Serial.print(leftDistanceToMove);
   Serial.print(" rightDistanceToMove: ");
-  Serial.println(rightDistanceToMove);
+  displayMessageWithNewline(rightDistanceToMove);
 #endif
 
   if (radius >= 0)

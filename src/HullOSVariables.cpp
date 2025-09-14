@@ -363,7 +363,7 @@ int checkIdentifier(char * var)
 bool matchVariable(int position, char * text)
 {
 #ifdef VAR_DEBUG
-	Serial.print(F("Match variable: "));
+	displayMessage(F("Match variable: "));
 	messageLogf(position);
 #endif
 
@@ -371,7 +371,7 @@ bool matchVariable(int position, char * text)
 	{
 		// position is empty - not a match
 #ifdef VAR_DEBUG
-		Serial.print(F("    Empty slot"));
+		displayMessage(F("    Empty slot"));
 		messageLogf(position);
 #endif
 
@@ -379,17 +379,17 @@ bool matchVariable(int position, char * text)
 	}
 
 #ifdef VAR_DEBUG
-	Serial.print(F("    Matching: "));
+	displayMessage(F("    Matching: "));
 	messageLogf(position);
 #endif
 
 	for (int i = 0; i < MAX_VARIABLE_NAME_LENGTH; i++)
 	{
 #ifdef VAR_DEBUG
-		Serial.print(variables[position].name[i]);
-		Serial.print(F(":"));
-		Serial.print(*text);
-		Serial.print(F("  "));
+		displayMessage(variables[position].name[i]);
+		displayMessage(F(":"));
+		displayMessage(*text);
+		displayMessage(F("  "));
 #endif
 		if ((variables[position].name[i] == 0) & !isVariableNameChar(text))
 		{
@@ -446,7 +446,7 @@ parseOperandResult findVariable(char * name, int *position)
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 	{
 #ifdef VAR_DEBUG
-		Serial.print(F("    Checking variable: "));
+		displayMessage(F("    Checking variable: "));
 		messageLogf(i);
 #endif
 		if (matchVariable(i, name))
@@ -516,10 +516,10 @@ parseOperandResult createVariable(char * namePos, int * varPos)
 		decodePos++;
 
 #ifdef VAR_DEBUG
-		Serial.print(variables[position].name[i]);
-		Serial.print(F(":"));
-		Serial.print(*decodePos);
-		Serial.print(F("  "));
+		displayMessage(variables[position].name[i]);
+		displayMessage(F(":"));
+		displayMessage(*decodePos);
+		displayMessage(F("  "));
 #endif
 
 		if (!isVariableNameChar(decodePos))
@@ -576,7 +576,7 @@ bool readInteger(int * result)
 		char ch = *decodePos;
 
 #ifdef READ_INTEGER_DEBUG
-		Serial.print(".  processing: ");
+		displayMessage(".  processing: ");
 		messageLogf((char)ch);
 #endif
 
@@ -591,7 +591,7 @@ bool readInteger(int * result)
 		resultValue = (resultValue * 10) + (ch - '0');
 
 #ifdef READ_INTEGER_DEBUG
-		Serial.print(".  result: ");
+		displayMessage(".  result: ");
 		messageLogf(resultValue);
 #endif
 
@@ -602,7 +602,7 @@ bool readInteger(int * result)
 	resultValue = resultValue * sign;
 
 #ifdef READ_INTEGER_DEBUG
-	Serial.print(".  returning: ");
+	displayMessage(".  returning: ");
 	messageLogf(resultValue);
 #endif
 
@@ -660,7 +660,7 @@ parseOperandResult parseOperand(int * result)
 	if (isdigit(*decodePos) | (*decodePos == '+') | (*decodePos == '-'))
 	{
 #ifdef VAR_DEBUG
-		Serial.print(F("    Getting literal operand"));
+		displayMessage(F("    Getting literal operand"));
 #endif
 		if (readInteger(result))
 		{
@@ -701,7 +701,7 @@ bool getOperand(int * result)
 
 	if (getResult != parseOperandResult::OPERAND_OK)
 	{
-		Serial.print(F("Operand error: "));
+		displayMessage(F("Operand error: "));
 		displayMessage("%d",getResult);
 		return false;
 	}
@@ -751,7 +751,7 @@ bool getValue(int * result)
 	}	
 
 #ifdef VAR_DEBUG
-	Serial.print(F("    get operand result"));
+	displayMessage(F("    get operand result"));
 	messageLogf(getOperandResult);
 #endif
 
@@ -789,7 +789,7 @@ bool testCondition(bool * result)
 	}
 
 #ifdef TEST_CONDITION_DEBUG
-	Serial.print(F("    operator: "));
+	displayMessage(F("    operator: "));
 	messageLogf(op->operatorCh);
 #endif
 
@@ -803,16 +803,16 @@ bool testCondition(bool * result)
 	}
 
 #ifdef TEST_CONDITION_DEBUG
-	Serial.print(F("    get operand result"));
+	displayMessage(F("    get operand result"));
 	messageLogf(getOperandResult);
-	Serial.print(F("    second operand"));
+	displayMessage(F("    second operand"));
 	messageLogf(secondOperand);
 #endif
 
 	*result = op->evaluator(firstOperand, secondOperand);
 
 #ifdef TEST_CONDITION_DEBUG
-	Serial.print(F("    comparision result"));
+	displayMessage(F("    comparision result"));
 	messageLogf(*result);
 #endif
 
@@ -834,14 +834,14 @@ void setVariable()
 	case INVALID_VARIABLE_NAME:
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			Serial.print(F("VS invalid variable name"));
+			displayMessage(F("VS invalid variable name"));
 		}
 		return;
 
 	case VARIABLE_NAME_TOO_LONG:
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			Serial.print(F("VS variable name too long"));
+			displayMessage(F("VS variable name too long"));
 		}
 		return;
 	}
@@ -916,21 +916,21 @@ void viewVariable()
 	switch (findVariable(decodePos, &position)){
 
 	case VARIABLE_NOT_FOUND:
-		Serial.println(F("VV variable not found"));
+		displayMessageWithNewline("VV variable not found");
 		return;
 
 	case INVALID_VARIABLE_NAME:
-		Serial.println(F("VV invalid variable name"));
+		displayMessageWithNewline(F("VV invalid variable name"));
 		return;
 
 	case OPERAND_OK:
 		if (!isAssigned(position))
 		{
-			Serial.println(F("Unassigned"));
+			displayMessageWithNewline(F("Unassigned"));
 		}
 		else
 		{
-			Serial.printf("Variable has value: %d\n", getVariable(position));
+			displayMessage("Variable has value: %d\n", getVariable(position));
 		}
 	}
 }

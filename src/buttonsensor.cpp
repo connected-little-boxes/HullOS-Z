@@ -110,7 +110,7 @@ void buttonSensorTest()
 		digitalWrite(buttonSensorSettings.buttonGroundPin, LOW);
 	}
 
-	alwaysDisplayMessage("Button Sensor test\nPress the ESC key to end the test\n");
+	displayMessage("Button Sensor test\nPress the ESC key to end the test\n");
 
 	int count = 0;
 	bool triggered = false;
@@ -133,7 +133,7 @@ void buttonSensorTest()
 			if (triggered == false)
 			{
 				count++;
-				alwaysDisplayMessage("    pressed: %d\n", count);
+				displayMessage("    pressed: %d\n", count);
 				triggered = true;
 			}
 		}
@@ -144,7 +144,7 @@ void buttonSensorTest()
 		delay(100);
 	}
 
-	alwaysDisplayMessage("Button test ended");
+	displayMessage("Button test ended");
 }
 
 bool updateButtonSensor()
