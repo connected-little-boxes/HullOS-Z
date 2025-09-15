@@ -582,7 +582,7 @@ void doFirmwareUpgradeReset(char *commandLine)
 
 #ifdef PROCESS_HULLOS
 
-void doPythonIshBegin (char *commandLine)
+void doPythonIshBegin(char *commandLine)
 {
 	HullOSStartLanguage("PythonIsh");
 	startCompiling();
@@ -680,7 +680,7 @@ struct consoleCommand userCommands[] =
 void doHelp(char *commandLine)
 {
 	displayMessage("\n\nConnected Little Boxes\nDevice Version %s\n\nThese are all the available commands.\n\n",
-						 Version);
+				   Version);
 
 	int noOfCommands = sizeof(userCommands) / sizeof(struct consoleCommand);
 
@@ -689,20 +689,20 @@ void doHelp(char *commandLine)
 		displayMessage("    %s - %s\n", userCommands[i].name, userCommands[i].commandDescription);
 	}
 
-	displayMessage("\nYou can view the value of any setting just by typing the setting name, for example:\n\n"
-						 "    mqttdevicename\n\n"
-						 "- would show you the MQTT device name.\n"
-						 "You can assign a new value to a setting, for example:\n\n"
-						 "     mqttdevicename=Rob\n\n"
-						 "- would set the name of the mqttdevicename to Rob.\n\n"
-						 "To see a list of all the setting names use the command settings.\n"
-						 "This displays all the settings, their values and names.\n"
-						 "To see a dump of settings (which can be restored to the device later) use dump.\n"
-						 "The dump and settings can be followed by a filter string to match setting names\n\n"
-						 "   dump pix\n\n"
-						 "- would dump all the settings that contain the string pix\n\n"
-						 "If you enter a JSON string this will be interpreted as a remote command.\n"
-						 "See the remote command documentation for more details of this.\n");
+	displayMessage("\nYou can view the value of any setting just by typing the setting name, for example:\n\n");
+	displayMessage("    mqttdevicename\n\n");
+	displayMessage("- would show you the MQTT device name.\n");
+	displayMessage("You can assign a new value to a setting, for example:\n\n");
+	displayMessage("     mqttdevicename=Rob\n\n");
+	displayMessage("- would set the name of the mqttdevicename to Rob.\n\n");
+	displayMessage("To see a list of all the setting names use the command settings.\n");
+	displayMessage("This displays all the settings, their values and names.\n");
+	displayMessage("To see a dump of settings (which can be restored to the device later) use dump.\n");
+	displayMessage("The dump and settings can be followed by a filter string to match setting names\n\n");
+	displayMessage("   dump pix\n\n");
+	displayMessage("- would dump all the settings that contain the string pix\n\n");
+	displayMessage("If you enter a JSON string this will be interpreted as a remote command.\n");
+	displayMessage("See the remote command documentation for more details of this.\n");
 }
 
 boolean findCommandName(consoleCommand *com, char *name)
@@ -874,10 +874,11 @@ void checkSerialBuffer()
 	}
 }
 
-void sendMessageToConsole(char * message)
+void sendMessageToConsole(char *message)
 {
 	displayMessage("Acting on received command\n");
-	while(*message){
+	while (*message)
+	{
 		bufferSerialChar(*message);
 		message++;
 	}

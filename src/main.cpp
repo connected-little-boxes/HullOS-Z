@@ -178,7 +178,7 @@ void startDevice()
   for (int i = 0; i < 10; i++)
   {
     delay(1000);
-    displayMessageWithNewline(10 - i);
+    displayMessageWithNewline("%d",10 - i);
     if(Serial.available()){
       break;
     }

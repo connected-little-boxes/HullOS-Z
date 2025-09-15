@@ -11,14 +11,66 @@ At the low level you can use HullOS "star" commands. see (HullOSRef.md) Each sta
 * control over the robot stepper motors
 * print messages to the serial port
 * send messages over MQTT
-## Immediate mode and program mode
-The robot will accept individual commands at any time, even when a program is running. Some commands can be used to control program execution. These direct commands can also be used in scripts. It you want to enter PythonIsh programs you use the command **pythonish** to start a Pythonish session on the terminal:
+
+## Starting PythonIsh
+It you want to control the device using PythonIsh commands the command **pythonish** starts a Pythonish session:
 ```
 pythonish
 P>
 ```
-The robot will now respond to PythonIsh commands. Note that you can 
+The prompt changes to **P>** and the device will now respond to PythonIsh commands. For example the command **red** will set the colour of the pixel display to red.
+```
+P>red
+```
+If you enter this command the pixel display will turn red. You can enter any single line command (**move**, **turn**, **print**, etc) and it wil be obeyed immediately. Languages constructions such as **if** can only be entered as part of a stored program. 
+## Storing a program
+If you want to enter a program you use the command **begin**
+```
+P>begin
+Storing in active.txt
+P*>
+```
+When you are entering a program statements are not performed at the time you type them, instead each statement is converted into HullOS code and stored in the device. The * in the prompt indicates that program statements are being stored. You will also see a single white pixel light up (if you have pixels connected) which indicates that a program is being stored. The light will move after each statement is processed.
 
+If the **begin** command is not followed by a filename the program you are entering will be stored in a file called **active.txt**. This file will be executed when the device is restarted. If you want to store the program in a different file you can follow the **begin** keyword with the name of a file enclosed in double quotes:
+```
+P>begin "fred.txt"
+Storing in fred.txt
+P*>
+```
+
+When you have entered your program you can use the command **end** to complete the storage.
+```
+P*>end
+Storing in active.txt
+P>
+```
+When the program has been entered PythonIsh returns to performing statements as they are typed in and the input prompt changes to **P>** to indicate this. The **end** can be followed by a filename into which the program will be stored.  
+```
+P*>end "ethel.txt"
+Storing in ethel.txt
+P>
+```
+## File manipulation
+
+You can use the **files** command to view the files on the device:
+```
+P>files
+List all files
+Listing LittleFS contents:
+File: active.txt = size 54
+File: nigel.txt = size 40
+File: trevor.txt = size 192
+```
+You can use the **delete** command to delete files from the internal storage:
+```
+P>delete "fred.txt"
+Remove named file
+  Got filename:fred.txt
+Deleted:fred.txt
+```
+# PythonIsh commands
+Each command has a particular name. The name can be given in upper or lower case. Some of the commands are followed by additional information for that command to use. Some of the commands (for example **if** and **forever**) can only be entered when a program is being stored. 
 ## Set the colour of the pixel
 You can set the colour of the pixel to one of a number of colours:
 ```
@@ -424,12 +476,25 @@ red
 end
 ```
 The **continue** statement will cause the loop to be restarted, meaning that the sound is only made when the distance value is less than 100. 
-## Entering Immediate Commands
-You can enter a PythonIsh program manually from a serial terminal connected to the serial port on the robot by pressing cntrl-C to get the following prompt:-
+# Interacting with HullOS
+PythonIsh runs on top of HullOS. PythonIsh programs can interact with HullOS in a variety of ways.
+## Entering HullOS commands
+You can perform HullOS commands (or embed them in PythonIsh stored programs) by preceding a command with a * character:
 ```
+*iv
+```
+The above command would run the HullOS "iv" command which displays the version of HullOS.
+## Entering Console commands
+You can enter Console commands (but not embed them in programs) by preceding a command with the ! character:
+```
+!help
+```
+This would output the console help description at the console. 
+## Entering JSON commands
+You can enter JSON commands directly. PythonIsh will detect the opening { character and decode the string as a HullOS command.
+```
+P>{"process":"pixels","command":"pattern","pattern":"walking","colourmask":"RGBY"}
+{"error":0,"message":"Worked OK"}
 P>
 ```
-
-From there you can enter pythonish commands.
-
-To exit just enter something like *IP which will list the current program.
+The HullOS system will pass the command onto the selected process and then display the process response as a JSON message. JSON commands can also be entered into stored programs.

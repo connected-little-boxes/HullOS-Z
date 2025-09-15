@@ -84,6 +84,7 @@
 #define ERROR_TOKEN_TOO_LARGE_FOR_BUFFER 73
 #define ERROR_MISSING_CLOSE_QUOTE_ON_SEND 74
 #define ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE 75
+#define ERROR_INVALID_FILENAME_IN_BEGIN 76
 
 
 #define COMMAND_SYSTEM_COMMAND 100
@@ -230,12 +231,12 @@ int compileDirectCommand();
 int compileProgramSave();
 int compileProgramLoad(bool clearVariablesBeforeRun);
 int compileProgramDump();
+int compileProgramFiles();
+int compileDeleteFile();
 
 #define EMPTY_STACK -1
 #define IF_CONSTRUCTION_STACK_ITEM 1
 #define WHILE_CONSTRUCTION_STACK_ITEM 3
 #define FOREVER_CONSTRUCTION_STACK_ITEM 4
-
-
 
 #endif

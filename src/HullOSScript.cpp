@@ -83,6 +83,7 @@ const char* getErrorMessage(int code) {
 		case ERROR_TOKEN_TOO_LARGE_FOR_BUFFER: return "Token too large for buffer";
 		case ERROR_MISSING_CLOSE_QUOTE_ON_SEND: return "Missing close quote on send";
 		case ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE: return "Nowait should be the last thing on the line";
+		case ERROR_INVALID_FILENAME_IN_BEGIN: return "Begin is not followed by a valid filename";
         default: return "Unknown error.";
     }
 }
@@ -1140,9 +1141,23 @@ int compileBegin()
 	// Not allowed to indent after a begin
 	previousStatementStartedBlock = false;
 
-	startCompiling();
+	int result = getProgramFilenameFromCode();
 
-	return ERROR_OK;
+	if (result==ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START){
+		// there is no filename - use default
+		clearHullOSFilename();
+		startCompiling();
+		return ERROR_OK;
+	}
+
+	if(result == ERROR_OK){
+		// start compiling and copy the filename into the command
+		startCompiling();
+		sendCommand(HullOScommandsFilenameBuffer);
+		return ERROR_OK;
+	}
+
+	return result;
 }
 
 int getProgramFilenameFromCode()
@@ -1208,14 +1223,13 @@ int compileEnd()
 
 	int result = getProgramFilenameFromCode();
 
-	if (result != ERROR_OK)
-	{
-		clearHullOSFilename();
+	if ((result==ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START) || (result == ERROR_OK)){
+		// either no filename or user entered filename
+		endCompilingStatements();
+		return ERROR_OK;
 	}
 
-	endCompilingStatements();
-
-	return ERROR_OK;
+	return result;
 }
 
 int compileDirectCommand()
@@ -1267,11 +1281,6 @@ int compileProgramLoad(bool clearVariablesBeforeRun)
 		return result;
 	}
 
-	if (!fileExists(HullOScommandsFilenameBuffer))
-	{
-		return ERROR_FILE_LOAD_FAILED;
-	}
-	
 	if(clearVariablesBeforeRun){
 		sendCommand("RF");
 	}
@@ -1311,3 +1320,28 @@ int compileProgramDump()
 
 	return ERROR_OK;
 }
+
+int compileProgramFiles()
+{
+	sendCommand("RL");
+	return ERROR_OK;
+}
+
+int compileDeleteFile()
+{
+	int result = getProgramFilenameFromCode();
+
+	if (result != ERROR_OK)
+	{
+		return result;
+	}
+
+	sendCommand("RK");
+
+	sendCommand(HullOScommandsFilenameBuffer);
+
+	return ERROR_OK;
+}
+
+
+

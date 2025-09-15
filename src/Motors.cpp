@@ -39,13 +39,10 @@ void setDefaultWheelDiameter(void *dest)
 
 void dumpActiveWheelSettings()
 {
-  displayMessageWithNewline(F("Wheel settings"));
-  Serial.print(F("Left diameter: "));
-  displayMessageWithNewline(motorSettings.leftWheelDiameter);
-  Serial.print(F("Right diameter: "));
-  displayMessageWithNewline(motorSettings.rightWheelDiameter);
-  Serial.print(F("Wheel spacing: "));
-  displayMessageWithNewline(motorSettings.wheelSpacing);
+  displayMessageWithNewline("Wheel settings");
+  displayMessageWithNewline("Left diameter: %d",motorSettings.leftWheelDiameter);
+  displayMessageWithNewline("Right diameter: %d",motorSettings.rightWheelDiameter);
+  displayMessageWithNewline("Wheel spacing: %d",motorSettings.wheelSpacing);
 }
 
 void setActiveWheelSettings(int leftDiam, int rightDiam, int spacing)

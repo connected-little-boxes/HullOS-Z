@@ -88,35 +88,6 @@ void displayMessage(const char *format, ...)
     va_end(args);
 }
 
-void displayMessage(const __FlashStringHelper* format, ...)
-{
-
-    // Use va_list to handle variable number of arguments
-    va_list args;
-    va_start(args, format);
-
-    // Use vsnprintf to format the string
-    // Assumes a maximum buffer size of 256 characters
-    char buffer[512];
-    int len = vsnprintf(buffer, sizeof(buffer), reinterpret_cast<PGM_P>(format), args);
-
-    // Check if vsnprintf was successful
-    if (len >= 0 && len < (int) sizeof(buffer))
-    {
-        // Print the formatted string
-        if (!messagesSettings.messagesEnabled)
-        {
-            #if defined(PICO_USE_UART)
-            uart_puts(uart0, buffer);
-            #else
-            Serial.print(buffer);
-            #endif
-        }
-    }
-
-    va_end(args);
-}
-
 void displayMessageWithNewline(const char *format, ...)
 {
 
@@ -152,40 +123,6 @@ void displayMessageWithNewline(const char *format, ...)
     va_end(args);
 }
 
-void displayMessageWithNewline(const __FlashStringHelper* format, ...)
-{
-
-    // don't send messages when turned off or the robot not enabled
-    
-    if (!messagesSettings.messagesEnabled)
-    {
-        return;
-    }
-
-    // Use va_list to handle variable number of arguments
-    va_list args;
-    va_start(args, format);
-
-    // Use vsnprintf to format the string
-    // Assumes a maximum buffer size of 256 characters
-    char buffer[512];
-    int len = vsnprintf(buffer, sizeof(buffer), reinterpret_cast<PGM_P>(format), args);
-
-    // Check if vsnprintf was successful
-    if (len >= 0 && len < (int) sizeof(buffer))
-    {
-        // Print the formatted string
-        #if defined(PICO_USE_UART)
-        uart_puts(uart0, buffer);
-        #else
-        Serial.print(buffer);
-        #endif
-    }
-
-    Serial.println();
-
-    va_end(args);
-}
 
 // enough room for four message handlers
 

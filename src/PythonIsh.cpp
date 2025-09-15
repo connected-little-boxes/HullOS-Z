@@ -80,6 +80,8 @@ const char pythonishcommandNames[] =
 	"chain#"	  // COMMAND_CHAIN      44
 	"send#"	      // COMMAND_SEND       45
 	"nowait#"     // COMMAND_NO_WAIT    46
+	"files#"      // COMMAND_FILES      47
+	"delete#"	  // COMMAND_DELETE     48
 	;
 
 
@@ -626,6 +628,12 @@ int processCommand(byte commandNo)
 
 	case COMMAND_DUMP:
 		return compileProgramDump();
+
+	case COMMAND_FILES:
+		return compileProgramFiles();
+
+	case COMMAND_DELETE:
+		return compileDeleteFile();
 
 	default:
 		return compileAssignment();
