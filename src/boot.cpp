@@ -266,11 +266,11 @@ void getBootMode()
 {
     getBootReasonMessage(bootReasonMessage, BOOT_REASON_MESSAGE_SIZE);
 
-    displayMessage("Reset reason: %s\n", bootReasonMessage);
+    Serial.printf("Reset reason: %s\n", bootReasonMessage);
 
     if (isSoftwareReset())
     {
-        displayMessage("Internal reset - selecting boot mode:\n");
+        Serial.printf("Internal reset - selecting boot mode:\n");
         // we have been restarted by a call
         // Pull out the requested boot code and set the
         // device for this
@@ -279,35 +279,35 @@ void getBootMode()
         switch (storedCode)
         {
         case COLD_BOOT_MODE:
-            displayMessage("  Cold boot mode from reset command");
+            Serial.printf("  Cold boot mode from reset command\n");
             bootMode = storedCode;
             break;
         case WARM_BOOT_MODE:
-            displayMessage("  Warm boot mode");
+            Serial.printf("  Warm boot mode\n");
             bootMode = storedCode;
             break;
         case CONFIG_HOST_BOOT_NO_TIMEOUT_MODE:
-            displayMessage("  Config boot no timeout");
+            Serial.printf("  Config boot no timeout\n");
             bootMode = storedCode;
             break;
 
         case CONFIG_HOST_TIMEOUT_BOOT_MODE:
-            displayMessage("  Config boot with timeout");
+            Serial.printf("  Config boot with timeout\n");
             bootMode = storedCode;
             break;
 
         case OTA_UPDATE_BOOT_MODE:
-            displayMessage("  OTA update");
+            Serial.printf("  OTA update\n");
             bootMode = storedCode;
             break;
         default:
-            displayMessage("  Unknown mode %d\n", storedCode);
+            Serial.printf("  Unknown mode %d\n", storedCode);
             bootMode = WARM_BOOT_MODE;
             break;
         }
     }
     else {
-        displayMessage("  Cold boot mode after power up\n");
+        Serial.printf("  Cold boot mode after power up\n");
         bootMode = COLD_BOOT_MODE;
     }
 }

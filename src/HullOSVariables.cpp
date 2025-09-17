@@ -23,33 +23,33 @@ int evaluatePlus(int op1, int op2)
 	return op1 + op2;
 }
 
-struct op addOp = { '+', evaluatePlus };
+struct op addOp = {'+', evaluatePlus};
 
 int evaluateMinus(int op1, int op2)
 {
 	return op1 - op2;
 }
-struct op minusOp = { '-', evaluateMinus };
+struct op minusOp = {'-', evaluateMinus};
 
 int evaluateTimes(int op1, int op2)
 {
 	return op1 * op2;
 }
-struct op timesOp = { '*', evaluateTimes };
+struct op timesOp = {'*', evaluateTimes};
 
 int evaluateDivide(int op1, int op2)
 {
 	return op1 / op2;
 }
-struct op divideOp = { '/', evaluateDivide };
+struct op divideOp = {'/', evaluateDivide};
 
 int evaluateModulus(int op1, int op2)
 {
 	return op1 % op2;
 }
-struct op modulusOp = { '%', evaluateModulus };
+struct op modulusOp = {'%', evaluateModulus};
 
-struct op * operators[NUMBER_OF_ARITHMETIC_OPERATORS] = { &addOp, &minusOp, &timesOp, &divideOp, &modulusOp };
+struct op *operators[NUMBER_OF_ARITHMETIC_OPERATORS] = {&addOp, &minusOp, &timesOp, &divideOp, &modulusOp};
 
 bool validOperator(char ch)
 {
@@ -61,7 +61,7 @@ bool validOperator(char ch)
 	return false;
 }
 
-op * findOperator(char ch)
+op *findOperator(char ch)
 {
 	for (int i = 0; i < NUMBER_OF_ARITHMETIC_OPERATORS; i++)
 	{
@@ -75,53 +75,53 @@ bool equalsOp(int op1, int op2)
 {
 	return op1 == op2;
 }
-struct logicalOp logicEquals = { "==",equalsOp };
+struct logicalOp logicEquals = {"==", equalsOp};
 
 bool notEqualsOp(int op1, int op2)
 {
 	return op1 != op2;
 }
-struct logicalOp logicNotEquals = { "!=",notEqualsOp };
+struct logicalOp logicNotEquals = {"!=", notEqualsOp};
 
 bool lessThanOp(int op1, int op2)
 {
 	return op1 < op2;
 }
-struct logicalOp logicLessThan = { "<",lessThanOp };
+struct logicalOp logicLessThan = {"<", lessThanOp};
 
 bool greaterThanOp(int op1, int op2)
 {
 	return op1 > op2;
 }
-struct logicalOp logicGreaterThan = { ">",greaterThanOp };
+struct logicalOp logicGreaterThan = {">", greaterThanOp};
 
 bool lessThanEqualsOp(int op1, int op2)
 {
 	return op1 <= op2;
 }
-struct logicalOp logicLessThanEquals = { "<=",lessThanEqualsOp };
+struct logicalOp logicLessThanEquals = {"<=", lessThanEqualsOp};
 
 bool greaterThanEqualsOp(int op1, int op2)
 {
 	return op1 >= op2;
 }
-struct logicalOp logicGreaterThanEquals = { ">=",greaterThanEqualsOp };
+struct logicalOp logicGreaterThanEquals = {">=", greaterThanEqualsOp};
 
-struct logicalOp * logicalOps[NUMBER_OF_LOGICAL_OPERATORS] = { 
-    &logicEquals, &logicNotEquals,
-    &logicLessThan, &logicGreaterThan, &logicLessThanEquals, &logicGreaterThanEquals };
+struct logicalOp *logicalOps[NUMBER_OF_LOGICAL_OPERATORS] = {
+	&logicEquals, &logicNotEquals,
+	&logicLessThan, &logicGreaterThan, &logicLessThanEquals, &logicGreaterThanEquals};
 
-struct logicalOp * findLogicalOp(char * text)
+struct logicalOp *findLogicalOp(char *text)
 {
 	// Some logical operators are two character
 	// If they are, the second character is always equals
 
-	char * firstChar = text;
-	char * secondChar = text + 1;
+	char *firstChar = text;
+	char *secondChar = text + 1;
 
 	for (int i = 0; i < NUMBER_OF_LOGICAL_OPERATORS; i++)
 	{
-		struct logicalOp * op = logicalOps[i];
+		struct logicalOp *op = logicalOps[i];
 		int opLength = strlen(op->operatorCh);
 
 		if (*secondChar == '=')
@@ -151,12 +151,12 @@ struct logicalOp * findLogicalOp(char * text)
 	return NULL;
 }
 
-inline bool isReadingNameStart(char * ch)
+inline bool isReadingNameStart(char *ch)
 {
 	return (isalpha(*ch));
 }
 
-inline bool isReadingNameChar(char * ch)
+inline bool isReadingNameChar(char *ch)
 {
 	return (isAlphaNumeric(*ch));
 }
@@ -166,35 +166,84 @@ int readTest()
 	int result = 99;
 	return result;
 }
-struct reading test = { "test", readTest };
+struct reading test = {"test", readTest};
 
 int readRandom()
 {
 	return random(1, 13);
 }
-struct reading randomReading = { "random", readRandom };
+struct reading randomReading = {"random", readRandom};
+
+#ifdef PROCESS_WIFI
+
+int readWiFIStatus()
+{
+	int status = getProcessStatus("wifi");
+	
+	if (status == WIFI_OK)
+	{
+		return 0;
+	}
+	else
+	{
+		return status;
+	}
+}
+
+struct reading wifiStatusReading = {"wifi", readWiFIStatus};
+
+#endif
+
+#ifdef PROCESS_MQTT
+
+int readMQTTStatus()
+{
+	int status = getProcessStatus("mqtt");
+
+	if (status == MQTT_OK)
+	{
+		return 0;
+	}
+	else
+	{
+		return status;
+	}
+}
+
+struct reading mqttStatusReading = {"mqtt", readMQTTStatus};
+
+#endif
 
 #ifdef SENSOR_DISTANCE
 
-struct reading distanceReading = { (char*)"distance", readDistance };
+struct reading distanceReading = {(char *)"distance", readDistance};
 
 #endif
 
 #ifdef PROCESS_MOTOR
-struct reading movingReading = { (char*)"moving", motorsMoving }; // BNN
+struct reading movingReading = {(char *)"moving", motorsMoving}; // BNN
 #endif
 
-struct reading * readers[] = { 	
+struct reading *readers[] = {
+
+#ifdef PROCESS_MQTT
+	&mqttStatusReading,
+#endif
+
+#ifdef PROCESS_WIFI
+	&wifiStatusReading,
+#endif
+
 #ifdef SENSOR_DISTANCE
 	&distanceReading,
 #endif
-	&randomReading, 
+	&randomReading,
 #ifdef PROCESS_MOTOR
 	&movingReading, // BNN
 #endif
-	&test };
+	&test};
 
-bool validReading(char * text)
+bool validReading(char *text)
 {
 	if (!isReadingNameStart(text))
 	{
@@ -205,19 +254,19 @@ bool validReading(char * text)
 		return false;
 	}
 
-	for (int i = 0; i < sizeof(readers)/sizeof(struct reading *); i++)
+	for (int i = 0; i < sizeof(readers) / sizeof(struct reading *); i++)
 	{
-		struct reading * currentReader = readers[i];
+		struct reading *currentReader = readers[i];
 
-		char * currentChar = text;
-		char * nameChar = currentReader->name;
+		char *currentChar = text;
+		char *nameChar = currentReader->name;
 
 		while (true)
 		{
 			if (!*nameChar)
 			{
-				// reached the end of the current reader 
-				// If the corresponding character in the program is not 
+				// reached the end of the current reader
+				// If the corresponding character in the program is not
 				// a valid part of a name, we can consider this a match
 				if (!isReadingNameChar(currentChar))
 					return true;
@@ -240,7 +289,7 @@ bool validReading(char * text)
 	return false;
 }
 
-struct reading * getReading(char * text)
+struct reading *getReading(char *text)
 {
 	if (!isReadingNameStart(text))
 	{
@@ -251,19 +300,19 @@ struct reading * getReading(char * text)
 		return NULL;
 	}
 
-	for (int i = 0; i < sizeof(readers)/sizeof(struct reading *); i++)
+	for (int i = 0; i < sizeof(readers) / sizeof(struct reading *); i++)
 	{
-		struct reading * currentReader = readers[i];
+		struct reading *currentReader = readers[i];
 
-		char * currentChar = text;
-		char * nameChar = currentReader->name;
+		char *currentChar = text;
+		char *nameChar = currentReader->name;
 
 		while (true)
 		{
 			if (!*nameChar)
 			{
-				// reached the end of the current reader 
-				// If the corresponding character in the program is not 
+				// reached the end of the current reader
+				// If the corresponding character in the program is not
 				// a valid part of a name, we can consider this a match
 				if (!isReadingNameChar(currentChar))
 				{
@@ -324,12 +373,12 @@ bool isAssigned(int position)
 	return !variables[position].unassigned;
 }
 
-bool isVariableNameStart(char * ch)
+bool isVariableNameStart(char *ch)
 {
 	return (isalpha(*ch));
 }
 
-bool isVariableNameChar(char * ch)
+bool isVariableNameChar(char *ch)
 {
 	return (isAlphaNumeric(*ch));
 }
@@ -339,7 +388,7 @@ bool variableSlotEmpty(int position)
 	return variables[position].empty;
 }
 
-int checkIdentifier(char * var)
+int checkIdentifier(char *var)
 {
 	if (!isVariableNameStart(var))
 		return INVALID_VARIABLE_NAME;
@@ -360,7 +409,7 @@ int checkIdentifier(char * var)
 	return VARIABLE_NAME_OK;
 }
 
-bool matchVariable(int position, char * text)
+bool matchVariable(int position, char *text)
 {
 #ifdef VAR_DEBUG
 	displayMessage("Match variable: ");
@@ -408,7 +457,7 @@ bool matchVariable(int position, char * text)
 
 		text++;
 	}
-    return false;
+	return false;
 }
 
 // returns the length of the variable name at the given position in the variable store
@@ -422,14 +471,14 @@ int getVariableNameLength(int position)
 }
 
 // A variable name must start with a letter and then contain letters and digits only
-// This method searches the variable store for a variable of the given name and then 
-// sets position to the variable store offset for that variable. 
+// This method searches the variable store for a variable of the given name and then
+// sets position to the variable store offset for that variable.
 // Returns OPERAND_OK if all is well
-// The parameter points to the area of memory holding the variable name. The variable name is judged to 
+// The parameter points to the area of memory holding the variable name. The variable name is judged to
 // have ended when a non-text/digit character is found
 //
 
-parseOperandResult findVariable(char * name, int *position)
+parseOperandResult findVariable(char *name, int *position)
 {
 #ifdef VAR_DEBUG
 	messageLogf(F("Finding variable"));
@@ -460,7 +509,7 @@ parseOperandResult findVariable(char * name, int *position)
 
 // finds an empty location in the variable table and returns the offset into that table
 // returns NO_ROOM_FOR_VARIABLE if the table is full
-parseOperandResult findVariableSlot(int * result)
+parseOperandResult findVariableSlot(int *result)
 {
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 	{
@@ -474,14 +523,14 @@ parseOperandResult findVariableSlot(int * result)
 	return parseOperandResult::NO_ROOM_FOR_VARIABLE;
 }
 
-// returns INVALID_VARIABLE_NAME if the name is invalid 
+// returns INVALID_VARIABLE_NAME if the name is invalid
 // returns NO_ROOM_FOR_VARIABLE if the variable cannot be stored
 // returns VARIABLE_NAME_TOO_LONG if the name of the variable is longer than the store length
-parseOperandResult createVariable(char * namePos, int * varPos)
+parseOperandResult createVariable(char *namePos, int *varPos)
 {
 	// Start position for the decode process
 
-	char * decodePos = namePos;
+	char *decodePos = namePos;
 	int position;
 
 #ifdef VAR_DEBUG
@@ -524,11 +573,11 @@ parseOperandResult createVariable(char * namePos, int * varPos)
 
 		if (!isVariableNameChar(decodePos))
 		{
-			// If we are 
+			// If we are
 			if (i < (MAX_VARIABLE_NAME_LENGTH - 1))
 				// end of variable name
 				// end the name string
-				// Note that we declared this one element larger to make room 
+				// Note that we declared this one element larger to make room
 				// for the zero
 				variables[position].name[i + 1] = 0;
 			variables[position].empty = false;
@@ -543,9 +592,9 @@ parseOperandResult createVariable(char * namePos, int * varPos)
 	return parseOperandResult::VARIABLE_NAME_TOO_LONG;
 }
 
-//#define READ_INTEGER_DEBUG
+// #define READ_INTEGER_DEBUG
 
-bool readInteger(int * result)
+bool readInteger(int *result)
 {
 #ifdef READ_INTEGER_DEBUG
 	messageLogf(".**readInteger");
@@ -580,7 +629,7 @@ bool readInteger(int * result)
 		messageLogf((char)ch);
 #endif
 
-		if ((ch<'0') || (ch>'9'))
+		if ((ch < '0') || (ch > '9'))
 		{
 #ifdef READ_INTEGER_DEBUG
 			messageLogf(".  not a digit ");
@@ -621,7 +670,7 @@ void skipCodeSpaces(void)
 	}
 }
 
-parseOperandResult parseOperand(int * result)
+parseOperandResult parseOperand(int *result)
 {
 #ifdef VAR_DEBUG
 	messageLogf(F("Get operand"));
@@ -678,7 +727,7 @@ parseOperandResult parseOperand(int * result)
 
 		decodePos++;
 
-		struct reading * reader = getReading(decodePos);
+		struct reading *reader = getReading(decodePos);
 
 		if (reader == NULL)
 		{
@@ -695,14 +744,14 @@ parseOperandResult parseOperand(int * result)
 	return parseOperandResult::INVALID_OPERAND;
 }
 
-bool getOperand(int * result)
+bool getOperand(int *result)
 {
 	parseOperandResult getResult = parseOperand(result);
 
 	if (getResult != parseOperandResult::OPERAND_OK)
 	{
 		displayMessage("Operand error: ");
-		displayMessage("%d",getResult);
+		displayMessage("%d", getResult);
 		return false;
 	}
 	return true;
@@ -710,7 +759,7 @@ bool getOperand(int * result)
 
 // decodepos points to the first character of a value sequence
 // It is either a literal, variable or two operand expression
-bool getValue(int * result)
+bool getValue(int *result)
 {
 	// Now we are at the start of a value to parse
 
@@ -739,7 +788,7 @@ bool getValue(int * result)
 		return false;
 	}
 
-	op * activeOperator = findOperator(*decodePos);
+	op *activeOperator = findOperator(*decodePos);
 
 	decodePos++;
 
@@ -748,7 +797,7 @@ bool getValue(int * result)
 	if (!getOperand(&secondOperand))
 	{
 		return false;
-	}	
+	}
 
 #ifdef VAR_DEBUG
 	displayMessage("    get operand result");
@@ -760,14 +809,13 @@ bool getValue(int * result)
 	return true;
 }
 
-
 // called from the command processor
 // the global variable decodePos holds the position in the decode array (first character
 // of the variable name) and the global variable decodeLimit the end of the array
 
-//#define TEST_CONDITION_DEBUG
+// #define TEST_CONDITION_DEBUG
 
-bool testCondition(bool * result)
+bool testCondition(bool *result)
 {
 
 	int firstOperand;
@@ -777,7 +825,7 @@ bool testCondition(bool * result)
 		return false;
 	}
 
-	logicalOp * op = findLogicalOp(decodePos);
+	logicalOp *op = findLogicalOp(decodePos);
 
 	if (op == NULL)
 	{
@@ -912,8 +960,9 @@ void setVariable()
 void viewVariable()
 {
 	int position;
-	
-	switch (findVariable(decodePos, &position)){
+
+	switch (findVariable(decodePos, &position))
+	{
 
 	case VARIABLE_NOT_FOUND:
 		displayMessageWithNewline("VV variable not found");

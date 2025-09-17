@@ -321,6 +321,31 @@ The **@random** variable returns a random number between 1 and 12. You can use t
 move @random*10
 ```
 This statement make the robot move a random distance between 10 and 120 mm. 
+### Get the WiFi status
+The **@wifi** variable contains a value which represents the current state of the device WiFi connection. If the value is 0 the WiFi is connected. Other values have the following meaning:
+
+* 601 WiFi turned off
+* 602 WiFi scanning
+* 603 WiFi connecting
+* 604 WiFi connect timeout
+* 605 WiFi error scan timeout
+* 606 WiFi waiting to reconnect
+### Get the MQTT status
+The **@mqtt** variable contains a value which represents the current state of the device MQTT connection. If the value is 0 the MQTT is connected. Any other value is an error condition:
+
+* 701 MQTT turned off
+* 702 MQTT starting
+* 703 No WiFi connection
+* 704 Bad protocol
+* 705 Bad client ID
+* 706 Connect unavailable
+* 707 Bad credentials
+* 708 Connect not authorized
+* 709 Connect failed
+* 710 Connect error
+* 711 Connect message failed
+* 712 Not configured
+
 # HullOS Scripting
 Individual commands can be sent to robots at any time, but you can also enter a program into a device controlled by HullOS. HullOS programs are expressed as a series of statements. Each statement must be given on a single line. 
 

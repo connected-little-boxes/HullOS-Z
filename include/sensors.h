@@ -80,6 +80,8 @@ struct sensor * findSensorByName( const char * name);
 struct sensor * findSensorSettingCollectionByName(const char * name);
 void startSensors();
 void dumpSensorStatus();
+bool dumpSensorStatusFiltered(const char * name);
+
 void startSensorsReading();
 void updateSensors();
 void createSensorJson(char * name, char * buffer, int bufferLength);

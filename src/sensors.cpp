@@ -10,7 +10,7 @@
 
 struct sensor *activeSensorList = NULL;
 struct sensor *allSensorList = NULL;
-struct sensorListener * deletedSensorListeners = NULL;
+struct sensorListener *deletedSensorListeners = NULL;
 
 void addSensorToAllSensorsList(struct sensor *newSensor)
 {
@@ -32,32 +32,33 @@ void addSensorToAllSensorsList(struct sensor *newSensor)
 	}
 }
 
-void addListenerToDeletedListeners(struct sensorListener * listener)
+void addListenerToDeletedListeners(struct sensorListener *listener)
 {
 	listener->nextMessageListener = deletedSensorListeners;
 	deletedSensorListeners = listener;
 }
 
-void clearSensorListener(struct sensorListener * listener)
+void clearSensorListener(struct sensorListener *listener)
 {
-	listener->config=NULL;
+	listener->config = NULL;
 	listener->lastReadingMillis = -1;
 	listener->receiveMessage = NULL;
 	listener->nextMessageListener = NULL;
 }
 
-struct sensorListener * getNewSensorListener()
+struct sensorListener *getNewSensorListener()
 {
 	TRACELOGLN("Getting a sensor listener");
 
-	sensorListener * result ;
+	sensorListener *result;
 
-	if(deletedSensorListeners == NULL)
+	if (deletedSensorListeners == NULL)
 	{
 		TRACELOGLN("   creating a new listener");
 		result = new sensorListener();
 	}
-	else {
+	else
+	{
 		TRACELOGLN("   reusing a discarded listener");
 		result = deletedSensorListeners;
 		// remove this listener from the list
@@ -69,7 +70,6 @@ struct sensorListener * getNewSensorListener()
 	return result;
 }
 
-
 // Removes a listener from the sensor and adds the listner to the list of deleted listeners
 // The listeners are recycled if used again
 
@@ -79,16 +79,16 @@ void removeMessageListenerFromSensor(struct sensor *sensor, struct sensorListene
 
 	sensorListener *nodeBeforeDel = sensor->listeners;
 
-	while(nodeBeforeDel != NULL)
+	while (nodeBeforeDel != NULL)
 	{
-		if(nodeBeforeDel->nextMessageListener == listener) 
+		if (nodeBeforeDel->nextMessageListener == listener)
 		{
 			break;
 		}
 		nodeBeforeDel = nodeBeforeDel->nextMessageListener;
 	}
 
-	if(nodeBeforeDel==NULL)
+	if (nodeBeforeDel == NULL)
 	{
 		TRACELOGLN("Remove listener - listener not found");
 		return;
@@ -112,14 +112,14 @@ void removeAllMessageListenersFromSensor(struct sensor *sensor)
 
 	sensorListener *node = sensor->listeners;
 	// sping down the listeners and delete each one
-	while(node != NULL)
+	while (node != NULL)
 	{
 		TRACELOG("   removing process:");
 		TRACELOG(node->config->commandProcess);
 		TRACELOG("   removing command:");
 		TRACELOGLN(node->config->commandName);
 		// remember the node we are deleting
-		sensorListener * nodeToDelete = node;
+		sensorListener *nodeToDelete = node;
 		// move on to the next node
 		node = node->nextMessageListener;
 		// delete the node we have just left
@@ -247,13 +247,38 @@ void dumpSensorStatus()
 		sensorValueBuffer[0] = 0; // empty the buffer string
 		activeSensorPtr->addReading(sensorValueBuffer, SENSOR_VALUE_BUFFER_SIZE);
 		displayMessage("    %s:%s %s Active time(microsecs): ",
-					  activeSensorPtr->sensorName, sensorStatusBuffer, sensorValueBuffer);
-		displayMessage("%d",activeSensorPtr->activeTime);
+					   activeSensorPtr->sensorName, sensorStatusBuffer, sensorValueBuffer);
+		displayMessage("%d", activeSensorPtr->activeTime);
 		displayMessage("  Millis since last reading: ");
-		displayMessage("%lu\n",ulongDiff(currentMillis, activeSensorPtr->millisAtLastReading));
+		displayMessage("%lu\n", ulongDiff(currentMillis, activeSensorPtr->millisAtLastReading));
 
 		activeSensorPtr = activeSensorPtr->nextActiveSensor;
 	}
+}
+
+bool dumpSensorStatusFiltered(const char *name)
+{
+	unsigned long currentMillis = millis();
+
+	sensor *activeSensorPtr = activeSensorList;
+
+	while (activeSensorPtr != NULL)
+	{
+		if (strcasecmp(activeSensorPtr->sensorName, name) == 0)
+		{
+			activeSensorPtr->getStatusMessage(sensorStatusBuffer, SENSOR_STATUS_BUFFER_SIZE);
+			sensorValueBuffer[0] = 0; // empty the buffer string
+			activeSensorPtr->addReading(sensorValueBuffer, SENSOR_VALUE_BUFFER_SIZE);
+			displayMessage("    %s:%s %s Active time(microsecs): ",
+						   activeSensorPtr->sensorName, sensorStatusBuffer, sensorValueBuffer);
+			displayMessage("%d", activeSensorPtr->activeTime);
+			displayMessage("  Millis since last reading: ");
+			displayMessage("%lu\n", ulongDiff(currentMillis, activeSensorPtr->millisAtLastReading));
+			return true;
+		}
+		activeSensorPtr = activeSensorPtr->nextActiveSensor;
+	}
+	return false;
 }
 
 void startSensorsReading()
@@ -350,7 +375,7 @@ void iterateThroughSensorSettings(void (*func)(unsigned char *settings, int size
 
 	while (allSensorPtr != NULL)
 	{
-		//messageLogf("  Settings %s\n", allSensorPtr->sensorName);
+		// messageLogf("  Settings %s\n", allSensorPtr->sensorName);
 		func(allSensorPtr->settingsStoreBase,
 			 allSensorPtr->settingsStoreLength);
 		allSensorPtr = allSensorPtr->nextAllSensors;
@@ -424,7 +449,7 @@ struct sensorEventBinder *findSensorListenerByName(struct sensor *s, const char 
 	}
 
 	if (s->noOfSensorListenerFunctions == 0)
-	{ 
+	{
 		return NULL;
 	}
 
@@ -449,34 +474,34 @@ void iterateThroughSensorListeners(struct sensor *sensor, void (*func)(struct se
 		pos = pos->nextMessageListener;
 	}
 }
- 
+
 void fireSensorListenersOnTrigger(struct sensor *sensor, int trigger)
 {
 	struct sensorListener *pos = sensor->listeners;
 
-	//messageLogf("      Sensor:%s mask:%d\n", sensor->sensorName, mask);
+	// messageLogf("      Sensor:%s mask:%d\n", sensor->sensorName, mask);
 
 	while (pos != NULL)
 	{
-		//messageLogf("        Listener:%s sendoption:%d\n", pos->config->listenerName, pos->config->sendOption);
+		// messageLogf("        Listener:%s sendoption:%d\n", pos->config->listenerName, pos->config->sendOption);
 		if (pos->config->sendOption == trigger)
 		{
-			//messageLogf("Got a match");
-			// dumpCommand(pos->config->commandProcess, pos->config->commandName, pos->config->optionBuffer);
+			// messageLogf("Got a match");
+			//  dumpCommand(pos->config->commandProcess, pos->config->commandName, pos->config->optionBuffer);
 
 			pos->receiveMessage(pos->config->destination, pos->config->optionBuffer);
-			//messageLogf("command performed");
+			// messageLogf("command performed");
 		}
 		pos = pos->nextMessageListener;
 	}
 }
 
-struct sensorEventBinder * findSensorEventBinderByTrigger(struct sensor * s, int trigger)
+struct sensorEventBinder *findSensorEventBinderByTrigger(struct sensor *s, int trigger)
 {
-	for(int i=0; i<s->noOfSensorListenerFunctions;i++)
+	for (int i = 0; i < s->noOfSensorListenerFunctions; i++)
 	{
-		struct sensorEventBinder * pos = &s->sensorListenerFunctions[i];
-		if(pos->trigger==trigger)
+		struct sensorEventBinder *pos = &s->sensorListenerFunctions[i];
+		if (pos->trigger == trigger)
 		{
 			return pos;
 		}

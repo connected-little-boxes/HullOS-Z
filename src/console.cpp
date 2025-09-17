@@ -111,6 +111,24 @@ void doStartWebServer(char *commandLine)
 
 void doDumpStatus(char *commandLine)
 {
+	char *filterStart = skipCommand(commandLine);
+
+	if (*filterStart != 0)
+	{
+		if(dumpSensorStatusFiltered(filterStart)){
+			return;
+		}
+		if(dumpProcessStatusFiltered(filterStart)){
+			return;
+		}
+		displayMessage("\nItem %s not found\n", filterStart);
+		return;
+	}
+	else
+	{
+		DumpAllSettings();
+	}
+	displayMessage("\nDump complete\n");
 	dumpSensorStatus();
 	dumpProcessStatus();
 

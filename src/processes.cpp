@@ -13,7 +13,8 @@ struct process *activeProcessList = NULL;
 
 struct process *allProcessList = NULL;
 
-struct process * getAllProcessList(){
+struct process *getAllProcessList()
+{
 	return allProcessList;
 }
 
@@ -69,7 +70,7 @@ void buildActiveProcessListFromMask(int processMask)
 		{
 			addProcessToActiveProcessList(processPtr);
 		}
-		processPtr = processPtr->nextAllProcesses ;
+		processPtr = processPtr->nextAllProcesses;
 	}
 }
 
@@ -152,14 +153,14 @@ struct process *startProcessByName(char *name)
 
 void initialiseAllProcesses()
 {
-//	messageLogf("Initialising processes\n\n");
+	//	messageLogf("Initialising processes\n\n");
 
 	struct process *procPtr = allProcessList;
 
 	while (procPtr != NULL)
 	{
 		// messageLogf("   initilising: %s\n", procPtr->processName);
-		procPtr->totalTime=0;
+		procPtr->totalTime = 0;
 		procPtr->initProcess();
 		DISPLAY_MEMORY_MONITOR(procPtr->processName);
 		procPtr = procPtr->nextAllProcesses;
@@ -191,12 +192,14 @@ void updateProcesses()
 	while (procPtr != NULL)
 	{
 		unsigned long startMicros = micros();
-//		displayMessage("%s\n", procPtr->processName);
+		//		displayMessage("%s\n", procPtr->processName);
 		procPtr->udpateProcess();
 		unsigned long runTime = ulongDiff(micros(), startMicros);
-		if(messagesSettings.speedMessagesEnabled) {
-			if(runTime>SLOW_PROCESS_TIME_MICROS){
-				displayMessage("  %s running slow: %ul\n", procPtr->processName,runTime);
+		if (messagesSettings.speedMessagesEnabled)
+		{
+			if (runTime > SLOW_PROCESS_TIME_MICROS)
+			{
+				displayMessage("  %s running slow: %ul\n", procPtr->processName, runTime);
 			}
 		}
 		procPtr->activeTime = runTime;
@@ -219,14 +222,56 @@ void dumpProcessStatus()
 			displayMessage("    %s:", procPtr->processName);
 			procPtr->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
 			displayMessage("%s Active time: ", processStatusBuffer);
-			displayMessage("%lu millisecs",procPtr->activeTime/1000);
+			displayMessage("%lu millisecs", procPtr->activeTime / 1000);
 			displayMessage(" Total time: ");
-			displayMessage("%lu millisecs\n",procPtr->totalTime/1000);
+			displayMessage("%lu millisecs\n", procPtr->totalTime / 1000);
 		}
 		procPtr = procPtr->nextActiveProcess;
 	}
 }
 
+bool dumpProcessStatusFiltered(const char *name)
+{
+
+	struct process *procPtr = activeProcessList;
+
+	while (procPtr != NULL)
+	{
+		if (procPtr->beingUpdated)
+		{
+			if (strcasecmp(procPtr->processName, name) == 0)
+			{
+				displayMessage("    %s:", procPtr->processName);
+				procPtr->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
+				displayMessage("%s Active time: ", processStatusBuffer);
+				displayMessage("%lu millisecs", procPtr->activeTime / 1000);
+				displayMessage(" Total time: ");
+				displayMessage("%lu millisecs\n", procPtr->totalTime / 1000);
+				return true;
+			}
+		}
+		procPtr = procPtr->nextActiveProcess;
+	}
+	return false;
+}
+
+int getProcessStatus(const char *name)
+{
+	struct process *procPtr = activeProcessList;
+
+	while (procPtr != NULL)
+	{
+		if (procPtr->beingUpdated)
+		{
+			if (strcasecmp(procPtr->processName, name) == 0)
+			{
+				return procPtr->status;
+			}
+		}
+		procPtr = procPtr->nextActiveProcess;
+	}
+	return -1;
+}
 
 void iterateThroughAllProcesses(void (*func)(process *p))
 {
@@ -265,15 +310,15 @@ void stopProcesses()
 	}
 }
 
-void iterateThroughProcessSettings(void (*func) (unsigned char * settings, int size))
+void iterateThroughProcessSettings(void (*func)(unsigned char *settings, int size))
 {
 	struct process *procPtr = allProcessList;
 
 	while (procPtr != NULL)
 	{
-		//messageLogf("  Process %s\n", procPtr->processName);
-		func(procPtr->settingsStoreBase, 
-			procPtr->settingsStoreLength);
+		// messageLogf("  Process %s\n", procPtr->processName);
+		func(procPtr->settingsStoreBase,
+			 procPtr->settingsStoreLength);
 		procPtr = procPtr->nextAllProcesses;
 	}
 }
@@ -323,7 +368,7 @@ void iterateThroughProcessCommands(void (*func)(Command *c))
 	}
 }
 
-Command * FindCommandInProcess(process * procPtr, const char *commandName)
+Command *FindCommandInProcess(process *procPtr, const char *commandName)
 {
 	TRACELOG("Finding command:");
 	TRACELOGLN(commandName);
@@ -342,11 +387,12 @@ Command * FindCommandInProcess(process * procPtr, const char *commandName)
 	return NULL;
 }
 
-Command *FindCommandByName(const char * processName, const char *name)
+Command *FindCommandByName(const char *processName, const char *name)
 {
 	struct process *procPtr = findProcessByName(processName);
 
-	if(procPtr==NULL){
+	if (procPtr == NULL)
+	{
 		return NULL;
 	}
 

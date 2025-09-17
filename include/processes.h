@@ -65,6 +65,8 @@ struct process *startProcessByName(char *name);
 void startProcesses();
 void updateProcesses();
 void dumpProcessStatus();
+bool dumpProcessStatusFiltered(const char * name);
+int getProcessStatus(const char *name);
 void updateProcess(struct process *process);
 void iterateThroughAllProcesses(void (*func)(process *p));
 void iterateThroughActiveProcesses(void (*func)(process *p));
