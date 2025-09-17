@@ -1,3 +1,5 @@
+#ifdef PROCESS_PRINTER
+
 #include <Arduino.h>
 
 #include "utils.h"
@@ -51,12 +53,21 @@ struct SettingItem printerEnabledSetting = {
     setFalse,
     validateYesNo};
 
+struct SettingItem printMessagesSetting = {
+    "Printer system messages",
+    "printmessages",
+    &printerSettings.printMessages,
+    ONOFF_INPUT_LENGTH,
+    yesNo,
+    setFalse,
+    validateYesNo};
+
 struct SettingItem *printerSettingItemPointers[] =
     {
         &printerEnabledSetting,
         &PrinterBaudRate,
         &PrinterDataPinNo,
-};
+        &printMessagesSetting};
 
 struct SettingItemCollection printerMessagesSettingItems = {
     "printerSettings",
@@ -76,6 +87,18 @@ void printerMessagesOn()
     saveSettings();
 }
 
+void printSystemMessagesOn()
+{
+    printerSettings.printMessages = true;
+    saveSettings();
+}
+
+void printSystemMessagesOff()
+{
+    printerSettings.printMessages = false;
+    saveSettings();
+}
+
 void printMessage(char *messageText, char *option)
 {
     TRACELOG("Printing message:");
@@ -90,7 +113,7 @@ void printMessage(char *messageText, char *option)
         if (strContains(option, "datestamp"))
         {
             TRACELOGLN("    Got datestamp");
-            if(getDateAndTime(PRINTERMessageBuffer,PRINTERMESSAGE_LENGTH ))
+            if (getDateAndTime(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH))
             {
                 TRACELOGLN("      printing datestamp");
                 Serial1.println(PRINTERMessageBuffer);
@@ -107,7 +130,8 @@ void printMessage(char *messageText, char *option)
             snprintf(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH, "%s\n", messageText);
         }
     }
-    else {
+    else
+    {
         snprintf(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH, "%s\n", messageText);
     }
     TRACELOGLN("Print complete");
@@ -162,7 +186,6 @@ struct CommandItem printerPostText = {
     validatePRINTERMessageString,
     setDefaultEmptyString};
 
-
 struct CommandItem *PrintTextCommandItems[] =
     {
         &PrinterMessageText,
@@ -172,14 +195,12 @@ struct CommandItem *PrintTextCommandItems[] =
 
 int doPrintText(char *destination, unsigned char *settingBase);
 
-struct Command printMessageCommand
-{
+struct Command printMessageCommand{
     "print",
-        "Prints text",
-        PrintTextCommandItems,
-        sizeof(PrintTextCommandItems) / sizeof(struct CommandItem *),
-        doPrintText
-};
+    "Prints text",
+    PrintTextCommandItems,
+    sizeof(PrintTextCommandItems) / sizeof(struct CommandItem *),
+    doPrintText};
 
 int doPrintText(char *destination, unsigned char *settingBase)
 {
@@ -197,7 +218,7 @@ int doPrintText(char *destination, unsigned char *settingBase)
     }
 
     char *message = (char *)(settingBase + PRINTER_MESSAGE_OFFSET);
-    char *post = (char *)(settingBase +PRINTER_POST_TEXT_OFFSET);
+    char *post = (char *)(settingBase + PRINTER_POST_TEXT_OFFSET);
     char *pre = (char *)(settingBase + PRINTER_PRE_TEXT_OFFSET);
     char *options = (char *)(settingBase + PRINTER_OPTION_OFFSET);
     char buffer[MAX_MESSAGE_LENGTH];
@@ -212,8 +233,7 @@ int doPrintText(char *destination, unsigned char *settingBase)
 }
 
 struct Command *PRINTERCommandList[] = {
-    &printMessageCommand
-    };
+    &printMessageCommand};
 
 struct CommandItemCollection PRINTERCommands =
     {
@@ -229,7 +249,7 @@ void initPrinter()
 
     printerProcess.status = PRINTER_OFF;
 
-    if (printerSettings.printerEnabled)
+    if (printerSettings.printerEnabled || printerSettings.printMessages)
     {
 #if defined(ARDUINO_ARCH_ESP8266)
         Serial1.begin(printerSettings.printerBaudRate);
@@ -240,18 +260,28 @@ void initPrinter()
     }
 }
 
+void displayMessageOnStatusPrinter(int messageNumber, ledFlashBehaviour severity, char *messageText)
+{
+    printMessage(messageText, NULL);
+}
+
 void startPrinter()
 {
     // all the hardware is set up in the init function. We just display the default message here
 
     if (printerSettings.printerEnabled)
     {
-    	char deviceNameBuffer [DEVICE_NAME_LENGTH];
-	    PrintSystemDetails(deviceNameBuffer,DEVICE_NAME_LENGTH);
+        char deviceNameBuffer[DEVICE_NAME_LENGTH];
+        PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
         char buffer[100];
-        snprintf(buffer,100,"\n\nPrinter starting on:%s\n\n\n", deviceNameBuffer);
+        snprintf(buffer, 100, "\n\nPrinter starting on:%s\n\n\n", deviceNameBuffer);
         printerProcess.status = PRINTER_OK;
         printMessage(buffer, NULL);
+    }
+
+    if (printerSettings.printMessages)
+    {
+        bindMessageHandler(displayMessageOnStatusPrinter);
     }
 }
 
@@ -284,8 +314,6 @@ void printerStatusMessage(char *buffer, int bufferLength)
         snprintf(buffer, bufferLength, "Printer on");
     }
 }
-
-#ifdef PROCESS_PRINTER
 
 struct process printerProcess = {
     "printer",

@@ -1,3 +1,9 @@
+# Connected Little Boxes
+A Connected Little Box is an Internet of Things (IoT) device. A particular box can both send message and receive them. A box can also react to message from itself. For example, a box that contains both a PIR sensor and a light could turn red whenever it detects a person in front of it. A box understands commands that specify what sensors it is using and how they are connected. You can also tell a box what messages to send, when to send them and who to send them to. Instructions to a box are expressed as JSON strings which specify the target process and the action that the process should perform. An instruction can contain reference to a sensor which can trigger the command and provide data for the command to work on. 
+
+The Connected Little Box software manages all the components in a box. All boxes run the same software, which is configured for that box. The settings for a box are stored as a collection of name-value pairs. These can be entered directly by connecting a serial terminal directly to the USB port on the box. A box can also be configured over WiFi via a web interface hosted by the box on an internal access point. 
+
+Connected Little Boxes use MQTT to communicate with each other and other devices. The MQTT connection supports usernames and passwords and can be configured to operate over secure sockets (SSL). It is possible to update settings remotely over an MQTT connection.
 # Processes
 A box contains several cooperating processes each of which is responsible for a particular behaviour. Each process runs in turn. The active processes can be selected when building the software image for a box. 
 ## Process Status
@@ -308,60 +314,90 @@ There are commands to set the state of a pin and to output a pulse from a pin. I
 The value is used to set the state of the output pin. If the input value is greater than or equal to 0.5 the output is set to high. 
 | Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
-| value | output state | (0-1) |  | Float |
+| value | output state | (0-1) |  Float |
 ```
 {"process":"outpin","command":"setoutpinstate","value":1}
 ```
 The command above sets the output pin to the high state. 
-pulseoutpinstate - Pulse the outpin
+### pulseoutpinstate - Pulse the outpin
 The value is used to pulse the output pin. The output will be set according to the input value and then return to its previous position after the specified pulse time. 
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- value | output state | (0-1) |  | Float
-pulselen | pulse length in seconds | (0-10) |  | Float
+ value | output state | (0-1) | Float
+pulselen | pulse length in seconds | (0-10) | Float |
+```
 {"process":"outpin","command":"pulseoutpinstate","value":1,"pulselen":2.5}
-The command above moves the servo to position 1 which will be one end of the range. The value of pulselen specifies a length of time in seconds that the output should be held before returning to the previous level. 
-setinitoutpinstate - Sets the initial state of the outpin
+```
+The command above moves the servo to position 1 which will be one end of the range. The value of **pulselen** specifies a length of time in seconds that the output should be held before returning to the previous level. 
+### setinitoutpinstate - Sets the initial state of the outpin
 The value is used to set the initial state of the output pin (i.e. the state when the box is first powered on). The range of 0-1 provides movement over the full extent of the servo range.
- || Property | Value | Default value | Type  |
+ Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- Value | servo position | (0-1) |  | float
+ Value | servo position | (0-1) | float |
+```
 {"process":"outpin","command":"initialoutpinstate","value":0}
+```
 Set the output to the low state when the box starts.
-printer process
+# printer process
 You can connect a printer so that a box can produce printed output. The printer is configured by the following settings.
+```
 printeron=no
 printerbaud=19200
 printerdatapin=16
-The printeron setting determines whether the printer is available.  It must be set to "yes" before the printer can be used. 
-The printerbaud setting determines the rate at which data is sent to the printer. The value above works with my thermal printer but you may need to change it for your device. 
-The printerdatapin setting is used to set the GPIO pin that is to be used for the serial connection. Note that on the ESP8266 the only pin that can be used is pin 16.
-Printing messages
+```
+* **printeron** determines whether the printer is available.  It must be set to "yes" before the printer can be used. 
+* **printerbaud** determines the rate at which data is sent to the printer. The value above works with my thermal printer but you may need to change it for your device. 
+* **printerdatapin** specifies the GPIO pin that is to be used for the serial connection. Note that on the ESP8266 the only pin that can be used is pin 16.
+## Printing messages
 Messages are printed using the serial port of the box device. There is no handshaking between the box and the printer. If you send large numbers of messages you might find that the messages are not printed, or are printed incorrectly. 
-print – print a message
+# print – print a message
 Use this command to print a message on the printer. The text of the message is set when the command is performed. It will be replaced by text from a sensor trigger.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- text | message text to be printed |  | text
-pre | text to be printed before the message text | empty string | text
-post | text to be printed after the message text | empty string | text
-options | sameline – the printer will not take a new line after the print
-datestamp – a datestamp will be printed before the message
-The datestamp option precedes the printed output with a line giving the current date and time. If the box does not have a working network connection the date and time will not be printed. The datestamp and sameline options should not be used together as the timestamp will disrupt any layout. 
+ text | message text to be printed ||  text |
+| pre | text to be printed before the message text | empty string | text |
+| post | text to be printed after the message text | empty string | text |
+| options | sameline – the printer will not take a new line after the print |
+| |datestamp – a datestamp will be printed before the message |
+
+The **datestamp** option precedes the printed output with a line giving the current date and time. If the box does not have a working network connection the date and time will not be printed. The datestamp and sameline options should not be used together as the timestamp will disrupt any layout. 
+```
 {"process":"printer","command":"print","text":"rob","options":"datestamp"}
+```
 This will print the text "rob". Before the text is printed a datestamp line is printed. The output has the following appearance:
+```
 Mon Mar 22 2021 16:06:11
 rob
-pixels process
+```
+# pixels process
 A connected Little Box can control a large number of pixels. The pixels settings for a box are as follows:
+```
 pixelcontrolpin=0
 noofxpixels=12
 noofypixels=1
+pixelpanelwidth=8
+pixelpanelheight=8
 pixelconfig=1
-pixelbrightness=1.00
-The pixelcontrolpin value sets the pin to be used to control the pixels that are connected to the processor. The dimensions of the pixel display are set using two settings values noofxpixels and noofypixels If the number of y pixels is set at 1 the display wraps around so that lights that move off one end will reappear on the other. This allows the box to control pixel rings and loops with wrapping movement. By default the pixels are configured as above, which is a 12 pixel chain or ring. If the noofxpixels value is set to 0 the pixel output is disabled. 
-Colour Test
+pixelbrightness=1.000000
+pixelname=
+```
+* **pixelcontrolpin** sets the pin to be used to control the pixels that are connected to the processor.
+* **noofxpixels** and **noofypixels** set the pixel dimensions of the pixel raster to be rendered. If the number of y pixels is set at 1 the display wraps around so that lights that move off one end will reappear on the other. This allows the box to control pixel rings and loops with wrapping movement. By default the pixels are configured as above, which is a 12 pixel chain or ring. If the noofxpixels value is set to 0 the pixel output is disabled. 
+* **pixelpanelwidth** sets the width of a pixel panel being used to construct a large display
+* **pixelpanelheight** sets the height of a pixel panel being used to construct a large display
+* **pixelbrightness** can be set between 0 and 1 to set the overall brightness of the pixels. This value is used to scale all the intensity values before they are displayed on the output. 
+* **pixelconfig** gives the pixel configuration value which sets the colour decoding and physical arrangement of the leds.
+
+  1. ring[NEO_GRB + NEO_KHZ800] 
+  2. strand[NEO_KHZ400 + NEO_RGB]
+  3. single panel[NEO_GRB + NEO_KHZ800]
+  4. multi-panel[NEO_GRB + NEO_KHZ800]
+
+* **pixelname** not presently used
+
+## Colour Test
 If you want to view each colour by name and view it on the pixels you can use the command colours on the serial connection to display each colour and the name of that colour in turn:
+```
 colours
 Press space to step through each colour
 Press the ESC key to exit
@@ -373,187 +409,234 @@ Colour:yellow
 Colour:orange
 Colour:magenta
 Colour display ended
+```
 Each named colour is displayed in turn. Note that during the colour display the connected little box will not respond to incoming messages or generate sensor events. 
-There are two possible hardware configurations for the pixels which are set using the pixelconfig setting. Option 1 sends the colour data to the pixels as GRB (green, red, blue) and option 2 sends the colour data as RGB. If the colours that are displayed look wrong, try changing to the other setting. The default setting is option 1 – GRB. 
-The pixelbrightness value can be set between 0 and 1 to set the overall brightness of the pixels. This value is used to scale all the intensity values before they are displayed on the output. 
-Pixel Sprites
+## Pixel Sprites
 The display is managed by the software as a number of "sprites", each of which has a particular colour and position on the pixels. A display can contain up to 25 sprites in the present version of the software. If there are more leds than sprites (for example of you have a large chain of pixels) the sprites are distributed evenly over the display. For small displays (for example a 4x4 text display) it is possible to display a sprite on every led. The number of sprites is calculated automatically by the software depending on the overall size of the display, up to the maximum of 25. This allows us to produce a good-looking animated display without having to update the entire display. There are two possible sprite animations: walking and mask. These are all the sprite commands:
-setcolour - Sets the colour of the pixels
+### setcolour - Sets the colour of the sprites
 This command sets the colour of all the sprites being displayed on the pixels. The colour intensity values are set in the range 0-1. The rate at which the colour changes from the existing colour to the new one is set with the steps property.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- red | amount of red | (0-1) |  | float
-blue | amount of blue | (0-1) |  | float
-green | amount of green | (0-1) |  | float
-steps | no of 50Hz steps to complete the change | positive int | 20 | int
+| red | amount of red | (0-1) |  float |
+| blue | amount of blue | (0-1) | float |
+| green | amount of green | (0-1) | float |
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+
 The following command sets the colour of the pixels to half brightness red over a period of 1 second.
+```
 {"process":"pixels","command":"setcolour","red":0.5,"green":0,"blue":0,"steps":50}
-setnamedcolour - Sets the pixels to a named colour
+```
+### setnamedcolour - Sets the pixels to a named colour
 This command sets the colour of all the sprites being displayed on the pixels. The colour is set to one of a number of named colours.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- colourname | name of the colour to set |  |  | text
-steps | no of 50Hz steps to complete the change | positive int | 20 | int
+| colourname | name of the colour to set |  |  | text
+|steps | no of 50Hz steps to complete the change | positive int | 20 | int
 These are the named colours that are available.
-black | red | green | blue | yellow | orange | orchid
-cyan | white | azure | blueviolet | brown | chartreuse | darkgoldenrod
-darkgreen | darkmagenta | darkorange | darkred | darkturquoise | darkviolet | deeppink
-deepskyblue | firebrick | forestgreen | gold | indianred | lawngreen | lightseagreen
-limegreen | maroon | mediumblue | mediumspringgreen | mediumviolet | midnightblue | navy
-orchid | purple | saddlebrown | salmon | seagreen | springgreen | teal
-tomato | violet |  |  |  |  | 
-Sets the colour of the pixels to orange over a period of .4 of a second (that is 20 steps)
+|black | red | green | blue | yellow | orange | orchid |
+|cyan | white | azure | blueviolet | brown | chartreuse | darkgoldenrod |
+|darkgreen | darkmagenta | darkorange | darkred | darkturquoise | darkviolet | deeppink |
+|deepskyblue | firebrick | forestgreen | gold | indianred | lawngreen | lightseagreen |
+|limegreen | maroon | mediumblue | mediumspringgreen | mediumviolet | midnightblue | navy |
+|orchid | purple | saddlebrown | salmon | seagreen | springgreen | teal |
+|tomato | violet |  |  |  |  | 
+
+```
 {"process":"pixels","command":"setnamedcolour","colourname":"orange"}
-setbackground - Sets the colour of the background
+```
+The above command sets the colour of the pixels to orange over a period of .4 of a second (that is 20 steps)
+### setbackground - Sets the colour of the background
 This command sets the colour of the background of the display. The colour intensity values are set in the range 0-1. The rate at which the colour changes from the existing colour to the new one is set with the steps property.
- || Property | Value | Default value | Type  |
+  Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- red | amount of red | (0-1) |  | float
-blue | amount of blue | (0-1) |  | float
-green | amount of green | (0-1) |  | float
-steps | no of 50Hz steps to complete the change | positive int | 20 | int
+| red | amount of red | (0-1) |  | float |
+|blue | amount of blue | (0-1) |  | float |
+|green | amount of green | (0-1) |  | float |
+|steps | no of 50Hz steps to complete the change | positive int | 20 | int
+
 The following command sets the colour of the background to half brightness red over a period of 1 second.
-{"process":"pixels","command":"setbackground","red":0.5,"green":0,"blue":0,
-"steps":50}
-setnamedbackground - Sets the background to a named colour
+```
+{"process":"pixels","command":"setbackground","red":0.5,"green":0,"blue":0,"steps":50}
+```
+### setnamedbackground - Sets the background to a named colour
 This command sets the colour of the display background. The colour is set to one of a number of named colours.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- colourname | name of the colour to set |  |  | text
-steps | no of 50Hz steps to complete the change | positive int | 20 | int
+| colourname | name of the colour to set |  |  | text |
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+
 Sets the colour of the pixels to orange over a period of .4 of a second (that is 20 steps)
+```
 {"process":"pixels","command":"setnamedbackground","colourname":"orange"}
-setrandomcolour - Sets the pixels to a random colour
+```
+### setrandomcolour - Sets the pixels to a random colour
 This command sets the colour of the pixels to a random colour which is determined by the current time. 
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- steps | no of 50Hz steps to complete the change | positive int | 20 | int
-options | timed – random colour is seeded from the time in minutes
-The random colour sequence is seeded by the current minute of the time value. This makes it possible to have a number of different light systems all displaying the same random sequence of synchronised colours.
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+| options | timed – random colour is seeded from the time in minutes The random colour sequence is seeded by the current minute of the time value. This makes it possible to have a number of different light systems all displaying the same random sequence of synchronised colours. |
+```
 {"process":"pixels","command":"setrandomcolour","options":"timed"}
+```
 This command sets a random colour on the pixels. Any devices that perform this command in the same minute will also display the same colour.
-twinkle - Sets the pixels to twinkle random colours
+### twinkle - Sets the pixels to twinkle random colours
 This command sets the colours of the lights displayed by the pixels to random colours. Each light will have a random colour. The timed option means that the random sequence of colours will be seeded from the current minute.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- steps | no of 50Hz steps to complete the change | positive int | 20 | int
-options | timed – the random colour is seeded from the time in minutes
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+| options | timed – the random colour is seeded from the time in minutes. This allows a number of different devices to all have synchronised colour displays. |
+```
 {"process":"pixels","command":"twinkle","options":"timed"}
+```
 This command sets a random colour on each of the sprites. Any devices that perform this command in the same minute will display the same colour sequence on their sprites. Note that some devices will display more colours if they have more sprites active on their display.
-brightness - Sets the pixel brightness
+### brightness - Sets the pixel brightness
 Sets the overall brightness of the pixels. Can be used to fade the pixels on and off if you set a large steps value.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- value | brightness level | (0-1) |  | float
-steps | no of 50Hz steps to complete the change | positive int | 20 | int
+| value | brightness level | (0-1) |  | float |
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+```
 {"process":"pixels","command":"brightness","value":0,"steps":500}
+```
 Fades down the over 10 seconds. Note light fades and colour changes can be used together. A light can change colour and brightness at the same time.  
-pattern - Sets the pixel pattern
+### pattern - Sets the pixel pattern
 Set a pattern on the leds. The pattern can be either "walking" or "mask".
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- steps | no of 50Hz steps to complete the change | positive int | 20 | int
-pattern | walking – a number of coloured sprites walk over the display
-pattern – a static pattern of sprites is displayed. Each sprite is a different colour
-colourmask | the colour mask to be used. See the description below
-Walking Sprite Display
-In a walking display the sprites move over the display area. The sprites can all be the same colour or each can be different. The colours of the sprites in a walking display be set for each sprite by using a colour mask. 
-Colour mask
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+| pattern | walking – a number of coloured sprites walk over the display. The sprites can all be the same colour or each can be different. The colours of the sprites in a walking display be set for each sprite by using a colour mask. 
+| |pattern – a static pattern of sprites is displayed. Each sprite is a different colour|
+| colourmask | the colour mask to be used. See the description below
+
 The colour mask sets the colour of individual sprites to a fixed colour. This is useful if you have a letter display and you want to highlight particular words. 
- | 0 | 1 | 2 | 3
-0 | R | E | D | 
-1 | N | O | S | E
-2 | D | A | Y | 
-3 | 2 | 0 | 2 | 1
+|  |**0** | **1** | **2** | **3** |
+|---|---|---|---|---|
+| **0** | R | E | D |   |
+| **1** | N | O | S | E |
+| **2** | D | A | Y |   |
+| **3** | 2 | 0 | 2 | 1 |
+
 The above table shows a led arrangement for a sign that contains text.  The display has been defined by setting noofxpixels to 4 and noofypixels to 4. We would like to set the colour of the pixels at the different positions so that the word "RED" is red, the word "NOSE" is green, the word "DAY" is blue and the number digits are displayed in orange, yellow, cyan and magenta respectively. We can create a mask that describes these requirements. The mask that defines the colours is a string with a single character expressing the colour of that element in the display. 
+```
 "RRRKGGGBBBKOYCM"
+```
 The mask is applied starting at the top right-hand corner of the raster (location 0,0) and then moving along each row. At the end of the row the mask moves back to the start of the next one. If the mask string is longer than the number of sprites on the display the excess colour characters are ignored. If the mask is shorter than the number of sprites it will be repeated.
+```
 "RB"
+```
 The mask string above would set the display to alternate red and blue sprites. The colour characters that are available are as follows:
-K | black
-R | red
-G | green
-B | blue
-Y | yellow
-O | orange
-M | magenta
-C | cyan
-W |  white
-V | violet
-P | purple
-T | teal
+| char | colour |
+|------|--------|
+|K | black |
+|R | red |
+|G | green |
+|B | blue |
+|Y | yellow |
+|O | orange |
+|M | magenta |
+|C | cyan |
+|W |  white |
+|V | violet |
+|P | purple |
+|T | teal |
+
 You can use a mask to set the colours in a mask command or in a walking sprite command. If the number of pixels is less than 25 (for a letter grid) each sprite is mapped directly onto a pixel.
-walking pixel pattern
+### walking pixel pattern
 The walking pattern "walks" several lights over the leds. The mask pattern distributes several coloured sprites over the leds. 
+```
 {"process":"pixels","command":"pattern","pattern":"walking","colourmask":"RGBY"}
+```
 The above command sets a walking pattern of red, green, blue and yellow over the sprites. The colour sequence will be repeated over all the sprites. 
-mask pixel pattern
+### mask pixel pattern
 The mask pattern maps the coloured mask directly onto the sprites to create a static light display.
+```
 {"process":"pixels","command":"pattern","pattern":"mask","colourmask":"RB"}
+```
 The above command sets alternate red and blue sprites along the length of the leds.
-Mapping Pixels
+## Mapping Pixels
 The colour of a display can be mapped onto a sensor input value. You can use this to make displays which change to reflect data values. You provide a range of colour values in the form of a string of colour names and then the displayed colour is obtained by mapping the sensor value into that string. 
-map - Sets the pixel colour to a mapped value
+### map - Sets the pixel colour to a mapped value
 This command maps a numeric value onto a particular pixel colour in a colour mask. The command picks the colour character from the array at the position that matches the numeric value delivered to command. 
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- value | Value to map | (0-1) |  | float
-steps | no of 50Hz steps to complete the change | positive int | 20 | int
-options | mix – the colour of the light is interpolated between the adjacent pixels in the mask. If the mix option is not set the colour of the light is set to the "nearest" colour in the colourmask.
-colourmask | The string of colour characters into which the range will be mapped. 
+| value | Value to map | (0-1) |  | float |
+| steps | no of 50Hz steps to complete the change | positive int | 20 | int |
+| options | **mix** – the colour of the light is interpolated between the adjacent pixels in the mask. If the mix option is not set the colour of the light is set to the "nearest" colour in the colourmask. |
+| colourmask | The string of colour characters into which the range will be mapped. |
+```
 {"process":"pixels", "command":"map","colourmask":"RGB","value":0.5, "sensor":"pot","trigger":"turned"}
+```
 The above command would map the value 0.5 into the colour mask "RGB". This would cause the pixels to display the green colour. The command is bound to a potentiometer and will receive numeric values if the potentiometer is moved. If the potentiometer is turned to the minimum position the light will display red. If the potentiometer is turned to the maximum position the light will display blue. 
 The mix option has not been selected which means that that colours will change directly from one to the other as the data values moves through the range. If the mix option had been selected the light would display yellow as the value increased from 0 and cyan as the value increased from 0.5.
-registration process
+# registration process
 This process performs registration commands on a device. These commands will result in messages being sent over MQTT to the registration topic on the MQTT server. 
-Register commands
+## Register commands
 The commands allow the server to update data records held for the device. In the future development device settings and configuration will be stored centrally and then used to automatically configure a device when it registers.
-register - Perform a remote Registration command
+### register - Perform a remote Registration command
 This command will cause the device to register on the remote server. 
+```
 {"process":"registration","command":"register"}
+```
 This will cause the device to register with the server host.
- getsetup - Get the device setup
+### getsetup - Get the device setup
+```
 {"process":"registration","command":"getsetup"}
-getsettings - Get the settings for a process or sensor
-        name - name of item : text
+```
+### getsettings - Get the settings for a process or sensor
+| Property | Value | Default value | Type  |
+|----------|-------|---------------|-------|
+| name | name of item ||  text|
+```
 {"process":"registration","command":"getsettings","name":"pixels"}
+```
 Get the settings in json for the pixels process.
-servo process 
+# servo process 
 The servo process controls a servo connected to a box. The servo can be configured as follows:
+```
 servooutputpin=12
 servoinitialangle=0.00
 servoactive=no
+```
 The servo is initially not active. It can be enabled by changing the servoactive setting to yes. 
-Servo control
+## Servo control
 The servo commands can be used to quickly position a servo or cause it to move to a particular position and then return to the previous position after a specified time interval. 
-setservopos - Sets the position of the servo
+### setservopos - Sets the position of the servo
 The value is used to set the position of the servo. The range of 0-1 provides movement over the full extent of the servo range.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- value | servo position | (0-1) |  | Float
+ value | servo position | (0-1)   | Float |
+```
 {"process":"servo","command":"setservopos","value":1}
+```
 The command above moves the servo to position 1 which will be one end of the range. 
-pulseservopos - Pulse the position of the servo
+### pulseservopos - Pulse the position of the servo
 The value is used to pulse the position of the servo. The range of 0-1 provides movement over the full extent of the servo range. The servo will move to the position specified by the value and then return to its previous position after the specified pulse time. 
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- value | servo position | (0-1) |  | Float
-pulselen | pulse length in seconds | (0-10) |  | Float
+ value | servo position | (0-1) |  Float |
+| pulselen | pulse length in seconds | (0-10) | Float |
+```
 {"process":"servo","command":"pulseservopos","value":1,"pulselen":2.5}
+```
 The command above moves the servo to position 1 which will be one end of the range. The value of pulselen specifies a length of time in seconds that the servo should hold that position before returning to the previous position. 
-setinitservopos - Sets the initial position of the servo
+### setinitservopos - Sets the initial position of the servo
 The value is used to set the initial position of the servo (i.e. the position the servo moves to when the box is first powered on). The range of 0-1 provides movement over the full extent of the servo range.
- || Property | Value | Default value | Type  |
+| Property | Value | Default value | Type  |
 |----------|-------|---------------|-------|
- Value | servo position | (0-1) |  | float
+ Value | servo position | (0-1) |   float |
+```
 {"process":"servo","command":"setinitservopos","value":0.33}
+```
 Move the servo to position 0.33 (a third of the way round) when the box starts.
-Sensors
+# Sensors
 Sensors can be either environmental sensors (for example a temperature sensor) or control inputs (for example a button or a rotary encoder). A sensor can be used to trigger an action when it has a new reading, or at regular intervals. Each sensor has a different set of trigger behaviours. There is also a clock sensor which can be used to generate sensor triggers at regular intervals or on alarm conditions. 
+
 Any command can be assigned a sensor and given a trigger setting. The sensor will then be set to "listen" for the given trigger and then perform the command when the trigger event occurs. A sensor can have multiple listeners assigned to it which can listen for the same or different triggers. The maximum number of listeners that can be assigned in a single connected little box is 10.
+
 When a sensor triggers an event, it may set the value of the value and text elements of the command it is triggering. The value element is set to a normalised value between 0 and 1 of the sensor reading. This can be used to control the behaviour of a process. For example, the output of a rotary encoder could be used to control the brightness of the pixel display. The text element may be set to a text description of the sensor data. This could be displayed or printed. 
-BME280 Environmental sensor
+# BME280 Environmental sensor
 The BME280 provides temperature, humidity and air pressure as values that can be displayed or transmitted. Note that when an event fires the float value is in the range 0-1 (so that it can be used to control another Connected Little Box device directly). However, the text value is set to a string that describes the value and can be used for display, printing or logging. The sensor is configured by the following setting values:
+```
 bme280sensorfitted=yes
 bme280envnoOfAverages=25
 bme280tempchangetoxmit=0.500000
@@ -565,41 +648,55 @@ bme280presslimitnorm=100.000000
 bme280humidchangetoxmit=2.000000
 bme280humidbasenorm=0.000000
 bme280humidlimitnorm=100.000000
-The bme280envnoOfAverages setting determines the number of averages of a reading that are used to create each reading. There are three settings for each of the three data types: temperature, pressure and humidity.  
-The bme280tempchangetoxmit setting determines the change in the setting value before the tempchange trigger is generated. The bme280tempbasenorm and bme280templimitnorm control how a temperature value is mapped onto a range that can then be used to control other processes. Any temperature below the base value will be mapped to the value 0. Any temperature above the limit value will be mapped to the value 1. A value in the range between the base and the limit will mapped into the range 0-1 proportionally. 
+```
+* **bme280envnoOfAverages** determines the number of averages of a reading that are used to create each reading. 
+
+There are three settings for each of the three data types: temperature (**temp**), pressure (**press**) and humidity (**humid**). They all work in the same way. Here is how they work for temperature:
+* **bme280tempchangetoxmit** setting determines the change in the setting value before the tempchange trigger is generated. 
+* **bme280tempbasenorm** a temperature below the base value will be mapped to the value 0
+* **bme280templimitnorm** a temperature above the limit value will be mapped to the value 1. A value in the range between the base and the limit will mapped into the range 0-1 proportionally. 
+
 Using the default settings any temperature less than 10 would be mapped to 0. A temperature greater than 30 would be mapped to 1. A temperature in the range 10-30 would be mapped onto the range 0-1. For example, the temperature 20 would be mapped to the value 0.5 because 20 is half way between 10 and 30.
-These are the settings for pressure and humidity are used in the same way.
-Environmental triggers
+## Environmental triggers
 The environmental sensor can trigger on time intervals or when a sensor value changes by a specified amount. 
-Trigger:tempsec,tempmin,temp5min ,temp30min,temphour
+### Trigger:tempsec,tempmin,temp5min ,temp30min,temphour
 The sensor will trigger and generate new temperature values on the given intervals. 
-Trigger:tempchanged
+### Trigger:tempchanged
 The sensor will trigger and generate a new humidity reading when the value of the temperature changes outside the bme280tempchangetoxmit range. 
-Trigger:presssec,pressmin,press5min,press30min,presshour
+### Trigger:presssec,pressmin,press5min,press30min,presshour
 The sensor will trigger and generate new pressure values on the given intervals. 
-Trigger:presschanged
-The sensor will trigger and generate a new humidity reading when the value of the temperature changes outside the bme280presschangetoxmit range. 
-Triggers:humidsec,humidmin,humid5min,humid30min,humidhour
+### Trigger:presschanged
+The sensor will trigger and generate a new humidity reading when the value of the temperature changes outside the **bme280presschangetoxmit** range. 
+### Triggers:humidsec,humidmin,humid5min,humid30min,humidhour
 The sensor will trigger and generate new humidity values on the given intervals. 
-Trigger:humidchanged
+### Trigger:humidchanged
 The sensor will trigger and generate a new humidity reading when the value of the humidity changes outside the bme280humidchangetoxmit range. 
- Trigger:allsec
+### Trigger:allsec
 The sensor will trigger and generate a summary of all the values as a JSON encoded text string:
+```
 {"humid":47,"temp":24.5,"press":1014}
+```
 This text can be displayed or printed as any other text string, but it is intended to be used with the console reportjson command to allow a box to send composite environmental information as a single block of data.
+```
 {"process":"console","command":"reportjson","text":"starting","sensor":"bme280","trigger":"allsec","attr":"env"}
+```
 This would cause a box with an enabled BME280 sensor to send the following message to the console report each second:
+```
 {"env":{"humid":47,"temp":24.5,"press":1014}}
-Trigger:allmin,all5min,all30min,allhour
+```
+### Trigger:allmin,all5min,all30min,allhour
 These triggers will cause the sensor output to be generated at the specified intervals. 
-Button sensor
-The button sensor reads the status of a push button. The button is implemented as a push to make connection that connects a GPIO pin to ground. The button wiring can be simplified by using another GPIO pin as the ground pin if a connection is not available. 
+# Button sensor
+The button sensor reads the status of a push button. The button is implemented as a push to make connection that connects a GPIO pin to ground. The button wiring can be simplified by using another GPIO pin as the ground pin if a connection is not available. The ground pin is made into an output and pulled low when the device starts. 
+```
 Buttoninputpin=14
 buttoninputgroundpin=16
 pushbuttonfitted=no
-If the ground pin is not required it can be disabled by setting buttoninputgroundpin to -1.
-Button sensor test
+```
+If the ground pin is not required it can be disabled by setting **buttoninputgroundpin** to -1.
+## Button sensor test
 The button sensor can be tested with the buttontest command. The command repeatedly tests the button state and displays a message each time that it detects a change. 
+```
 buttontest
 Button Sensor test
 Press the ESC key to end the test
@@ -607,110 +704,167 @@ Press the ESC key to end the test
     pressed: 2
     pressed: 3
 Button test ended
+```
 Note that during the button test the connected little box will not respond to incoming messages or generate sensor events.
-Button triggers
+## Button triggers
 The button triggers are fired when a button is pressed or released. The button signal could be connected to any sensor that generates logical values, for example a reed switch.
 Trigger:changed
 This trigger is raised when the state of the button input changes. The value element is set to 0 if the button is up or 1 if the button is pressed. The text element is set to "down" or "up" to reflect the new status of the button.
+```
 {"process":"max7219","command":"display","text":"starting","sensor":"button","trigger":"changed","to":"command/CLB-3030da","options":"sticky,small"}
+```
 This command would send a message to a connected little box with the address "command/CLB-3030da". The box should be fitted with a max7219 display and will be updated each time the button status changes. The message would be sticky (i.e. it would remain on the display for a while) and it uses the small font. The command would display the message "starting" until the first message was received from the button.
-  Trigger:pressed
+### Trigger:pressed
 This trigger is raised when the button state changes from up to pressed. It does not set the value or text elements. 
+```
 {"process":"printer","command":"print","text":"button pressed", "options":"datestamp", "to":"command/CLB-b00808", "sensor":"button", "trigger":"pressed"}
+```
 This command would print the message "button pressed" on a printer connected to the box with the address "command/CLB-b00808" each time the button was pressed. The message would have a datestamp.
-   Trigger:released
+### Trigger:released
 This trigger is raised when the button state changes from up to pressed. It does not set the value or text elements. 
 {"process":"servo","command":"setservopos","value":0.0, "sensor":"button","trigger":"released","to":"command/CLB-285627"}
 This command would set the servo to position 0 on a box with the address command/CLB-285627 when the button was released.
-Clock sensor
+# Clock sensor
 The clock sensor is used to provide timed trigger events. There are three alarms. There are also two timers which can operate as single shot or repeating timers. The clock can also trigger events every second, minute, hour or day. The clock is automatically set from internet time when a box starts running. No clock triggers are produced until the clock has been set successfully.
-Clock triggers
+## Clock triggers
 There are multiple triggers available. The alarm values are all stored as system settings and are set by modifying the setting values. 
-Trigger:alarm1 + alarm2 + alarm3
+### Trigger:alarm1 + alarm2 + alarm3
 You can set these alarms to fire triggers at a particular time of the day. They are controlled by the following setting values:
+```
 alarm1hour=7
 alarm1min=0
 alarm1enabled=no
 alarm1timematch=yes
-The alarm1hour and alarm1min settings give the hour and minute when the alarm will fire, in 24 hour format. 
-The alarm1enabled setting is used to enable and disable the alarm. 
-The alarm1timematch determines how the alarm will fire. Normally the alarm will fire when the time matches the alarm time. For example the alarm above will fire the first time that the hour is 7 and the minute is 0. Sometimes you want the alarm to fire after the alarm time. For example, if you turn your central heating controller off and on in the middle of the day, you will still want the 7:00 am heating on event to be triggered so that your heating is on at that time. If you set the alarm1timematch setting to no this will make a 7:00 am alarm trigger if the box is restarted any time after 7:00. The settings for alarms 2 and 3 work in the same way. 
+```
+* **alarm1hour** and **alarm1min** settings give the hour and minute when the alarm will fire, in 24 hour format. 
+* **alarm1enabled** is used to enable and disable the alarm. 
+*  **alarm1timematch** determines how the alarm will fire. Normally the alarm will fire when the time matches the alarm time. For example the alarm above will fire the first time that the hour is 7 and the minute is 0. Sometimes you want the alarm to fire after the alarm time. For example, if you turn your central heating controller off and on in the middle of the day, you will still want the 7:00 am heating on event to be triggered so that your heating is on at that time. If you set the **alarm1timematch** setting to no this will make a 7:00 am alarm trigger if the box is restarted any time after 7:00. 
+
+The settings for alarms 2 and 3 work in the same way. 
+```
 Alarm1hour=11
 alarm1min=45
 alarm1enabled=yes
 alarm1timematch=yes
+```
+The above values would be persisted in the device in the same way as any other settings. There are sets of the settings for each of the three alarms. 
+```
 {"process":"pixels","command":"setnamedcolour","colourname":"orange","sensor":"clock","trigger":"alarm1"}
-The settings and command above would cause the pixels to become orange at 11:45. 
-Trigger:timer1 + timer2
+```
+The timer settings and command above would cause the pixels to become orange at 11:45. 
+## #Trigger:timer1 + timer2
 You can use the timers to cause triggers after a specified interval, or at regular intervals. They are controlled by the following setting values:
+```
 timer1=30
 timer1enabled=no
 timer1singleshot=yes
-The timer1 value sets the number of minutes that the timer is to run for. The timer1enabled value enables and disables the timer. If timer1singleshot is set to no the timer will repeatedly trigger at the specified interval. The settings for timer2 work in the same way. 
+```
+* **timer1** number of minutes that the timer is to run for. 
+* **timer1enabled** value enables and disables the timer. 
+* **timer1singleshot** specifies if this is a single shot time. If set to **no** the timer will repeatedly trigger at the specified interval. 
+
+The settings for timer2 work in the same way. 
+```
 Timer1=3
 timer1enabled=yes
 timer1singleshot=no
+```
+The above commands would cause **timer1** to trigger every three minutes. 
+```
 {"process":"pixels","command":"setnamedcolour","colourname":"green","sensor":"clock","trigger":"timer1"}
-The above commands would cause the pixels to turn green every three minutes. 
-Trigger:second
+```
+The above commands would cause the pixels to turn green each time timer1 is triggered, which would be every three minutes. 
+### Trigger:second
 This trigger will raise an event every second. When the event is raised the text value will be set to the current time in the form "hh:mm:ss". This text can be displayed or printed. 
+```
 {"process":"max7219","command":"display","text":"Start..","sensor":"clock","trigger":"second","options":"small"}
+```
 This command creates a max7219 powered clock that ticks once a second. Each time the second trigger fires the clock text is updated. The command uses the small font so that the time display will fit onto a 32 pixel wide display.
-Trigger:minute
+### Trigger:minute
 This trigger will raise an event every minute. When the event is raised the text value is set to the current time in the form "hh:mm"
+```
 {"process":"max7219","command":"display","text":"Start..","sensor":"clock","trigger":"minute"}
+```
 This command will create a max7219 powered clock which ticks once a minute. 
-Trigger:hour
+### Trigger:hour
 This trigger will raise an event every hour. When the event is raised the text value is set to the current time in the form "hh:mm"
+```
 {"process":"printer","command":"print","pre":"Check:","text":"Start..","sensor":"clock","trigger":"hour"}
+```
 This command will print the message "Check:hh:00" on the printer every hour. 
-Trigger:day
-This trigger will raise an event every hour. When the event is raised the text value is set to the current date in the form "dd:mm:yy"
+### Trigger:day
+This trigger will raise an event every day. When the event is raised the text value is set to the current date in the form "dd:mm:yy"
+```
 {"process":"printer","command":"print","pre":"Log:","text":"Start..","sensor":"clock","trigger":"day"}
+```
 This command will print the message "Log:dd:mm:yy" on the printer every day. 
-Pir sensor
+# Pir sensor
 The sensor uses a Passive Infrared Sensor (PIR) to detect human presence. The driver was written for an HC-SR501 PIR Sensor device in its default configuration. These are the settings in a box for this sensor.
-Pirsensorfitted=no
+```
+pirsensorfitted=no
 pirsensorinputpin=4 
 piractivehigh=yes
-By default the sensor is disabled, you enable it by setting pirsensorfitted to yes. The default input pin is GPIO 4. The setting piractivehigh allows a box to be adapted for a sensor that provides an active low signal. 
-Pir sensor test
+```
+* **pirsensorfitted** set to **yes** if PIR sensor is fitted. 
+* **pirsensorinputpin** input pin for PIR sensor. The default input pin is GPIO 4.
+* **piractivehigh** sets  the polarity of the input signal. It allows a box to be adapted for a sensor that provides an active low signal.
+## Pir sensor test
 The pirtest command can be used to test the PIR sensor. When the command is issued the connected little box will repeatedly check the input from the PIR sensor and print a message when the input changes state. Press any key to end the test.
+```
 pirtest
 PIR Sensor test
 Press the ESC key to end the test
     triggered: 1
 PIR test ended
+```
 Note that during the PIR test the connected little box will not respond to incoming messages or generate sensor events.
-Pir triggers
+## Pir triggers
 The PIR sensor can raise triggers when it changes, when it is triggered by a person being detected and when it clears (when the detected signal clears). 
-Trigger:changed
+### Trigger:changed
 This trigger is raised when the state of the PIR sensor changes. The value element is set to 0 if the sensor is clear or 1 if the sensor has been triggered. The text element is set to "triggered" or "cleared" to reflect the new status of the sensor.
+```
 {"process":"max7219","command":"display","text":"starting","sensor":"pir","trigger":"changed","to":"command/CLB-3030da","options":"sticky,small"}
+```
 This command would send a message to a connected little box with the address "command/CLB-3030da". The box should be fitted with a max7219 display and will be updated each time the PIR status changes. The message would be sticky (i.e. it would remain on the display for a while) and it uses the small font. The command would display the message "starting" until the first message was received from the PIR sensor. 
+```
 {"process":"pixels","command":"brightness","value":0,"steps":20, "sensor":"pir","trigger":"changed","to":"command/CLB-eab714"}
+```
 This command would send a message to a connected little box with the address "command/CLB-eab714". When the pir was triggered the brightness of the leds would be set to 1, when the pir was clear the leds would be set to 0. If you want more control over the precise brightness when the sensor is triggered and when not, you can assign pixel controls to the triggered and cleared events.
-Trigger:triggered
+### Trigger:triggered
 This trigger is raised when the PIR sensor detects a movement. The value element and the text element of the triggered command are not changed by this trigger.
+```
 {"process":"printer","command":"print","text":"Door 1","options":"datestamp", "to":"command/CLB-b00808","sensor":"pir","trigger":"triggered"}
+```
 This command would print the message "Door 1" on a printer connected to the box with the address "command/CLB-b00808" each time the PIR sensor detected someone. The message would have a datestamp.
+```
 {"process":"pixels","command":"setnamedcolour","colourname":"red","steps":20, "sensor":"pir","trigger":"triggered","to":"command/CLB-eab714"}
+```
 This command would send a message to a connected little box with the address "command/CLB-eab714". This command would set the colour of the pixel display to red when the PIR sensor was triggered.
-Trigger:cleared
+### Trigger:cleared
 This trigger is raised at the end of a movement detection. The value element and the text element of the triggered command are not changed by this trigger.
+```
 {"process":"pixels","command":"setnamedcolour","colourname":"green","steps":20, "sensor":"pir","trigger":"cleared","to":"command/CLB-eab714"}
+```
 This command would send a message to a connected little box with the address "command/CLB-eab714". This command would set the colour of the pixel display to green when the PIR sensor was cleared.
+```
 {"process":"servo","command":"setservopos","value":0.5,"sensor":"pir","trigger":"cleared","to":"command/CLB-285627"}
+```
 This command would send a message to a connected little box with the address "command/CLB-285627". This command would set the servo position to 0.5 when the PIR sensor was cleared.
-Potentiometer rotary sensor
+# Potentiometer rotary sensor
 The potentiometer can also be used to read rotary input. It can only be turned through 270 degrees, but the values that are returned are absolute within this range as the potentiometer will be in a particular physical position. The sensor triggers a new value when it detects a change in the potentiometer position. The numeric output will range between 0 and 1 in steps of 0.01. The text output is a string from "0.00" to "1.00". The potentiometer is configured using the following settings:
+```
 potsensorfitted=no
 potsensordatapin=0
 potsensormillisbetween=100
 potsensordeadzone=10
-The potsensordatapin specifies the analogue data pin to be used to read the value from the potentiometer. This uses a different numbering scheme from the GPIO pins. The potsensormillisbetween sets the maximum rate at which position inputs are transmitted to commands that bind to the turned trigger. A setting of 100 milliseconds (the default) means that the sensor will only send 10 readings per second, even if the position signal is changing more rapidly. The potsensordeadzone value sets the minimum change in the signal that must be detected for the sensor to trigger. The default value is 10 in an analogue integer reading in the range 0-1023. If output is found to be noisy it can be filtered by increasing this value. 
-Potentiometer test
+```
+* **potsensorfitted** is set to **yes** if a sensor is fitted. By default it is set to **no**.
+* **potsensordatapin** specifies the analogue data pin to be used to read the value from the potentiometer. This might use a different numbering scheme from the GPIO pins. 
+* **potsensormillisbetween** sets the maximum rate at which position inputs are transmitted to commands that bind to the turned trigger. A setting of 100 milliseconds (the default) means that the sensor will only send 10 readings per second, even if the position signal is changing more rapidly. 
+* **potsensordeadzone** sets the minimum change in the signal that must be detected for the sensor to trigger. The default value is 10 in an analogue integer reading in the range 0-1023. If output is found to be noisy it can be filtered by increasing this value. 
+## Potentiometer test
 The command potte st can be used to test the output values from the potentiometer. Press the Escape key to end the test.
+```
 pottest
 Got command: pottest
 Pot Sensor test
@@ -721,29 +875,37 @@ Pot value:12
 Pot value:13
 Pot value:12
 Pot test ended
-Potentiometer triggers
+```
+## Potentiometer triggers
 The potentiometer triggers are produced by movement. A potentiometer has an absolute physical position so the value produced will be absolute within the range of movement. This is unlike the rotary encoder sensor that produces movement values relative the previous position of the input. 
-Trigger:turned
+### Trigger:turned
 The turned event is triggered each time that the pot is moved.
+```
 {"process":"pixels","command":"brightness","value":0,"steps":5, "sensor":"pot","trigger":"turned","to":"CLB-ae894c","store":"mqtt","id":"dim2"}
+```
 The statement above allows a potentiometer to be used to control the brightness of the leds of the box CLB-ae894c.The command would be stored in the device and become active when the device had made an MQTT connection.
-RFID card sensor
+# RFID card sensor
 This sensor allows a box to be controlled by RFID cards. It uses 13.56 MHz RFID cards based on the ISO 14443A standard. Devices operating to this standard can be found in stickers, tags and cards. Only the unique ID of the card is used by the system. Every RFID card (including bank cards and other cards you already own) has a unique id. You can assign actions to the ids of eight different cards.  When the card is detected, the action is performed.
+
 You can also use a card sensor to implement resource control in the form of a “drinks monitor”. When operating as a “drinks monitor” the box will track cards and display green pixels when a new card is detected and red when a card has been seen before. This allows a box to be used to manage access to a resource (for example, free drinks) where each card holder is allowed one use of the resource. A “reset” card can be configured which will empty the list of cards, allowing each card holder access to the resource again.
- Note that this feature should not be used to implement any kind of secure system. It is easy to spoof card ids. 
-Hardware Connection
+
+Note that this feature should not be used to implement any kind of secure system. It is easy to spoof card ids. 
+## Hardware Connection
 The hardware connection for the RFID sensor is not configurable. If you are using a Raspberry Pi Pico or Wemos D1 Mini the connections are as follows:
- RFID | PICO | Wemos D1 Mini
-3.3v | Pin 36 3.3v | 3V3
-RST | Pin 26 GPIO 20 | D2
-GND | Pin 13 GND | GND
-IRQ | Pin 27 GPIO 21 | D1
-MISO | Pin 7 GPIO 5 | D6
-MOSI | Pin 5 GPIO 3 | D7
-SCK | Pin 4 GPIO 2 | D5
-SDA | Pin 6 GPIO 4 | D8
-Settings
+
+| RFID | PICO | Wemos D1 Mini |
+|------|------|---------------|
+|3.3v | Pin 36 3.3v | 3V3 |
+|RST | Pin 26 GPIO 20 | D2 |
+|GND | Pin 13 GND | GND |
+|IRQ | Pin 27 GPIO 21 | D1 |
+|MISO | Pin 7 GPIO 5 | D6 |
+|MOSI | Pin 5 GPIO 3 | D7 |
+|SCK | Pin 4 GPIO 2 | D5 |
+|SDA | Pin 6 GPIO 4 | D8 |
+## Settings
 There are a number of other settings for the sensor. These are the default values:
+```
 rfidfitted=no
 rfiddrinkmonitor=no
 rfiddrinkresetkey=
@@ -756,64 +918,94 @@ rfidcard5key=
 rfidcard6key=
 rfidcard7key=
 rfidcard8key=
-When rfidfitted is set to yes the RFID sensor is enabled. If a sensor is not connected the box may not work correctly. A box will output a card ID message to the terminal output each time a card is detected:
-Got a card:73d03714
-You can use this to read the ID of a card. The ID value can then be used to set key values to control the behaviour of the system. 
-Trigger: card
+```
+### Card operation
+
+The **rfidfitted** setting is set to yes the RFID sensor is enabled. If a sensor is not connected the box may not work correctly. A box will output a card ID message to the terminal output each time a card is detected:
+```
+    Got a card:73d03714
+```
+You can use this to obtain the ID of a card. The ID value can then be used to set key values to control the behaviour of the system. 
+
+### Trigger: card
 The card event is triggered each time a card is detected:
-{"process":"pixels","command":"setnamedcolour","colourname":"green",
-"sensor":"RFID","trigger":"card}
+```
+{"process":"pixels","command":"setnamedcolour","colourname":"green","sensor":"RFID","trigger":"card}
+```
 This command will cause the pixels on a device to turn green when a card is detected.  The event sends the ID key of the card as the data part of a command, so this can be displayed or printed if required. 
-Trigger: cardn (n is 1 to 8)
+###Trigger: cardn (n is 1 to 8)
 The cardn event is triggered when a card is recognised:
-{"process":"pixels","command":"setnamedcolour","colourname":"blue",
-"sensor":"RFID","trigger":"card1}
-This command will cause the pixels on a device to turn blue when the card registered to card1 is detected.  You enable card trigger by setting a key id for the card:
+```
+{"process":"pixels","command":"setnamedcolour","colourname":"blue","sensor":"RFID","trigger":"card1}
+```
+This command will cause the pixels on a device to turn blue when the card registered to **card1** is detected.  You enable card trigger by setting a key id for the card:
+```
 Rfidcard1key=73d03714
-The card1 event will now be generated when the card with the id 73d03714 is scanned. There are settings for 8 different cards. 
-MQTT message
+```
+The **card1** event will now be generated when the card with the id 73d03714 is scanned. There are settings for 8 different cards. 
+## MQTT message
 The box can send an MQTT message each time a card is detected. If the same card is presented twice in sequence the box will send a message for each detection. The messages are not time-stamped. They contain the card ID and the device which detected the card. 
+```
 rfidmqttmessages=yes
+```
 The above setting enables MQTT messages. The box will send a message to the MQTT server when a card is detected:
+```
 Got a card:73d03714
 Sending rfid: {"device":"CLB-aef88d","cardID":"73d03714"}
 MQTT publishing:{"device":"CLB-aef88d","cardID":"73d03714"} to topic:lb/rfid
 
-OK: 21 MQTT transmit OK
-This would allow a server based “drinks monitor” to be created in which the server tracks resource use and sends pixel commands to control the box display. 
-Drinks Monitor
-Note that the drinks monitor must be used in conjunction with neopixels connected to the same box as the RFID reader. The pixels will display a moving animation which will change colour to indicate status. Drinks monitor mode can be enabled by setting rfiddrinkmonitor to yes. 
+OK: 21 MQTT transmit 
+```
+This would allow a server based resource monitor to be created in which the server tracks resource use and sends pixel commands to control the box display. 
+## Drinks Monitor
+Note that the drinks monitor must be used in conjunction with neopixels connected to the same box as the RFID reader. The pixels will display a moving animation which will change colour to indicate status. Drinks monitor mode can be enabled by setting **rfiddrinkmonitor** to **yes**. 
+```
 rfiddrinkmonitor=yes
+```
 To enable a reset card you can use the setdrinksresetcard command:
+```
 setdrinksresetcard
+```
 This will turn the pixel display blue and wait for you to scan the card to be used as the drinks reset card. Scan the card and the pixel display will turn white, indicating that the reset card has been registered. The reset card id is stored in settings and is retained when the box is switched off. You can also set the reset card by assigning the card ID to the ID of the selected card:
+```
 rfiddrinkresetkey=73d03714
+```
 This would set the reset key to the specified card ID. 
-Rotary encoder sensor
+# Rotary encoder sensor
 The rotary sensor is used to provide rotary input to a box. The sensor will generate events when turned which can be used to adjust the relative position of a value. It will also generate events when the button on the sensor is pressed and released. The value of the output is clamped between 0 and 1.00, attempts to turn the value below 9 or beyond 1 will be ignored. The numeric output will range between 0 and 1 in steps of 0.01. The text output is a string from "0.00" to "1.00".
 The sensor driver connects to a rotary sensor that provides a clock and a data signal. It has been tested with a KY-040 360 Degree Rotary Encoder without any additional conditioning of the clock and data signals and found to work well. It is configured using these setting items:
+```
 rotarysensordatapin=4
 rotarysensorclockpin=5
 rotarysensorswitchpin=0
 rotarysensorfitted=yes
 rotarysensorinitial=0.5
-These are the default values. The pin settings are connected to the encoder. The switch pin is connected to the switch in the encoder. The encoder always provides a value which is relative to the previous position. There is no absolute positioning. The rotarysensorinitial setting allows you to set an initial rotary value which is returned when the device starts. 
-Rotary encoder triggers
+```
+These are the default values. The pin settings are connected to the encoder. The switch pin is connected to the switch in the encoder. The encoder always provides a value which is relative to the previous position. There is no absolute positioning. The **rotarysensorinitial** setting allows you to set an initial rotary value which is returned when the device starts. 
+## Rotary encoder triggers
 There is no absolute position with a rotary encoder. Values will be produced relative to the previous position. The notional “initial” position can be set, so that a volume or brightness 
-Trigger:turned
+### Trigger:turned
 The turned event is triggered each time a sensor movement is detected. 
+```
 {"process":"max7219","command":"display","text":"Hello","sensor":"rotary","trigger":"turned","to":"CLB-2feada"}
+```
 This command will display the new position of the rotary encoder on the display with the address CLB-2feada. Note that a lot of rotary movement will result in a large number of messages being transmitted. 
-Trigger:pressed
+### Trigger:pressed
 The pressed event is triggered when the user press down on the shaft of the rotary encoder. In this respect the rotary input works in exactly the same way as a push button. 
+```
 {"process":"pixels","command":"setnamedcolour","colourname":"green", "sensor":"rotary","trigger":"pressed"}
+```
 The above statement would cause the pixels on the box to turn green when the shaft of the encoder was pressed in. 
-Trigger:released
+### Trigger:released
 The released event is triggered with the user releases a shaft that has been held down.
+```
 {"process":"pixels", "command":"setnamedcolour","colourname":"magenta","pixelSpeed":20, "sensor":"rotary","trigger":"released"}
+```
+
 The above statement would cause the pixels on the box to turn magenta when the shaft of the encoder was released. 
-Appendix 1 – Settings List
+# Appendix 1 – Settings List
  
+```
 pirsensorfitted=no
 pirsensorinputpin=4
 piractivehigh=yes
@@ -922,10 +1114,12 @@ hullosactive=no
 Hullosprogram=
 otaupdateurl=
 otaupdateprodkey=
+```
 
 These are the default settings for a device. You can change the setting values by assigning values to them.  
-Appendix 2 Error Codes
+# Appendix 2 Error Codes
 The command line has a number of error codes if an invalid command is entered. These are the code meanings. 
+```
 #define WORKED_OK 0
 #define INVALID_HEX_DIGIT_IN_VALUE 1
 #define INCOMING_HEX_VALUE_TOO_BIG_FOR_BUFFER 2
@@ -970,3 +1164,4 @@ The command line has a number of error codes if an invalid command is entered. T
 #define JSON_MESSAGE_STORE_FILENAME_INVALID -38
 #define JSON_MESSAGE_STORE_FOLDERNAME_INVALID -39
 #define JSON_MESSAGE_STORE_FOLDER_DOES_NOT_EXIST -40
+```

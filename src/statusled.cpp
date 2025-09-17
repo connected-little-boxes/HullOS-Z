@@ -232,7 +232,7 @@ void initStatusLed()
     // everything initializes
     if (statusLedSettings.statusLedEnabled)
     {
-#if defined(WEMOSD1MINI)
+#if defined(WEMOSD1MINI) && defined(PROCESS_PRINTER)
 // The Wemos device uses pin 2 for both the printer and the builtin led
 // Can't use both at once....
         if(printerSettings.printerEnabled && statusLedSettings.statusLedOutputPin==LED_BUILTIN)

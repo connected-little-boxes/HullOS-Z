@@ -186,15 +186,15 @@ void startDevice()
 
 #endif
 
-  displayMessage("\n\nStarting\n\n");
+  Serial.printf("\n\nStarting\n\n");
 
   char deviceNameBuffer[DEVICE_NAME_LENGTH];
   PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
-  displayMessage("%s\n", deviceNameBuffer);
-  displayMessage("Connected Little Boxes Device\n");
-  displayMessage("Powered by HULLOS-X\n");
-  displayMessage("www.connectedlittleboxes.com\n");
-  displayMessage("Version %s build date: %s %s\n", Version, __DATE__, __TIME__);
+  Serial.printf("%s\n", deviceNameBuffer);
+  Serial.printf("Connected Little Boxes Device\n");
+  Serial.printf("Powered by HULLOS-X\n");
+  Serial.printf("www.connectedlittleboxes.com\n");
+  Serial.printf("Version %s build date: %s %s\n", Version, __DATE__, __TIME__);
 
 #ifdef DEBUG
   messageLogf("**** Debug output enabled");
@@ -210,23 +210,23 @@ void startDevice()
 
   DISPLAY_MEMORY_MONITOR("Populate sensor list");
 
-  displayMessage("Setup settings complete");
+  Serial.printf("Setup settings complete\n");
 
   SettingsSetupStatus status = setupSettings();
 
   switch (status)
   {
   case SETTINGS_SETUP_OK:
-    displayMessage("Settings loaded OK\n");
+    Serial.printf("Settings loaded OK\n");
     break;
   case SETTINGS_RESET_TO_DEFAULTS:
-    displayMessage("Settings reset to defaults\n");
+    Serial.printf("Settings reset to defaults\n");
     break;
   case SETTINGS_FILE_SYSTEM_FAIL:
-    displayMessage("Settings file system fail\n");
+    Serial.printf("Settings file system fail\n");
     break;
   default:
-    displayMessage("Invalid setupSettings return\n");
+    Serial.printf("Invalid setupSettings return\n");
   }
 
   // get the boot mode
@@ -284,10 +284,9 @@ void startDevice()
   DISPLAY_MEMORY_MONITOR("Start all sensors\n");
 
   delay(1000); // show the status for a while
-  if (messagesSettings.messagesEnabled)
-  {
-    displayMessage("Start complete\n\nType help and press enter for help\n\n");
-  }
+  
+  displayMessage("Start complete\n\nType help and press enter for help\n\n");
+  
 }
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)

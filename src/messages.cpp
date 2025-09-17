@@ -189,6 +189,9 @@ void startMessages()
     {
         messagesProcess.status = MESSAGES_OK;
     }
+    else{
+        Serial.printf("Message displays disabled. Use the command messagesactive=yes to turn messages on,\n");
+    }
 }
 
 void updateMessages()

@@ -9,6 +9,7 @@ This is the latest Connected Little Boxes software with embedded PythonIsh. It c
 * [Building the software](/docs/buildsoftware.md)
 * [Configuring a device](/docs/settings.md)
 * [HullOS commands](/docs/HullOSref.md)
+* [Connected Little Boxes](/docs/connnectedlittlebox.md)
 
 Rob Miles
 
