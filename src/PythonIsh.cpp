@@ -19,7 +19,8 @@ struct LanguageHandler PythonIshLanguage = {
 	"PythonIsh",
 	pythonIshDecoderStart,
 	pythonIshdecodeScriptLine,
-	pythonIshShowPrompt
+	pythonIshShowPrompt,
+	'#'
 };
 
 void pythonIshShowPrompt()

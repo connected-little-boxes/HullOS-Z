@@ -369,6 +369,49 @@ This will print the text "rob". Before the text is printed a datestamp line is p
 Mon Mar 22 2021 16:06:11
 rob
 ```
+# lcdpanel process
+You can connect an LCD panel so that a box can display messages. The panel is configured by the following settings.
+```
+lcdon=yes
+lcdPanelwidth=20
+lcdPanelheight=4
+lcdPanelclockpin=5
+lcdPaneldatapin=4
+lcdmessages=no
+```
+* **lcdon** determines whether the panel is available.  It must be set to "yes" before the panel can display messages. 
+* **lcdPanelwidth** sets the width of the LCD panel. 
+* **lcdPanelheight** sets the height of the LCD panel. 
+* **lcdPanelclockpin** specifies the GPIO pin that is to be used for the I2C clock signal.
+* **lcdPaneldatapin** specifies the GPIO pin that is to be used for the I2C clock signal.
+* **lcdmessages** determines whether or not the panel will display messages sent to the console
+## Displaying messages
+A single message is displayed on line line of the LCD panel. The line is cleared before the updated line is displayed.  
+# display – display a message
+Use this command to display a message on the screen. The text of the message is set when the command is performed. It will be replaced by text from a sensor trigger.
+| Property | Value | Default value | Type  |
+|----------|-------|---------------|-------|
+ text | message text to be displayed ||  text |
+| pre | text to be displayed before the message text | empty string | text |
+| post | text to be displayed after the message text | empty string | text |
+| line | line number of the display to be written to | 1 | number |
+| dateformat | datestamp – a datestamp will be displayed before the message |
+| |date – the date (dd:mm:yy) will be displayed before the message |
+| |time – the time (hh:mm:ss) will be displayed before the message |
+
+The **dateformat** option precedes the printed output with a line giving the current date and time. If the box does not have a working network connection the date and time will not be printed. 
+```
+{"process":"lcdPanel","command":"display","text":"rob"}
+```
+This will display the text "rob" on the top line of the display.
+```
+{"process":"lcdPanel","command":"display","text":"miles","line":"2"}
+```
+This would display the text "miles" on the second line of the display.
+```
+{"process":"lcdPanel","command":"display","text":"x","sensor":"clock","trigger":"second","dateformat":"time","pre"="+","post"="-"}
+```
+This would display the character "x" which would be replaced by the time which will be updated every second. The time display will have a + character in front of it and a - character after it. 
 # pixels process
 A connected Little Box can control a large number of pixels. The pixels settings for a box are as follows:
 ```

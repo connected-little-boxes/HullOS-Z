@@ -20,6 +20,7 @@ struct LanguageHandler {
 	void (*setup)(void);
 	int (*consoleInputHandler)(char *);
 	void (*displayPrompt)();
+	char escapeChar;
 };
 
 void HullOSShowPrompt();

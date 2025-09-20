@@ -12,7 +12,7 @@
 
 struct PrinterSettings printerSettings;
 
-char PRINTERMessageBuffer[PRINTERMESSAGE_LENGTH];
+char printerMessageBuffer[PRINTERMESSAGE_LENGTH];
 
 void setDefaultPRINTERDataPinNo(void *dest)
 {
@@ -113,29 +113,29 @@ void printMessage(char *messageText, char *option)
         if (strContains(option, "datestamp"))
         {
             TRACELOGLN("    Got datestamp");
-            if (getDateAndTime(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH))
+            if (getDateAndTime(printerMessageBuffer, PRINTERMESSAGE_LENGTH))
             {
                 TRACELOGLN("      printing datestamp");
-                Serial1.println(PRINTERMessageBuffer);
+                Serial1.println(printerMessageBuffer);
             }
         }
 
         if (strContains(option, "sameline"))
         {
             TRACELOGLN("    Got sameline");
-            snprintf(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH, messageText);
+            snprintf(printerMessageBuffer, PRINTERMESSAGE_LENGTH, messageText);
         }
         else
         {
-            snprintf(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH, "%s\n", messageText);
+            snprintf(printerMessageBuffer, PRINTERMESSAGE_LENGTH, "%s\n", messageText);
         }
     }
     else
     {
-        snprintf(PRINTERMessageBuffer, PRINTERMESSAGE_LENGTH, "%s\n", messageText);
+        snprintf(printerMessageBuffer, PRINTERMESSAGE_LENGTH, "%s\n", messageText);
     }
     TRACELOGLN("Print complete");
-    Serial1.print(PRINTERMessageBuffer);
+    Serial1.print(printerMessageBuffer);
 }
 
 #define PRINTER_FLOAT_VALUE_OFFSET 0

@@ -218,7 +218,7 @@ void updateROTARYSensor()
 				if (rotarySensoractiveReading->pressed)
 				{
 					pos->receiveMessage(pos->config->destination, pos->config->optionBuffer);
-					pos->lastReadingMillis = buttonSensor.millisAtLastReading;
+					pos->lastReadingMillis = rotarySensor.millisAtLastReading;
 					// move on to the next one
 					pos = pos->nextMessageListener;
 					continue;
@@ -231,7 +231,7 @@ void updateROTARYSensor()
 				if (!rotarySensoractiveReading->pressed)
 				{
 					pos->receiveMessage(pos->config->destination, pos->config->optionBuffer);
-					pos->lastReadingMillis = buttonSensor.millisAtLastReading;
+					pos->lastReadingMillis = rotarySensor.millisAtLastReading;
 					// move on to the next one
 					pos = pos->nextMessageListener;
 					continue;
@@ -254,7 +254,7 @@ void updateROTARYSensor()
 				snprintf(messageBuffer, MAX_MESSAGE_LENGTH, "%.2f", resultValue);
 
 				pos->receiveMessage(pos->config->destination, pos->config->optionBuffer);
-				pos->lastReadingMillis = buttonSensor.millisAtLastReading;
+				pos->lastReadingMillis = rotarySensor.millisAtLastReading;
 				// move on to the next one
 				pos = pos->nextMessageListener;
 				continue;

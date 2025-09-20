@@ -26,7 +26,8 @@ struct LanguageHandler RockstarLanguage = {
     "Rockstar",
     rockstarDecoderStart,
     RockstarIshDecodeScriptLine,
-    rockstarShowPrompt
+    rockstarShowPrompt,
+    '$'
 };
 
 void rockstarShowPrompt()

@@ -1,3 +1,56 @@
+#define sillyX
+
+#ifdef silly
+
+ /*!
+	@file     HelloWorldSTM32.ino
+	@author   Gavin Lyons
+	@brief 
+		 Hello World for HD44780_LCD_PCF8574 arduino library  for STM32 "blue pill"
+	@note Allows testing of both I2C ports 1 and 2 on the STM32 "blue pill" board
+*/
+
+#include <Wire.h>
+
+// Section: Included library
+#include "HD44780_LCD_PCF8574.h"
+
+
+HD44780LCD myLCD(4, 20, 0x27, &Wire); 
+
+// Section: Setup
+
+void setup() {
+  delay(300);
+  Wire.setSDA(4); 
+  Wire.setSCL(5);
+  Wire.begin();
+
+  delay(100);
+  myLCD.PCF8574_LCDInit(myLCD.LCDCursorTypeOn);
+  myLCD.PCF8574_LCDClearScreen();
+  myLCD.PCF8574_LCDBackLightSet(true);
+  myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberOne, 0);
+}
+
+// Section: Main Loop
+
+void loop() {
+  char testString[] = "Hello World";
+  myLCD.PCF8574_LCDSendString(testString);
+  myLCD.PCF8574_LCDSendChar('!');  // Display a single character
+  myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberTwo, 0);
+  myLCD.PCF8574_LCDSendString(testString);
+  myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberThree, 0);
+  myLCD.PCF8574_LCDSendString(testString);
+  myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberFour, 0);
+  myLCD.PCF8574_LCDSendString(testString);
+  while (true) {};
+}
+
+// EOF
+#else
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -39,6 +92,7 @@
 #include "Motors.h"
 #include "distance.h"
 #include "codeEditorProcess.h"
+#include "lcdPanel.h"
 
 #ifdef PROCESS_MOTOR
 
@@ -105,6 +159,9 @@ void populateProcessList()
 #endif
 #if defined(PROCESS_MOTOR)
   addProcessToAllProcessList(&motorProcessDescriptor);
+#endif
+#if defined(PROCESS_LCD_PANEL)
+  addProcessToAllProcessList(&lcdPanelProcess);
 #endif
 #if defined(PROCESS_CODE_EDITOR)
   addProcessToAllProcessList(&codeEditorProcess);
@@ -313,6 +370,7 @@ void heapMonitor()
 
 void setup()
 {
+  delay(3000);
   startDevice();
 }
 
@@ -323,3 +381,5 @@ void loop()
   delay(5);
   //  DISPLAY_MEMORY_MONITOR("System");
 }
+
+#endif

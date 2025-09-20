@@ -166,6 +166,9 @@ void decodeError(int errorNo, char *buffer, int bufferLength)
     case COMMAND_NO_COMMAND_FOUND:
         message = F("No command found");
         break;
+    case JSON_MESSAGE_LCD_NOT_ENABLED:
+        message = F("LCD not enabled");
+        break;
     }
 
     snprintf(buffer, bufferLength, message.c_str());

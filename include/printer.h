@@ -18,10 +18,6 @@ struct PrinterSettings
 
 void printMessage(char *messageText, char *option);
 
-void printerprinterMessagesOff();
-
-void printerprinterMessagesOn();
-
 void printSystemMessagesOn();
 
 void printSystemMessagesOff();

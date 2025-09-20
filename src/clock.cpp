@@ -754,7 +754,6 @@ bool getDateAndTime(char *buffer, int bufferLength)
 {
 	if (clockSensor.status == SENSOR_OK)
 	{
-		displayMessage("Got the date and time");
 		struct clockReading *clockActiveReading;
 		clockActiveReading =
 			(struct clockReading *)clockSensor.activeReading;
@@ -764,6 +763,41 @@ bool getDateAndTime(char *buffer, int bufferLength)
 				 monthNames[clockActiveReading->month],
 				 clockActiveReading->day,
 				 clockActiveReading->year,
+				 clockActiveReading->hour,
+				 clockActiveReading->minute,
+				 clockActiveReading->second);
+		return true;
+	}
+	return false;
+}
+
+bool getDate(char *buffer, int bufferLength)
+{
+	if (clockSensor.status == SENSOR_OK)
+	{
+		struct clockReading *clockActiveReading;
+		clockActiveReading =
+			(struct clockReading *)clockSensor.activeReading;
+
+		snprintf(buffer, bufferLength, "%02d:%02d:%02d",
+				 clockActiveReading->day,
+				 clockActiveReading->month,
+				 clockActiveReading->year%100
+				);
+		return true;
+	}
+	return false;
+}
+
+bool getTime(char *buffer, int bufferLength)
+{
+	if (clockSensor.status == SENSOR_OK)
+	{
+		struct clockReading *clockActiveReading;
+		clockActiveReading =
+			(struct clockReading *)clockSensor.activeReading;
+
+		snprintf(buffer, bufferLength, "%02d:%02d:%02d",
 				 clockActiveReading->hour,
 				 clockActiveReading->minute,
 				 clockActiveReading->second);

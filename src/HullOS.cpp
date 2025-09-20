@@ -50,7 +50,9 @@ struct LanguageHandler hullOSLanguage = {
     "HullOS",
     hullOSDecoderStart,
     hullOSdecodeScriptLine,
-    HullOSShowPrompt};
+    HullOSShowPrompt,
+    '*'
+};
 
 void HullOSShowPrompt()
 {
