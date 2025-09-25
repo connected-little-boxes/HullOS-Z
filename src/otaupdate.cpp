@@ -33,12 +33,12 @@ struct SettingItemCollection otaUpdateSettingItems = {
 
 void update_started()
 {
-	displayMessage("CALLBACK:  HTTP update process started");
+	displayMessage(F("CALLBACK:  HTTP update process started"));
 }
 
 void update_finished()
 {
-	displayMessage("CALLBACK:  HTTP update process finished");
+	displayMessage(F("CALLBACK:  HTTP update process finished"));
 	delay(1000);
 	internalReboot(WARM_BOOT_MODE);
 }
@@ -52,7 +52,7 @@ void update_progress(int cur, int total)
 
 void update_error(int err)
 {
-	displayMessage("CALLBACK:  HTTP update fatal error code %d\n", err);
+	displayMessage(F("CALLBACK:  HTTP update fatal error code %d\n"), err);
 	delay(1000);
 	internalReboot(COLD_BOOT_MODE);
 }
@@ -62,21 +62,21 @@ void performOTAUpdate()
 
 	WiFiClient client;
 
-	displayMessage("Boot OTA Update requested");
+	displayMessage(F("Boot OTA Update requested"));
 
 	if (!syncWiFiConnect())
 	{
 		internalReboot(COLD_BOOT_MODE);
 	}
 
-	displayMessage("WiFi Connected");
+	displayMessage(F("WiFi Connected"));
 
   initStatusLedHardware();
   statusLedOn();
 
 #if defined(ARDUINO_ARCH_ESP8266)
 
-	displayMessage("Performing OTA update from %s\n", ESP8266_OTA_UPDATE_URL);
+	displayMessage(F("Performing OTA update from %s\n"), ESP8266_OTA_UPDATE_URL);
 
 	//	ESPhttpUpdate.onStart(update_started);
 	ESPhttpUpdate.onEnd(update_finished);
@@ -85,13 +85,13 @@ void performOTAUpdate()
 
 	t_httpUpdate_return ret = ESPhttpUpdate.update(client, ESP8266_OTA_UPDATE_URL, Version);
 
-	displayMessage("Update running..........");
+	displayMessage(F("Update running.........."));
 
 #endif
 
 #if defined(ARDUINO_ARCH_ESP32)
 
-	displayMessage("Performing OTA update from %s\n", ESP32_OTA_UPDATE_URL);
+	displayMessage(F("Performing OTA update from %s\n"), ESP32_OTA_UPDATE_URL);
 
 	httpUpdate.onEnd(update_finished);
 	httpUpdate.onError(update_error);
@@ -103,7 +103,7 @@ void performOTAUpdate()
 
 void requestOTAUpate()
 {
-	displayMessage("OTA Update");
+	displayMessage(F("OTA Update"));
 
 	internalReboot(OTA_UPDATE_BOOT_MODE);
 }

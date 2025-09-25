@@ -69,18 +69,18 @@ void Leds::wash(Colour colour)
 
 void Leds::dump()
 {
-	displayMessage("Leds width:%d height:%d\n  ", ledWidth, ledHeight);
+	displayMessage(F("Leds width:%d height:%d\n  "), ledWidth, ledHeight);
 	for (int y = 0; y < ledHeight; y++)
 	{
 		for (int x = 0; x < ledWidth; x++)
 		{
-			displayMessage("     r:%f g:%f b:%f\n",
+			displayMessage(F("     r:%f g:%f b:%f\n"),
 						  leds[x][y].colour.Red,
 						  leds[x][y].colour.Green,
 						  leds[x][y].colour.Blue);
 		}
 	}
-	displayMessage("\n");
+	displayMessage(F("\n"));
 	}
 
 

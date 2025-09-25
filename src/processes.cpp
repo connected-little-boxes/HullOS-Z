@@ -128,10 +128,10 @@ char processStatusBuffer[PROCESS_STATUS_BUFFER_SIZE];
 
 void startProcess(process *proc)
 {
-	displayMessage("   %s: ", proc->processName);
+	displayMessage(F("   %s: "), proc->processName);
 	proc->startProcess();
 	proc->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
-	displayMessage(" %s\n", processStatusBuffer);
+	displayMessage(F(" %s\n"), processStatusBuffer);
 	proc->beingUpdated = true; // process only gets updated after it has started
 }
 
@@ -169,7 +169,7 @@ void initialiseAllProcesses()
 
 void startProcesses()
 {
-	displayMessage("Starting processes\n");
+	displayMessage(F("Starting processes\n"));
 
 	struct process *procPtr = activeProcessList;
 
@@ -192,14 +192,14 @@ void updateProcesses()
 	while (procPtr != NULL)
 	{
 		unsigned long startMicros = micros();
-		//		displayMessage("%s\n", procPtr->processName);
+		//		displayMessage(F("%s\n"), procPtr->processName);
 		procPtr->udpateProcess();
 		unsigned long runTime = ulongDiff(micros(), startMicros);
 		if (messagesSettings.speedMessagesEnabled)
 		{
 			if (runTime > SLOW_PROCESS_TIME_MICROS)
 			{
-				displayMessage("  %s running slow: %ul\n", procPtr->processName, runTime);
+				displayMessage(F("  %s running slow: %ul\n"), procPtr->processName, runTime);
 			}
 		}
 		procPtr->activeTime = runTime;
@@ -211,7 +211,7 @@ void updateProcesses()
 
 void dumpProcessStatus()
 {
-	displayMessage("Processes\n");
+	displayMessage(F("Processes\n"));
 
 	struct process *procPtr = activeProcessList;
 
@@ -219,12 +219,12 @@ void dumpProcessStatus()
 	{
 		if (procPtr->beingUpdated)
 		{
-			displayMessage("    %s:", procPtr->processName);
+			displayMessage(F("    %s:"), procPtr->processName);
 			procPtr->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
-			displayMessage("%s Active time: ", processStatusBuffer);
-			displayMessage("%lu millisecs", procPtr->activeTime / 1000);
-			displayMessage(" Total time: ");
-			displayMessage("%lu millisecs\n", procPtr->totalTime / 1000);
+			displayMessage(F("%s Active time: "), processStatusBuffer);
+			displayMessage(F("%lu millisecs"), procPtr->activeTime / 1000);
+			displayMessage(F(" Total time: "));
+			displayMessage(F("%lu millisecs\n"), procPtr->totalTime / 1000);
 		}
 		procPtr = procPtr->nextActiveProcess;
 	}
@@ -241,12 +241,12 @@ bool dumpProcessStatusFiltered(const char *name)
 		{
 			if (strcasecmp(procPtr->processName, name) == 0)
 			{
-				displayMessage("    %s:", procPtr->processName);
+				displayMessage(F("    %s:"), procPtr->processName);
 				procPtr->getStatusMessage(processStatusBuffer, PROCESS_STATUS_BUFFER_SIZE);
-				displayMessage("%s Active time: ", processStatusBuffer);
-				displayMessage("%lu millisecs", procPtr->activeTime / 1000);
-				displayMessage(" Total time: ");
-				displayMessage("%lu millisecs\n", procPtr->totalTime / 1000);
+				displayMessage(F("%s Active time: "), processStatusBuffer);
+				displayMessage(F("%lu millisecs"), procPtr->activeTime / 1000);
+				displayMessage(F(" Total time: "));
+				displayMessage(F("%lu millisecs\n"), procPtr->totalTime / 1000);
 				return true;
 			}
 		}
@@ -297,13 +297,13 @@ void iterateThroughActiveProcesses(void (*func)(process *p))
 
 void stopProcesses()
 {
-	displayMessage("Stopping processes\n");
+	displayMessage(F("Stopping processes\n"));
 
 	struct process *procPtr = activeProcessList;
 
 	while (procPtr != NULL)
 	{
-		displayMessage("   %s\n", procPtr->processName);
+		displayMessage(F("   %s\n"), procPtr->processName);
 		procPtr->stopProcess();
 		procPtr->beingUpdated = false;
 		procPtr = procPtr->nextAllProcesses;

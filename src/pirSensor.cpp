@@ -164,7 +164,7 @@ void pirSensorTest()
 
 	pinMode(pirSensorSettings.pirSensorPinNo, INPUT);
 
-	displayMessage("PIR Sensor test\nPress the ESC key to end the test\n");
+	displayMessage(F("PIR Sensor test\nPress the ESC key to end the test\n"));
 
 	int count = 0;
 	bool triggered = false;
@@ -186,7 +186,7 @@ void pirSensorTest()
 			if (triggered == false)
 			{
 				count++;
-				displayMessage("    triggered: %d\n", count);
+				displayMessage(F("    triggered: %d\n"), count);
 				triggered = true;
 			}
 		}
@@ -197,7 +197,7 @@ void pirSensorTest()
 		delay(100);
 	}
 
-	displayMessage("PIR test ended");
+	displayMessage(F("PIR test ended"));
 }
 
 void startPirSensor()

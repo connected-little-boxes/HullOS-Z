@@ -164,7 +164,7 @@ void potSensorTest()
 	struct potSensorReading *potSensoractiveReading =
 		(struct potSensorReading *)potSensor.activeReading;
 
-	displayMessage("Pot Sensor test\nPress the ESC key to end the test\n");
+	displayMessage(F("Pot Sensor test\nPress the ESC key to end the test\n"));
 
 	while (true)
 	{
@@ -180,12 +180,12 @@ void potSensorTest()
 
 		readPOTSensor(potSensoractiveReading);
 
-		displayMessage("Pot value:%d\n", potSensoractiveReading->counter);
+		displayMessage(F("Pot value:%d\n"), potSensoractiveReading->counter);
 
 		delay(100);
 	}
 
-	displayMessage("Pot test ended");
+	displayMessage(F("Pot test ended"));
 }
 
 void startPotSensor()

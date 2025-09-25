@@ -64,8 +64,8 @@ void Frame::render()
 void Frame::dump()
 {
 
-	displayMessage("\nFrame");
-	displayMessage("Width:%d Height:%d brightness:%f brightness change:%f brightnessSteps:%d\n",
+	displayMessage(F("\nFrame"));
+	displayMessage(F("Width:%d Height:%d brightness:%f brightness change:%f brightnessSteps:%d\n"),
 	width, height, brightness, brightnessStep, noOfBrightnessSteps);
 
 	leds->dump();

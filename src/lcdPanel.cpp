@@ -153,7 +153,7 @@ void displayLCDMessage(char *messageText, int lineNo, char *dateFormat)
     }
 
     if(lineNo>lcdPanelSettings.height || lineNo<1){
-        displayMessage("Line number invalid in LCD message display\n");
+        displayMessage(F("Line number invalid in LCD message display\n"));
         return;
     }
 

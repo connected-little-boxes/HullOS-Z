@@ -86,7 +86,7 @@ WebServer server(80);
 
 void handleRoot()
 {
-    displayMessageWithNewline("Server root hit");
+    displayMessageWithNewline(F("Server root hit"));
 
     server.send(200, "text/html", webPage);
 }
@@ -183,7 +183,7 @@ bool sendTextToPythonIsh(char * text){
         
         if(result != ERROR_OK){
             const char * error = getErrorMessage(result);
-            displayMessage("%d line:%s\n",lineCount,error);
+            displayMessage(F("%d line:%s\n"),lineCount,error);
             return false;
         }
         lineCount++;
@@ -221,24 +221,24 @@ bool sendStringToCodeBuffer(String str)
 void setupCodeEditorServer()
 {
 
-    displayMessage("Code editor starting\n");
+    displayMessage(F("Code editor starting\n"));
 
     if (MDNS.begin(codeEditorSettings.codeEditorDeviceName))
     {
-        displayMessage("MDNS responder started on %s\n", codeEditorSettings.codeEditorDeviceName);
+        displayMessage(F("MDNS responder started on %s\n"), codeEditorSettings.codeEditorDeviceName);
     }
 
     server.on("/", handleRoot);
 
     server.on("/run", []()
               {
-  displayMessage("Got a run request");
+  displayMessage(F("Got a run request"));
 //  sendLineToRobot("*RS");
   handleRoot(); });
 
     server.on("/stop", []()
               {
-//    displayMessageWithNewline("Got a stop request");
+//    displayMessageWithNewline(F("Got a stop request"));
 //    sendLineToRobot("*RH");
     handleRoot(); });
 
@@ -248,7 +248,7 @@ void setupCodeEditorServer()
                   String robotCode = server.arg(0);
                   sendStringToCodeBuffer(robotCode);
                   sendTextToPythonIsh(codeEditSource);
-                  // displayMessage("Source code received from web page: %s\n", codeEditSource);
+                  // displayMessage(F("Source code received from web page: %s\n"), codeEditSource);
                   saveCode();
                   handleRoot(); });
 
@@ -380,7 +380,7 @@ void startcodeEditorProcess()
 
     loadCodeFromFile();
 
-    displayMessage("Source code: %s\n", codeEditSource);
+    displayMessage(F("Source code: %s\n"), codeEditSource);
 
     millisOfLastCodeEditorUpdate = millis();
 

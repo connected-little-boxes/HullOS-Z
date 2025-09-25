@@ -210,7 +210,7 @@ void displayControlMessage(int messageNumber, ledFlashBehaviour severity, char *
 
   ledFlashBehaviourToString(severity, buffer, 20);
 
-  displayMessage("%s: %d %s\n", buffer, messageNumber, messageText);
+  displayMessage(F("%s: %d %s\n"), buffer, messageNumber, messageText);
 }
 
 unsigned long heapPrintTime = 0;
@@ -235,7 +235,7 @@ void startDevice()
   for (int i = 0; i < 10; i++)
   {
     delay(1000);
-    displayMessageWithNewline("%d",10 - i);
+    displayMessageWithNewline(F("%d"),10 - i);
     if(Serial.available()){
       break;
     }
@@ -342,7 +342,7 @@ void startDevice()
 
   delay(1000); // show the status for a while
   
-  displayMessage("Start complete\n\nType help and press enter for help\n\n");
+  displayMessage(F("Start complete\n\nType help and press enter for help\n\n"));
   
 }
 
@@ -359,8 +359,8 @@ void heapMonitor()
     uint32_t newHeap = ESP.getFreeHeap();
     if (newHeap != oldHeap)
     {
-      displayMessage("Heap: ");
-      displayMessage("%lu", newHeap);
+      displayMessage(F("Heap: "));
+      displayMessage(F("%lu"), newHeap);
       oldHeap = newHeap;
     }
     heapPrintTime = millis();

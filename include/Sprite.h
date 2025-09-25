@@ -177,7 +177,7 @@ public:
             return;            
         }
 
-        displayMessage("r:%f g:%f b:%f bright:%f opacity:%f x:%f y:%f moveSteps:%d colourSteps:%d ",
+        displayMessage(F("r:%f g:%f b:%f bright:%f opacity:%f x:%f y:%f moveSteps:%d colourSteps:%d "),
             colour.Red, colour.Green, colour.Blue,
             brightness, opacity,
             x, y, moveSteps, colourSteps);
@@ -185,16 +185,16 @@ public:
         switch(movingState)
         {
             case SPRITE_STOPPED:
-                displayMessage(" stopped\n");
+                displayMessage(F(" stopped\n"));
                 break;
             case SPRITE_BOUNCE:
-                displayMessage(" bounce -xSpeed:%f ySpeed:%f\n", xSpeed, ySpeed);
+                displayMessage(F(" bounce -xSpeed:%f ySpeed:%f\n"), xSpeed, ySpeed);
                 break;
             case SPRITE_WRAP:
-                displayMessage(" wrap -xSpeed:%f ySpeed:%f\n", xSpeed, ySpeed);
+                displayMessage(F(" wrap -xSpeed:%f ySpeed:%f\n"), xSpeed, ySpeed);
                 break;
             case SPRITE_MOVE:
-                displayMessage(" move -xSpeed:%f ySpeed:%f \n", xSpeed, ySpeed );
+                displayMessage(F(" move -xSpeed:%f ySpeed:%f \n"), xSpeed, ySpeed );
                 break;
         }
     }

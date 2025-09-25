@@ -48,7 +48,7 @@ void printListenerConfiguration(sensorListenerConfiguration *item)
 
 		if (s == NULL)
 		{
-			displayMessage("Sensor %s in listener not found\n", item->sensorName);
+			displayMessage(F("Sensor %s in listener not found\n"), item->sensorName);
 			return;
 		}
 
@@ -56,7 +56,7 @@ void printListenerConfiguration(sensorListenerConfiguration *item)
 
 		if (item->destination[0] == 0)
 		{
-			displayMessage("Process:%s Command:%s Sensor:%s Trigger:%s\n",
+			displayMessage(F("Process:%s Command:%s Sensor:%s Trigger:%s\n"),
 						  item->commandProcess,
 						  item->commandName,
 						  item->sensorName,
@@ -64,7 +64,7 @@ void printListenerConfiguration(sensorListenerConfiguration *item)
 		}
 		else
 		{
-			displayMessage("Process:%s Command:%s Sensor:%s Trigger:%s Destination:%s\n",
+			displayMessage(F("Process:%s Command:%s Sensor:%s Trigger:%s Destination:%s\n"),
 						  item->commandProcess,
 						  item->commandName,
 						  item->sensorName,
@@ -562,24 +562,24 @@ void dumpCommand(const char *processName, const char *commandName, unsigned char
 
 	for (int i = 0; i < OPTION_STORAGE_SIZE; i++)
 	{
-		displayMessage("%x:%c ", commandParameterBuffer[i], commandParameterBuffer[i]);
+		displayMessage(F("%x:%c "), commandParameterBuffer[i], commandParameterBuffer[i]);
 	}
 
-	displayMessage("\n\n");
+	displayMessage(F("\n\n"));
 
 	if (command == NULL)
 	{
-		displayMessage("Process %s not found\n", processName);
+		displayMessage(F("Process %s not found\n"), processName);
 		return;
 	}
 
-	displayMessage("Dumping command: %s with %d items\n", command->name, command->noOfItems);
+	displayMessage(F("Dumping command: %s with %d items\n"), command->name, command->noOfItems);
 
 	for (int i = 0; i < command->noOfItems; i++)
 	{
 		CommandItem *item = command->items[i];
 
-		displayMessage("Offset:%d ", item->commandSettingOffset);
+		displayMessage(F("Offset:%d "), item->commandSettingOffset);
 
 		int intValue;
 		float floatValue;
@@ -587,17 +587,17 @@ void dumpCommand(const char *processName, const char *commandName, unsigned char
 		switch (item->type)
 		{
 		case textCommand:
-			displayMessage("   %s: %s\n", item->name, (char *)commandParameterBuffer + item->commandSettingOffset);
+			displayMessage(F("   %s: %s\n"), item->name, (char *)commandParameterBuffer + item->commandSettingOffset);
 			break;
 
 		case integerCommand:
 			intValue = getUnalignedInt(commandParameterBuffer + item->commandSettingOffset);
-			displayMessage("   %s: %d\n", item->name, intValue);
+			displayMessage(F("   %s: %d\n"), item->name, intValue);
 			break;
 
 		case floatCommand:
 			floatValue = getUnalignedFloat(commandParameterBuffer + item->commandSettingOffset);
-			displayMessage("   %s: %f\n", item->name, floatValue);
+			displayMessage(F("   %s: %f\n"), item->name, floatValue);
 			break;
 		}
 	}
@@ -1244,7 +1244,7 @@ void createJSONfromSettings(char *processName, struct Command *command, char *de
 	}
 
 	appendFormattedString(buffer, bufferLength, ", \"from\":\"%s\"}", mqttSettings.mqttDeviceName);
-	displayMessage("Built:%s\n", buffer);
+	displayMessage(F("Built:%s\n"), buffer);
 }
 
 void showLocalPublishCommandResult(char *resultText)
@@ -1293,7 +1293,7 @@ int doPerformCommandStore(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	displayMessage("Performing a command");
+	displayMessage(F("Performing a command"));
 
 	char *command = (char *)(settingBase + CONTROLLER_MESSAGE_OFFSET);
 	return performCommandsInStore(command);

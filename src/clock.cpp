@@ -299,7 +299,7 @@ void iterateThroughAlarms(void (*func)(clockAlarmDescriptor *alarm))
 
 bool pastAlarmTime(struct ClockAlarm *alarm, struct clockReading *reading)
 {
-	displayMessage("    Alarm:%d:%d  Time:%d:%d\n", alarm->hour, alarm->minute, reading->hour, reading->minute);
+	displayMessage(F("    Alarm:%d:%d  Time:%d:%d\n"), alarm->hour, alarm->minute, reading->hour, reading->minute);
 
 	if (reading->hour > alarm->hour)
 	{
@@ -582,10 +582,10 @@ void checkTimeZone()
 		return;
 	}
 
-	displayMessage("Setting time zone\n");
+	displayMessage(F("Setting time zone\n"));
 
 	if(homeTimezone.setLocation(clockSensorSettings.timeZone)){
-		displayMessage("Time zone set\n");
+		displayMessage(F("Time zone set\n"));
 		timeZoneSet = true;
 	}
 }

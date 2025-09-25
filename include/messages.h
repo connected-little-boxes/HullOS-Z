@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 
 #define MESSAGES_OK 400
 #define MESSAGES_STOPPED 401
@@ -8,12 +9,19 @@ struct MessagesSettings {
 	bool speedMessagesEnabled;
 };
 
-void displayMessage(const char *format, ...);
-void displayMessageWithNewline(const char *format, ...);
+#pragma once
+#include <Arduino.h>
 
+// printf-style variants (use these for literals and F("..."))
+void displayMessage(const __FlashStringHelper* fmt, ...);
+void displayMessage(const char* fmt, ...);
 
-void displayMessage(const char *format, ...);
+// convenience overload for Arduino String (no formatting)
+void displayMessage(const String& s);
 
+void displayMessageWithNewline(const __FlashStringHelper* fmt, ...);
+void displayMessageWithNewline(const char* fmt, ...);
+void displayMessageWithNewline(const String& s);
 
 enum ledFlashBehaviour { ledFlashOn, ledFlashNormalState, ledFlashStartingState,
 	ledFlashConfigState, ledFlashAlertState};

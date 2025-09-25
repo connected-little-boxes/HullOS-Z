@@ -59,22 +59,22 @@ void HullOSProgramoutputFunction(char ch)
 
 #ifdef HullOS_DEBUG
 
-    displayMessage("Got a HullOS program ch %c\n", ch);
+    displayMessage(F("Got a HullOS program ch %c\n"), ch);
 
     if (ch == STATEMENT_TERMINATOR)
     {
-        displayMessage("Writing a line terminator\n");
+        displayMessage(F("Writing a line terminator\n"));
     }
     else
     {
-        displayMessage("Writing a %c %d\n", ch, ch);
+        displayMessage(F("Writing a %c %d\n"), ch, ch);
     }
 
 #endif
 
     if (HullOSOutputBufferPos >= HULLOS_PROGRAM_COMMAND_LENGTH - 2)
     {
-        displayMessage("HullOS command too long - ignoring\n");
+        displayMessage(F("HullOS command too long - ignoring\n"));
         resetHullOSOutputBuffer();
         return;
     }
@@ -85,7 +85,7 @@ void HullOSProgramoutputFunction(char ch)
         HullOSOutputBuffer[HullOSOutputBufferPos++] = 0;
 
 #ifdef HullOS_DEBUG
-        displayMessage("Got a statement to perform: %s\n", HullOSOutputBuffer);
+        displayMessage(F("Got a statement to perform: %s\n"), HullOSOutputBuffer);
 #endif
         hullOSActOnStatement(HullOSOutputBuffer, HullOSOutputBuffer + HullOSOutputBufferPos);
         resetHullOSOutputBuffer();
@@ -98,19 +98,19 @@ void displayProgramState()
 {
     switch(programState){
 	case PROGRAM_STOPPED : 
-        displayMessage("Program Stopped");
+        displayMessage(F("Program Stopped"));
         break;
 	case PROGRAM_PAUSED :
-        displayMessage("Program Stopped");
+        displayMessage(F("Program Stopped"));
         break;
 	case PROGRAM_ACTIVE:
-        displayMessage("Program Stopped");
+        displayMessage(F("Program Stopped"));
         break;
 	case PROGRAM_AWAITING_DELAY_COMPLETION:
-        displayMessage("Program Stopped");
+        displayMessage(F("Program Stopped"));
         break;
 	case PROGRAM_AWAITING_MOVE_COMPLETION: 
-        displayMessage("Program Stopped");
+        displayMessage(F("Program Stopped"));
         break;
     }
 };
@@ -199,7 +199,7 @@ void dumpRunningProgram()
     int progPos = 0;
     int lineNumber = 2;
 
-    displayMessage("Program:\n1 : ");
+    displayMessage(F("Program:\n1 : "));
 
     unsigned char b;
 
@@ -208,19 +208,19 @@ void dumpRunningProgram()
         b = HullOScodeRunningCode[progPos++];
 
         if (b == STATEMENT_TERMINATOR)
-            displayMessage("\n%d : ", lineNumber++);
+            displayMessage(F("\n%d : "), lineNumber++);
         else
-            displayMessage("%c", b);
+            displayMessage(F("%c"), b);
 
         if (b == PROGRAM_TERMINATOR)
         {
-            displayMessage("\nProgram size: %d\n", progPos);
+            displayMessage(F("\nProgram size: %d\n"), progPos);
             break;
         }
 
         if (progPos >= HULLOS_PROGRAM_SIZE)
         {
-            displayMessage("\nProgram end\n");
+            displayMessage(F("\nProgram end\n"));
             break;
         }
     }
@@ -232,7 +232,7 @@ void startProgramExecution(bool clearVariablesBeforeRun)
 {
 
 #ifdef PROGRAM_DEBUG
-    displayMessageWithNewline("Starting program execution");
+    displayMessageWithNewline(F("Starting program execution"));
 #endif
 
     if (clearVariablesBeforeRun)
@@ -253,7 +253,7 @@ void startProgramExecution(bool clearVariablesBeforeRun)
 void haltProgramExecution()
 {
 #ifdef PROGRAM_DEBUG
-    displayMessage("Ending program execution at: ");
+    displayMessage(F("Ending program execution at: "));
     displayMessageWithNewline(programCounter);
 #endif
 
@@ -268,7 +268,7 @@ void haltProgramExecution()
 void pauseProgramExecution()
 {
 #ifdef PROGRAM_DEBUG
-    displayMessage(".Pausing program execution at: ");
+    displayMessage(F(".Pausing program execution at: "));
     displayMessageWithNewline(programCounter);
 #endif
 
@@ -278,7 +278,7 @@ void pauseProgramExecution()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("RPOK");
+        displayMessage(F("RPOK"));
     }
 
 #endif
@@ -289,7 +289,7 @@ void pauseProgramExecution()
 void resumeProgramExecution()
 {
 #ifdef PROGRAM_DEBUG
-    displayMessage(".Resuming program execution at: ");
+    displayMessage(F(".Resuming program execution at: "));
     displayMessageWithNewline(programCounter);
 #endif
 
@@ -302,7 +302,7 @@ void resumeProgramExecution()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("RROK");
+            displayMessage(F("RROK"));
         }
 #endif
     }
@@ -312,7 +312,7 @@ void resumeProgramExecution()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("RRFail:");
+            displayMessage(F("RRFail:"));
             displayProgramState();
         }
 #endif
@@ -342,7 +342,7 @@ void clearStoredProgram()
 void startDownloadingCode()
 {
 #ifdef PROGRAM_DEBUG
-    displayMessageWithNewline(".Starting code download");
+    displayMessageWithNewline(F(".Starting code download"));
 #endif
 
     // clear the existing program so that
@@ -364,7 +364,7 @@ void startDownloadingCode()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("RMOK");
+        displayMessage(F("RMOK"));
     }
 
 #endif
@@ -383,11 +383,11 @@ void dumpProgram(char *start)
         }
         if (ch == STATEMENT_TERMINATOR)
         {
-            displayMessage("\n");
+            displayMessage(F("\n"));
         }
         else
         {
-            displayMessage("%c", ch);
+            displayMessage(F("%c"), ch);
         }
         start++;
     }
@@ -398,7 +398,7 @@ void endProgramReceive(bool save)
 
 #ifdef PROGRAM_DEBUG
 
-    displayMessage("End Program Receive\n");
+    displayMessage(F("End Program Receive\n"));
 
     dumpProgram(HullOScodeCompileOutput);
 
@@ -413,17 +413,17 @@ void endProgramReceive(bool save)
 
         if (HullOSFilenameSet())
         {
-            displayMessage("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+            displayMessage(F("Storing the program in:%s\n"), HullOScommandsFilenameBuffer);
             saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
         }
         else
         {
-            displayMessage("Storing the program in:%s\n", RUNNING_PROGRAM_FILENAME);
+            displayMessage(F("Storing the program in:%s\n"), RUNNING_PROGRAM_FILENAME);
             saveToFile(RUNNING_PROGRAM_FILENAME, HullOScodeCompileOutput);
         }
     }
     else {
-        displayMessage("Program download aborted\n");
+        displayMessage(F("Program download aborted\n"));
     }
 
     // enable immediate command receipt
@@ -435,7 +435,7 @@ void storeReceivedByte(byte b)
 {
 
 #ifdef PROGRAM_DEBUG
-    displayMessage("Storing:%d %c\n", b, b);
+    displayMessage(F("Storing:%d %c\n"), b, b);
 #endif
 
     // ignore odd characters - except for CR
@@ -470,7 +470,7 @@ void storeReceivedByte(byte b)
         case 'x':
         case 'X':
 #ifdef PROGRAM_DEBUG
-            displayMessageWithNewline("RX");
+            displayMessageWithNewline(F("RX"));
 #endif
             // put the terminator on the end
 
@@ -491,7 +491,7 @@ void storeReceivedByte(byte b)
         case 'A':
         case 'a':
 #ifdef PROGRAM_DEBUG
-            displayMessageWithNewline("RA");
+            displayMessageWithNewline(F("RA"));
 #endif
             storeProgramByte(PROGRAM_TERMINATOR);
 
@@ -528,7 +528,7 @@ void storeReceivedByte(byte b)
 
         if (diagnosticsOutputLevel & ECHO_DOWNLOADS)
         {
-            displayMessage("%c",(char)b);
+            displayMessage(F("%c"),(char)b);
         }
 
 #endif
@@ -541,7 +541,7 @@ void storeReceivedByte(byte b)
 
             if (diagnosticsOutputLevel & ECHO_DOWNLOADS)
             {
-                displayMessage("\n");
+                displayMessage(F("\n"));
             }
 
 #endif
@@ -557,7 +557,7 @@ void storeReceivedByte(byte b)
 void resetCommand()
 {
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**resetCommand");
+    displayMessageWithNewline(F(".**resetCommand"));
 #endif
     resetHullOSOutputBuffer();
 }
@@ -576,7 +576,7 @@ void remoteMoveForwards()
     int forwardMoveDistance;
 
 #ifdef MOVE_FORWARDS_DEBUG
-    displayMessageWithNewline(".**moveForwards");
+    displayMessageWithNewline(F(".**moveForwards"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR)
@@ -586,7 +586,7 @@ void remoteMoveForwards()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no dist");
+            displayMessageWithNewline(F("FAIL: no dist"));
         }
 
 #endif
@@ -606,7 +606,7 @@ void remoteMoveForwards()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MFOK");
+            displayMessageWithNewline(F("MFOK"));
         }
 
 #endif
@@ -624,7 +624,7 @@ void remoteMoveForwards()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no time");
+            displayMessageWithNewline(F("FAIL: no time"));
         }
 
 #endif
@@ -647,14 +647,14 @@ void remoteMoveForwards()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MFOK");
+            displayMessageWithNewline(F("MFOK"));
         }
     }
     else
     {
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MFFail");
+            displayMessageWithNewline(F("MFFail"));
         }
     }
 
@@ -673,7 +673,7 @@ void remoteMoveForwards()
 void remoteMoveAngle()
 {
 #ifdef MOVE_ANGLE_DEBUG
-    displayMessageWithNewline(".**moveAngle");
+    displayMessageWithNewline(F(".**moveAngle"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -683,7 +683,7 @@ void remoteMoveAngle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MAFail: no radius");
+            displayMessageWithNewline(F("MAFail: no radius"));
         }
 
 #endif
@@ -705,7 +705,7 @@ void remoteMoveAngle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MAFail: no angle");
+            displayMessageWithNewline(F("MAFail: no angle"));
         }
 
 #endif
@@ -722,7 +722,7 @@ void remoteMoveAngle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MAFail: no angle");
+            displayMessageWithNewline(F("MAFail: no angle"));
         }
 
 #endif
@@ -743,7 +743,7 @@ void remoteMoveAngle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MAOK");
+            displayMessage(F("MAOK"));
         }
 
 #endif
@@ -761,7 +761,7 @@ void remoteMoveAngle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MAFail: no time");
+            displayMessageWithNewline(F("MAFail: no time"));
         }
 
 #endif
@@ -777,11 +777,11 @@ void remoteMoveAngle()
     }
 
 #ifdef MOVE_ANGLE_DEBUG
-    displayMessage("    radius: ");
+    displayMessage(F("    radius: "));
     displayMessage(radius);
-    displayMessage(" angle: ");
+    displayMessage(F(" angle: "));
     displayMessage(angle);
-    displayMessage(" time: ");
+    displayMessage(F(" time: "));
     displayMessageWithNewline(time);
 #endif
 
@@ -794,14 +794,14 @@ void remoteMoveAngle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MAOK");
+            displayMessage(F("MAOK"));
         }
     }
     else
     {
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MAFail");
+            displayMessage(F("MAFail"));
         }
     }
 
@@ -820,7 +820,7 @@ void remoteMoveAngle()
 void remoteMoveMotors()
 {
 #ifdef MOVE_MOTORS_DEBUG
-    displayMessageWithNewline(".**movemMotors");
+    displayMessageWithNewline(F(".**movemMotors"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -830,7 +830,7 @@ void remoteMoveMotors()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MMFail: no left distance");
+            displayMessageWithNewline(F("MMFail: no left distance"));
         }
 
 #endif
@@ -852,7 +852,7 @@ void remoteMoveMotors()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MMFail: no right distance");
+            displayMessageWithNewline(F("MMFail: no right distance"));
         }
 
 #endif
@@ -869,7 +869,7 @@ void remoteMoveMotors()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MMFail: no right distance");
+            displayMessageWithNewline(F("MMFail: no right distance"));
         }
 
 #endif
@@ -891,7 +891,7 @@ void remoteMoveMotors()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MMOK");
+            displayMessage(F("MMOK"));
         }
 
 #endif
@@ -909,7 +909,7 @@ void remoteMoveMotors()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MMFail: no time");
+            displayMessageWithNewline(F("MMFail: no time"));
         }
 
 #endif
@@ -925,11 +925,11 @@ void remoteMoveMotors()
     }
 
 #ifdef MOVE_MOTORS_DEBUG
-    displayMessage("    ld: ");
+    displayMessage(F("    ld: "));
     displayMessage(leftDistance);
-    displayMessage(" rd: ");
+    displayMessage(F(" rd: "));
     displayMessage(rightDistance);
-    displayMessage(" time: ");
+    displayMessage(F(" time: "));
     displayMessageWithNewline(time);
 #endif
 
@@ -941,14 +941,14 @@ void remoteMoveMotors()
     {
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MMOK");
+            displayMessage(F("MMOK"));
         }
     }
     else
     {
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MMFail: %d\n",reply);
+            displayMessage(F("MMFail: %d\n"),reply);
         }
     }
 
@@ -968,7 +968,7 @@ void remoteMoveMotors()
 void remoteConfigWheels()
 {
 #ifdef CONFIG_WHEELS_DEBUG
-    displayMessageWithNewline(".**remoteConfigWheels");
+    displayMessageWithNewline(F(".**remoteConfigWheels"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
@@ -978,7 +978,7 @@ void remoteConfigWheels()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MWFail: no left diameter");
+            displayMessageWithNewline(F("MWFail: no left diameter"));
         }
 
 #endif
@@ -1000,7 +1000,7 @@ void remoteConfigWheels()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MWFail: no right diameter");
+            displayMessageWithNewline(F("MWFail: no right diameter"));
         }
 
 #endif
@@ -1017,7 +1017,7 @@ void remoteConfigWheels()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MWFail: no right diameter");
+            displayMessageWithNewline(F("MWFail: no right diameter"));
         }
 
 #endif
@@ -1039,7 +1039,7 @@ void remoteConfigWheels()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MWFail: no wheel spacing");
+            displayMessageWithNewline(F("MWFail: no wheel spacing"));
         }
 #endif
 
@@ -1055,7 +1055,7 @@ void remoteConfigWheels()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MWFail: no wheel spacing");
+            displayMessageWithNewline(F("MWFail: no wheel spacing"));
         }
 
 #endif
@@ -1071,11 +1071,11 @@ void remoteConfigWheels()
     }
 
 #ifdef CONFIG_WHEELS_DEBUG
-    displayMessage("    ld: ");
+    displayMessage(F("    ld: "));
     displayMessage(leftDiameter);
-    displayMessage(" rd: ");
+    displayMessage(F(" rd: "));
     displayMessage(rightDiameter);
-    displayMessage(" separation: ");
+    displayMessage(F(" separation: "));
     displayMessageWithNewline(spacing);
 #endif
 
@@ -1085,7 +1085,7 @@ void remoteConfigWheels()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("MWOK");
+        displayMessage(F("MWOK"));
     }
 #endif
 }
@@ -1108,7 +1108,7 @@ void remoteRotateRobot()
     int rotateAngle;
 
 #ifdef ROTATE_DEBUG
-    displayMessageWithNewline(".**rotateRobot");
+    displayMessageWithNewline(F(".**rotateRobot"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR)
@@ -1118,7 +1118,7 @@ void remoteRotateRobot()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MRFail: no angle");
+            displayMessageWithNewline(F("MRFail: no angle"));
         }
 
 #endif
@@ -1134,7 +1134,7 @@ void remoteRotateRobot()
     }
 
 #ifdef ROTATE_DEBUG
-    displayMessage(".  Rotating: ");
+    displayMessage(F(".  Rotating: "));
     displayMessageWithNewline(rotateAngle);
 #endif
 
@@ -1145,7 +1145,7 @@ void remoteRotateRobot()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MROK");
+            displayMessage(F("MROK"));
         }
 
 #endif
@@ -1163,7 +1163,7 @@ void remoteRotateRobot()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MRFail: no time");
+            displayMessageWithNewline(F("MRFail: no time"));
         }
 #endif
         return;
@@ -1185,7 +1185,7 @@ void remoteRotateRobot()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("MROK");
+            displayMessage(F("MROK"));
         }
 #endif
     }
@@ -1196,7 +1196,7 @@ void remoteRotateRobot()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("MRFail");
+            displayMessageWithNewline(F("MRFail"));
         }
 
 #endif
@@ -1213,22 +1213,22 @@ void remoteRotateRobot()
 void checkMoving()
 {
 #ifdef CHECK_MOVING_DEBUG
-    displayMessageWithNewline(".**CheckMoving: ");
+    displayMessageWithNewline(F(".**CheckMoving: "));
 #endif
 
     if (motorsMoving())
     {
 #ifdef CHECK_MOVING_DEBUG
-        displayMessageWithNewline(".  moving");
+        displayMessageWithNewline(F(".  moving"));
 #endif
-        displayMessageWithNewline("MCMove");
+        displayMessageWithNewline(F("MCMove"));
     }
     else
     {
 #ifdef CHECK_MOVING_DEBUG
-        displayMessageWithNewline(".  stopped");
+        displayMessageWithNewline(F(".  stopped"));
 #endif
-        displayMessageWithNewline("MCstopped");
+        displayMessageWithNewline(F("MCstopped"));
     }
 }
 
@@ -1241,7 +1241,7 @@ void checkMoving()
 void remoteStopRobot()
 {
 #ifdef REMOTE_STOP_DEBUG
-    displayMessageWithNewline(".**remoteStopRobot: ");
+    displayMessageWithNewline(F(".**remoteStopRobot: "));
 #endif
 
     motorStop();
@@ -1250,7 +1250,7 @@ void remoteStopRobot()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("MSOK");
+        displayMessageWithNewline(F("MSOK"));
     }
 
 #endif
@@ -1263,7 +1263,7 @@ void remoteMoveControl()
 
 #ifdef DIAGNOSTICS_ACTIVE
 
-        displayMessageWithNewline("FAIL: missing move control command character");
+        displayMessageWithNewline(F("FAIL: missing move control command character"));
 
 #endif
 
@@ -1271,13 +1271,13 @@ void remoteMoveControl()
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**remoteMoveControl: ");
+    displayMessageWithNewline(F(".**remoteMoveControl: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".  Move Command code : ");
+    displayMessage(F(".  Move Command code : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -1338,7 +1338,7 @@ bool readColour(byte *r, byte *g, byte *b)
     *r = (byte)result;
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessage(".  Red: ");
+    displayMessage(F(".  Red: "));
     displayMessageWithNewline(*r);
 #endif
 
@@ -1349,7 +1349,7 @@ bool readColour(byte *r, byte *g, byte *b)
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing colour values in readColor");
+            displayMessageWithNewline(F("FAIL: missing colour values in readColor"));
         }
 
 #endif
@@ -1365,7 +1365,7 @@ bool readColour(byte *r, byte *g, byte *b)
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing colours after red in readColor");
+            displayMessageWithNewline(F("FAIL: missing colours after red in readColor"));
         }
 
 #endif
@@ -1381,7 +1381,7 @@ bool readColour(byte *r, byte *g, byte *b)
     *g = (byte)result;
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessage(".  Green: ");
+    displayMessage(F(".  Green: "));
     displayMessageWithNewline(*g);
 #endif
 
@@ -1394,7 +1394,7 @@ bool readColour(byte *r, byte *g, byte *b)
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing colours after green in readColor");
+            displayMessageWithNewline(F("FAIL: missing colours after green in readColor"));
         }
 
 #endif
@@ -1404,14 +1404,14 @@ bool readColour(byte *r, byte *g, byte *b)
 
     if (!getValue(&result))
     {
-        displayMessage("FAIL: missing colours after blue in readColor\n");
+        displayMessage(F("FAIL: missing colours after blue in readColor\n"));
         return false;
     }
 
     *b = (byte)result;
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessage(".  Blue: ");
+    displayMessage(F(".  Blue: "));
     displayMessageWithNewline(*b);
 #endif
 
@@ -1426,7 +1426,7 @@ void remoteColouredCandle()
 {
     
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessageWithNewline(".**remoteColouredCandle: ");
+    displayMessageWithNewline(F(".**remoteColouredCandle: "));
 #endif
 
     byte r, g, b;
@@ -1435,7 +1435,7 @@ void remoteColouredCandle()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("PC");
+        displayMessage(F("PC"));
     }
 
 #endif
@@ -1449,7 +1449,7 @@ void remoteColouredCandle()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("OK");
+            displayMessageWithNewline(F("OK"));
         }
 #endif
     }
@@ -1461,7 +1461,7 @@ void remoteColouredCandle()
 void remoteSetColorByName()
 {
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessageWithNewline(".**remoteColouredName: ");
+    displayMessageWithNewline(F(".**remoteColouredName: "));
 #endif
 
     byte r = 0, g = 0, b = 0;
@@ -1470,7 +1470,7 @@ void remoteSetColorByName()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("PN");
+        displayMessage(F("PN"));
     }
 
 #endif
@@ -1482,7 +1482,7 @@ void remoteSetColorByName()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing colour in set colour by name");
+            displayMessageWithNewline(F("FAIL: missing colour in set colour by name"));
         }
 
 #endif
@@ -1496,7 +1496,7 @@ void remoteSetColorByName()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("  colour id:%c\n", inputCh);
+        displayMessage(F("  colour id:%c\n"), inputCh);
     }
 
 #endif
@@ -1537,7 +1537,7 @@ void remoteSetColorByName()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: invalid colour in set colour by name");
+            displayMessageWithNewline(F("FAIL: invalid colour in set colour by name"));
         }
 #endif
         return;
@@ -1551,7 +1551,7 @@ void remoteSetColorByName()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("OK");
+        displayMessageWithNewline(F("OK"));
     }
 
 #endif
@@ -1562,7 +1562,7 @@ void remoteSetColorByName()
 void remoteFadeToColor()
 {
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessageWithNewline(".**remoteFadeToColour: ");
+    displayMessageWithNewline(F(".**remoteFadeToColour: "));
 #endif
 
     int result;
@@ -1582,7 +1582,7 @@ void remoteFadeToColor()
     no = 21 - no;
 
 #ifdef DIAGNOSTICS_ACTIVE
-    displayMessageWithNewline(" Speed: %d", no);
+    displayMessageWithNewline(F(" Speed: %d"), no);
 #endif
 
     decodePos++;
@@ -1591,7 +1591,7 @@ void remoteFadeToColor()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("PX");
+        displayMessage(F("PX"));
     }
 
 #endif
@@ -1603,7 +1603,7 @@ void remoteFadeToColor()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("Fail: missing colours after speed");
+            displayMessageWithNewline(F("Fail: missing colours after speed"));
         }
 
 #endif
@@ -1617,7 +1617,7 @@ void remoteFadeToColor()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("PX");
+        displayMessage(F("PX"));
     }
 
 #endif
@@ -1630,7 +1630,7 @@ void remoteFadeToColor()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("OK");
+            displayMessageWithNewline(F("OK"));
         }
 
 #endif
@@ -1642,7 +1642,7 @@ void remoteFadeToColor()
 void remoteSetFlickerSpeed()
 {
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessageWithNewline(".**remoteSetFlickerSpeed: ");
+    displayMessageWithNewline(F(".**remoteSetFlickerSpeed: "));
 #endif
 
     int result;
@@ -1655,7 +1655,7 @@ void remoteSetFlickerSpeed()
     byte no = (byte)result;
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessage(".  Setting: ");
+    displayMessage(F(".  Setting: "));
     displayMessageWithNewline(no);
 #endif
 
@@ -1666,7 +1666,7 @@ void remoteSetFlickerSpeed()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("PFOK");
+        displayMessageWithNewline(F("PFOK"));
     }
 
 #endif
@@ -1679,7 +1679,7 @@ void remoteSetIndividualPixel()
 {
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessageWithNewline(".**remoteSetIndividualPixel: ");
+    displayMessageWithNewline(F(".**remoteSetIndividualPixel: "));
 #endif
 
     int result;
@@ -1692,7 +1692,7 @@ void remoteSetIndividualPixel()
     byte no = (byte)result;
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessage(".  Setting: ");
+    displayMessage(F(".  Setting: "));
     displayMessageWithNewline(no);
 #endif
 
@@ -1702,7 +1702,7 @@ void remoteSetIndividualPixel()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("PI");
+        displayMessage(F("PI"));
     }
 
 #endif
@@ -1714,7 +1714,7 @@ void remoteSetIndividualPixel()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("Fail: missing colours after pixel");
+            displayMessageWithNewline(F("Fail: missing colours after pixel"));
         }
 
 #endif
@@ -1734,7 +1734,7 @@ void remoteSetIndividualPixel()
 
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("OK");
+            displayMessageWithNewline(F("OK"));
         }
 
 #endif
@@ -1748,7 +1748,7 @@ void remoteSetPixelsOff()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("POOK");
+        displayMessageWithNewline(F("POOK"));
     }
 
 #endif
@@ -1765,7 +1765,7 @@ void remoteSetRandomColors()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("PROK");
+        displayMessageWithNewline(F("PROK"));
     }
 
 #endif
@@ -1781,19 +1781,19 @@ void remotePixelControl()
     {
 
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing pixel control command character");
+        displayMessageWithNewline(F("FAIL: missing pixel control command character"));
 #endif
         return;
     }
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessageWithNewline(".**remotePixelControl: ");
+    displayMessageWithNewline(F(".**remotePixelControl: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef PIXEL_COLOUR_DEBUG
-    displayMessage(".  Pixel Command code : ");
+    displayMessage(F(".  Pixel Command code : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -1859,7 +1859,7 @@ void remoteDelay()
     int delayValueInTenthsIOfASecond;
 
 #ifdef COMMAND_DELAY_DEBUG
-    displayMessageWithNewline(".**remoteDelay");
+    displayMessageWithNewline(F(".**remoteDelay"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR)
@@ -1868,7 +1868,7 @@ void remoteDelay()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("CDFail: no delay");
+            displayMessageWithNewline(F("CDFail: no delay"));
         }
 #endif
 
@@ -1881,14 +1881,14 @@ void remoteDelay()
     }
 
 #ifdef COMMAND_DELAY_DEBUG
-    displayMessage(".  Delaying: ");
+    displayMessage(F(".  Delaying: "));
     displayMessageWithNewline(delayValueInTenthsIOfASecond);
 #endif
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("CDOK");
+        displayMessage(F("CDOK"));
     }
 #endif
 
@@ -1904,13 +1904,13 @@ void remoteDelay()
 void declareLabel()
 {
 #ifdef COMMAND_DELAY_DEBUG
-    displayMessageWithNewline(".**declareLabel");
+    displayMessageWithNewline(F(".**declareLabel"));
 #endif
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("CLOK");
+        displayMessageWithNewline(F("CLOK"));
     }
 #endif
 }
@@ -1961,22 +1961,22 @@ int findLabelInProgram(char *label, int programPosition)
         char programByte = HullOScodeRunningCode[programPosition++];
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-        displayMessage("Statement at: ");
+        displayMessage(F("Statement at: "));
         displayMessage(statementStart);
-        displayMessage(" starting: ");
+        displayMessage(F(" starting: "));
         displayMessageWithNewline(programByte);
 #endif
         if (programByte != 'C' & programByte != 'c')
         {
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-            displayMessageWithNewline("Not a statement that starts with C");
+            displayMessageWithNewline(F("Not a statement that starts with C"));
 #endif
 
             programPosition = findNextStatement(programPosition);
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-            displayMessage("Spin to statement at: ");
+            displayMessage(F("Spin to statement at: "));
             displayMessageWithNewline(programPosition);
 #endif
 
@@ -1999,7 +1999,7 @@ int findLabelInProgram(char *label, int programPosition)
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
 
-        displayMessage("Second statement character: ");
+        displayMessage(F("Second statement character: "));
         displayMessageWithNewline(programByte);
 
 #endif
@@ -2009,7 +2009,7 @@ int findLabelInProgram(char *label, int programPosition)
         {
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-            displayMessageWithNewline("Not a loop command");
+            displayMessageWithNewline(F("Not a loop command"));
 #endif
 
             programPosition = findNextStatement(programPosition);
@@ -2026,7 +2026,7 @@ int findLabelInProgram(char *label, int programPosition)
         // if we get here we have a CL command
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-        displayMessageWithNewline("Got a CL command");
+        displayMessageWithNewline(F("Got a CL command"));
 #endif
 
         // Set start position for label comparison
@@ -2039,9 +2039,9 @@ int findLabelInProgram(char *label, int programPosition)
             programByte = HullOScodeRunningCode[programPosition];
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-            displayMessage("Destination byte: ");
+            displayMessage(F("Destination byte: "));
             displayMessage(*labelTest);
-            displayMessage(" Program byte: ");
+            displayMessage(F(" Program byte: "));
             displayMessageWithNewline(programByte);
 #endif
 
@@ -2049,7 +2049,7 @@ int findLabelInProgram(char *label, int programPosition)
             {
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-                displayMessageWithNewline("Got a match");
+                displayMessageWithNewline(F("Got a match"));
 #endif
                 // Move on to the next byte
                 labelTest++;
@@ -2058,7 +2058,7 @@ int findLabelInProgram(char *label, int programPosition)
             else
             {
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-                displayMessageWithNewline("Fail");
+                displayMessageWithNewline(F("Fail"));
 #endif
                 break;
             }
@@ -2078,7 +2078,7 @@ int findLabelInProgram(char *label, int programPosition)
             // Which is fine by me.
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-            displayMessageWithNewline("label match");
+            displayMessageWithNewline(F("label match"));
 #endif
             return statementStart;
         }
@@ -2087,7 +2087,7 @@ int findLabelInProgram(char *label, int programPosition)
             programPosition = findNextStatement(programPosition);
 
 #ifdef FIND_LABEL_IN_PROGRAM_DEBUG
-            displayMessage("Spin to statement at: ");
+            displayMessage(F("Spin to statement at: "));
             displayMessageWithNewline(programPosition);
 #endif
 
@@ -2115,7 +2115,7 @@ int findLabelInProgram(char *label, int programPosition)
 void jumpToLabel()
 {
 #ifdef JUMP_TO_LABEL_DEBUG
-    displayMessageWithNewline(".**jump to label");
+    displayMessageWithNewline(F(".**jump to label"));
 #endif
 
     char *labelPos = decodePos;
@@ -2124,7 +2124,7 @@ void jumpToLabel()
     int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef JUMP_TO_LABEL_DEBUG
-    displayMessage("Label statement pos: ");
+    displayMessage(F("Label statement pos: "));
     displayMessageWithNewline(labelStatementPos);
 #endif
 
@@ -2134,14 +2134,14 @@ void jumpToLabel()
         programCounter = labelStatementPos;
 
 #ifdef JUMP_TO_LABEL_DEBUG
-        displayMessage("New Program Counter: ");
+        displayMessage(F("New Program Counter: "));
         displayMessageWithNewline(programCounter);
 #endif
 
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("CJOK");
+            displayMessageWithNewline(F("CJOK"));
         }
 #endif
     }
@@ -2150,7 +2150,7 @@ void jumpToLabel()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("CJFAIL: no dest");
+            displayMessageWithNewline(F("CJFAIL: no dest"));
         }
 #endif
     }
@@ -2165,7 +2165,7 @@ void jumpToLabel()
 void jumpToLabelCoinToss()
 {
 #ifdef JUMP_TO_LABEL_COIN_DEBUG
-    displayMessageWithNewline(".**jump to label coin toss");
+    displayMessageWithNewline(F(".**jump to label coin toss"));
     send
 
 #endif
@@ -2176,7 +2176,7 @@ void jumpToLabelCoinToss()
     int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef JUMP_TO_LABEL_COIN_DEBUG
-    displayMessage("  Label statement pos: ");
+    displayMessage(F("  Label statement pos: "));
     displayMessageWithNewline(labelStatementPos);
 #endif
 
@@ -2190,7 +2190,7 @@ void jumpToLabelCoinToss()
 #ifdef DIAGNOSTICS_ACTIVE
             if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
             {
-                displayMessage("CCjump");
+                displayMessage(F("CCjump"));
             }
 #endif
         }
@@ -2199,13 +2199,13 @@ void jumpToLabelCoinToss()
 #ifdef DIAGNOSTICS_ACTIVE
             if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
             {
-                displayMessage("CCcontinue");
+                displayMessage(F("CCcontinue"));
             }
 #endif
         }
 
 #ifdef JUMP_TO_LABEL_COIN_DEBUG
-        displayMessage("New Program Counter: ");
+        displayMessage(F("New Program Counter: "));
         displayMessageWithNewline(programCounter);
 #endif
     }
@@ -2214,7 +2214,7 @@ void jumpToLabelCoinToss()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("CCFail: no dest");
+            displayMessageWithNewline(F("CCFail: no dest"));
         }
 #endif
     }
@@ -2226,7 +2226,7 @@ void jumpToLabelCoinToss()
 void pauseWhenMotorsActive()
 {
 #ifdef PAUSE_MOTORS_ACTIVE_DEBUG
-    displayMessageWithNewline(".**pause while the motors are active");
+    displayMessageWithNewline(F(".**pause while the motors are active"));
 #endif
 
     // Only wait for completion if the program is actually running
@@ -2237,7 +2237,7 @@ void pauseWhenMotorsActive()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("CAOK");
+        displayMessageWithNewline(F("CAOK"));
     }
 #endif
 }
@@ -2251,7 +2251,7 @@ void measureDistanceAndJump()
 {
 
 #ifdef COMMAND_MEASURE_DEBUG
-    displayMessageWithNewline(".**measure distance and jump to label");
+    displayMessageWithNewline(F(".**measure distance and jump to label"));
 #endif
 
     int distance;
@@ -2262,14 +2262,14 @@ void measureDistanceAndJump()
     }
 
 #ifdef COMMAND_MEASURE_DEBUG
-    displayMessage(".  Distance: ");
+    displayMessage(F(".  Distance: "));
     displayMessageWithNewline(distance);
 #endif
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("CM");
+        displayMessage(F("CM"));
     }
 #endif
 
@@ -2278,7 +2278,7 @@ void measureDistanceAndJump()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing dest");
+            displayMessageWithNewline(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2291,7 +2291,7 @@ void measureDistanceAndJump()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing dest");
+            displayMessageWithNewline(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2300,14 +2300,14 @@ void measureDistanceAndJump()
     int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef COMMAND_MEASURE_DEBUG
-    displayMessage("Label statement pos: ");
+    displayMessage(F("Label statement pos: "));
     displayMessageWithNewline(labelStatementPos);
 #endif
 
     if (labelStatementPos < 0)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: label not found");
+        displayMessageWithNewline(F("FAIL: label not found"));
 #endif
         return;
     }
@@ -2315,14 +2315,14 @@ void measureDistanceAndJump()
     int measuredDistance = getDistanceValueInt();
 
 #ifdef COMMAND_MEASURE_DEBUG
-    displayMessage("Measured Distance: ");
+    displayMessage(F("Measured Distance: "));
     displayMessageWithNewline(measuredDistance);
 #endif
 
     if (measuredDistance < distance)
     {
 #ifdef COMMAND_MEASURE_DEBUG
-        displayMessageWithNewline("Distance smaller - taking jump");
+        displayMessageWithNewline(F("Distance smaller - taking jump"));
 #endif
         // the label has been found - jump to it
         programCounter = labelStatementPos;
@@ -2330,19 +2330,19 @@ void measureDistanceAndJump()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("jump");
+            displayMessageWithNewline(F("jump"));
         }
 #endif
     }
     else
     {
 #ifdef COMMAND_MEASURE_DEBUG
-        displayMessageWithNewline("Distance larger - continuing");
+        displayMessageWithNewline(F("Distance larger - continuing"));
 #endif
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("continue");
+            displayMessageWithNewline(F("continue"));
         }
 #endif
     }
@@ -2356,7 +2356,7 @@ void compareAndJump(bool jumpIfTrue)
 {
 
 #ifdef COMPARE_CONDITION_DEBUG
-    displayMessageWithNewline(".**test condition and jump to label");
+    displayMessageWithNewline(F(".**test condition and jump to label"));
 #endif
 
     bool result;
@@ -2370,9 +2370,9 @@ void compareAndJump(bool jumpIfTrue)
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
         if (jumpIfTrue)
-            displayMessage("CC");
+            displayMessage(F("CC"));
         else
-            displayMessage("CN");
+            displayMessage(F("CN"));
     }
 #endif
 
@@ -2381,7 +2381,7 @@ void compareAndJump(bool jumpIfTrue)
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing dest");
+            displayMessageWithNewline(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2394,7 +2394,7 @@ void compareAndJump(bool jumpIfTrue)
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing dest");
+            displayMessageWithNewline(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2403,14 +2403,14 @@ void compareAndJump(bool jumpIfTrue)
     int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef COMPARE_CONDITION_DEBUG
-    displayMessage("Label statement pos: ");
+    displayMessage(F("Label statement pos: "));
     displayMessageWithNewline(labelStatementPos);
 #endif
 
     if (labelStatementPos < 0)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: label not found");
+        displayMessageWithNewline(F("FAIL: label not found"));
 #endif
         return;
     }
@@ -2418,7 +2418,7 @@ void compareAndJump(bool jumpIfTrue)
     if (result == jumpIfTrue)
     {
 #ifdef COMPARE_CONDITION_DEBUG
-        displayMessageWithNewline("Condition true - taking jump");
+        displayMessageWithNewline(F("Condition true - taking jump"));
 #endif
         // the label has been found - jump to it
         programCounter = labelStatementPos;
@@ -2426,19 +2426,19 @@ void compareAndJump(bool jumpIfTrue)
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("jump");
+            displayMessageWithNewline(F("jump"));
         }
 #endif
     }
     else
     {
 #ifdef COMPARE_CONDITION_DEBUG
-        displayMessageWithNewline("condition failed - continuing");
+        displayMessageWithNewline(F("condition failed - continuing"));
 #endif
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("continue");
+            displayMessageWithNewline(F("continue"));
         }
 #endif
     }
@@ -2457,13 +2457,13 @@ void jumpWhenMotorsInactive()
 {
 
 #ifdef JUMP_MOTORS_INACTIVE_DEBUG
-    displayMessageWithNewline(".**jump to label if motors inactive");
+    displayMessageWithNewline(F(".**jump to label if motors inactive"));
 #endif
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("CI");
+        displayMessage(F("CI"));
     }
 #endif
 
@@ -2472,7 +2472,7 @@ void jumpWhenMotorsInactive()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: missing dest");
+            displayMessageWithNewline(F("FAIL: missing dest"));
         }
 #endif
         return;
@@ -2481,7 +2481,7 @@ void jumpWhenMotorsInactive()
     int labelStatementPos = findLabelInProgram(decodePos, 0);
 
 #ifdef JUMP_MOTORS_INACTIVE_DEBUG
-    displayMessage("Label statement pos: ");
+    displayMessage(F("Label statement pos: "));
     displayMessageWithNewline(labelStatementPos);
 #endif
 
@@ -2490,7 +2490,7 @@ void jumpWhenMotorsInactive()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: label not found");
+            displayMessageWithNewline(F("FAIL: label not found"));
         }
 #endif
         return;
@@ -2499,14 +2499,14 @@ void jumpWhenMotorsInactive()
     if (!motorsMoving())
     {
 #ifdef JUMP_MOTORS_INACTIVE_DEBUG
-        displayMessageWithNewline("Motors inactive - taking jump");
+        displayMessageWithNewline(F("Motors inactive - taking jump"));
 #endif
         // the label has been found - jump to it
         programCounter = labelStatementPos;
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("jump");
+            displayMessageWithNewline(F("jump"));
         }
 #endif
     }
@@ -2515,11 +2515,11 @@ void jumpWhenMotorsInactive()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("continue");
+            displayMessageWithNewline(F("continue"));
         }
 #endif
 #ifdef JUMP_MOTORS_INACTIVE_DEBUG
-        displayMessageWithNewline("Motors running - continuing");
+        displayMessageWithNewline(F("Motors running - continuing"));
 #endif
     }
 
@@ -2533,19 +2533,19 @@ void programControl()
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing program control command character");
+        displayMessageWithNewline(F("FAIL: missing program control command character"));
 #endif
         return;
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**remoteProgramControl: ");
+    displayMessageWithNewline(F(".**remoteProgramControl: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".   Program command : ");
+    displayMessage(F(".   Program command : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -2605,19 +2605,19 @@ void remoteDownloadCommand()
 {
 
 #ifdef REMOTE_DOWNLOAD_DEBUG
-    displayMessageWithNewline(".**remote download");
+    displayMessageWithNewline(F(".**remote download"));
 #endif
 
 #ifdef PROGRAM_DEBUG
-    displayMessage("Remote download command decode pos:%s\n", decodePos);
+    displayMessage(F("Remote download command decode pos:%s\n"), decodePos);
 #endif
     if (getHullOSFileNameFromCode())
     {
-        displayMessage("Storing in file:%s\n", HullOScommandsFilenameBuffer);
+        displayMessage(F("Storing in file:%s\n"), HullOScommandsFilenameBuffer);
     }
     else
     {
-        displayMessage("Storing in %s\n", RUNNING_PROGRAM_FILENAME);
+        displayMessage(F("Storing in %s\n"), RUNNING_PROGRAM_FILENAME);
         clearHullOSFilename();
     }
     startDownloadingCode();
@@ -2626,11 +2626,11 @@ void remoteDownloadCommand()
 void startProgramCommand(bool clearVariablesBeforeRun)
 {
 
-    //    displayMessage("Start program command decode pos:%s\n", decodePos);
+    //    displayMessage(F("Start program command decode pos:%s\n"), decodePos);
 
     if (getHullOSFileNameFromCode())
     {
-        displayMessage("Got filename:%s\n", HullOScommandsFilenameBuffer);
+        displayMessage(F("Got filename:%s\n"), HullOScommandsFilenameBuffer);
         if (loadFromFile(HullOScommandsFilenameBuffer, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
         {
             dumpRunningProgram();
@@ -2638,7 +2638,7 @@ void startProgramCommand(bool clearVariablesBeforeRun)
     }
     else
     {
-        displayMessage("Starting default program:%s\n", RUNNING_PROGRAM_FILENAME);
+        displayMessage(F("Starting default program:%s\n"), RUNNING_PROGRAM_FILENAME);
         if (loadFromFile(RUNNING_PROGRAM_FILENAME, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
         {
             dumpRunningProgram();
@@ -2650,7 +2650,7 @@ void startProgramCommand(bool clearVariablesBeforeRun)
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("RSOK");
+        displayMessageWithNewline(F("RSOK"));
     }
 #endif
 }
@@ -2662,7 +2662,7 @@ void haltProgramExecutionCommand()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("RHOK");
+        displayMessageWithNewline(F("RHOK"));
     }
 #endif
 }
@@ -2675,7 +2675,7 @@ void clearProgramStoreCommand()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("RCOK");
+        displayMessageWithNewline(F("RCOK"));
     }
 #endif
 }
@@ -2683,15 +2683,15 @@ void clearProgramStoreCommand()
 void runProgramFromFileCommand(bool clearVariablesBeforeRun)
 {
 
-    displayMessage("Running program from file\n");
+    displayMessage(F("Running program from file\n"));
 
     if (getHullOSFileNameFromCode())
     {
-        displayMessage("Got filename:%s\n", HullOScommandsFilenameBuffer);
+        displayMessage(F("Got filename:%s\n"), HullOScommandsFilenameBuffer);
     }
     else
     {
-        displayMessage("No filename supplied to run\n");
+        displayMessage(F("No filename supplied to run\n"));
         clearHullOSFilename();
         return;
     }
@@ -2703,27 +2703,27 @@ void runProgramFromFileCommand(bool clearVariablesBeforeRun)
 
     if (!result)
     {
-        displayMessage("File read failed\n");
+        displayMessage(F("File read failed\n"));
         clearHullOSFilename();
         return;
     }
 
-    displayMessage("Running program in %s\n", HullOScommandsFilenameBuffer);
+    displayMessage(F("Running program in %s\n"), HullOScommandsFilenameBuffer);
     dumpRunningProgram();
     startProgramExecution(clearVariablesBeforeRun);
 }
 
 void saveCompiledProgramToFileCommand()
 {
-    displayMessage("Save compiled program into a file\n");
+    displayMessage(F("Save compiled program into a file\n"));
 
     if (getHullOSFileNameFromCode())
     {
-        displayMessage("Got save filename:%s\n", HullOScommandsFilenameBuffer);
+        displayMessage(F("Got save filename:%s\n"), HullOScommandsFilenameBuffer);
     }
     else
     {
-        displayMessage("No filename supplied to save\n");
+        displayMessage(F("No filename supplied to save\n"));
         clearHullOSFilename();
         return;
     }
@@ -2733,15 +2733,15 @@ void saveCompiledProgramToFileCommand()
 
 void dumpFileCommand()
 {
-    displayMessage("Dump named file\n");
+    displayMessage(F("Dump named file\n"));
 
     if (getHullOSFileNameFromCode())
     {
-        displayMessage("  Got dump filename:%s\n", HullOScommandsFilenameBuffer);
+        displayMessage(F("  Got dump filename:%s\n"), HullOScommandsFilenameBuffer);
     }
     else
     {
-        displayMessage("  No filename supplied to dump\n");
+        displayMessage(F("  No filename supplied to dump\n"));
         clearHullOSFilename();
         return;
     }
@@ -2751,22 +2751,22 @@ void dumpFileCommand()
 
 void listFilesCommand()
 {
-    displayMessage("List all files\n");
+    displayMessage(F("List all files\n"));
 
     listLittleFSContents();
 }
 
 void removeFileCommand()
 {
-    displayMessage("Remove named file\n");
+    displayMessage(F("Remove named file\n"));
 
     if (getHullOSFileNameFromCode())
     {
-        displayMessage("  Got filename:%s\n", HullOScommandsFilenameBuffer);
+        displayMessage(F("  Got filename:%s\n"), HullOScommandsFilenameBuffer);
     }
     else
     {
-        displayMessage("  No filename supplied to remove\n");
+        displayMessage(F("  No filename supplied to remove\n"));
         clearHullOSFilename();
         return;
     }
@@ -2778,7 +2778,7 @@ char messageBuffer[MQTT_TEXT_BUFFER_SIZE + 1];
 
 void transmitMQTTmessage()
 {
-    displayMessage("Transmit MQTT message\n");
+    displayMessage(F("Transmit MQTT message\n"));
 
     int messageBufferPos = 0;
 
@@ -2800,7 +2800,7 @@ void transmitMQTTmessage()
 
 void transmitMQTTvalue()
 {
-    displayMessage("Transmit MQTT value\n");
+    displayMessage(F("Transmit MQTT value\n"));
 
     int valueToTransmit;
 
@@ -2816,19 +2816,19 @@ void remoteManagement()
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing remote control command character");
+        displayMessageWithNewline(F("FAIL: missing remote control command character"));
 #endif
         return;
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**remoteProgramDownload: ");
+    displayMessageWithNewline(F(".**remoteProgramDownload: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".   Download command : ");
+    displayMessage(F(".   Download command : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -2902,7 +2902,7 @@ void displayVersion()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("IVOK");
+        displayMessageWithNewline(F("IVOK"));
     }
 #endif
 
@@ -2914,10 +2914,10 @@ void displayDistance()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("IDOK");
+        displayMessageWithNewline(F("IDOK"));
     }
 #endif
-    displayMessageWithNewline("%d",getDistanceValueInt());
+    displayMessageWithNewline(F("%d"),getDistanceValueInt());
 }
 
 void printStatus()
@@ -2925,10 +2925,10 @@ void printStatus()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("ISOK");
+        displayMessageWithNewline(F("ISOK"));
     }
 #endif
-    displayMessage("state:%d diagnostics:%d\n", (int) programState, diagnosticsOutputLevel);
+    displayMessage(F("state:%d diagnostics:%d\n"), (int) programState, diagnosticsOutputLevel);
 }
 
 // IMddd - set the debugging diagnostics level
@@ -2939,7 +2939,7 @@ void setMessaging()
 {
 
 #ifdef SET_MESSAGING_DEBUG
-    displayMessageWithNewline(".**informationlevelset: ");
+    displayMessageWithNewline(F(".**informationlevelset: "));
 #endif
     int result;
 
@@ -2951,7 +2951,7 @@ void setMessaging()
     byte no = (byte)result;
 
 #ifdef SET_MESSAGING_DEBUG
-    displayMessage(".  Setting: ");
+    displayMessage(F(".  Setting: "));
     displayMessageWithNewline(no);
 #endif
 
@@ -2960,7 +2960,7 @@ void setMessaging()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("IMOK");
+        displayMessageWithNewline(F("IMOK"));
     }
 #endif
 }
@@ -2972,7 +2972,7 @@ void printProgram()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessageWithNewline("IPOK");
+        displayMessageWithNewline(F("IPOK"));
     }
 #endif
 }
@@ -2982,19 +2982,19 @@ void information()
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing information command character");
+        displayMessageWithNewline(F("FAIL: missing information command character"));
 #endif
         return;
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**remoteProgramDownload: ");
+    displayMessageWithNewline(F(".**remoteProgramDownload: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".   Download command : ");
+    displayMessage(F(".   Download command : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -3031,7 +3031,7 @@ void doClearVariables()
 
     if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
     {
-        displayMessage("VCOK");
+        displayMessage(F("VCOK"));
     }
 }
 
@@ -3040,19 +3040,19 @@ void variableManagement()
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing variable command character");
+        displayMessageWithNewline(F("FAIL: missing variable command character"));
 #endif
         return;
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**variable management: ");
+    displayMessageWithNewline(F(".**variable management: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".   Download command : ");
+    displayMessage(F(".   Download command : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -3086,7 +3086,7 @@ void doTone()
     int frequency;
 
 #ifdef PLAY_TONE_DEBUG
-    displayMessageWithNewline(".**play tone");
+    displayMessageWithNewline(F(".**play tone"));
 #endif
 
     if (*decodePos == STATEMENT_TERMINATOR)
@@ -3094,7 +3094,7 @@ void doTone()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no tone frequency");
+            displayMessageWithNewline(F("FAIL: no tone frequency"));
         }
 #endif
         return;
@@ -3110,7 +3110,7 @@ void doTone()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no tone frequency");
+            displayMessageWithNewline(F("FAIL: no tone frequency"));
         }
 #endif
         return;
@@ -3123,7 +3123,7 @@ void doTone()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no tone duration");
+            displayMessageWithNewline(F("FAIL: no tone duration"));
         }
 #endif
         return;
@@ -3141,7 +3141,7 @@ void doTone()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no wait ");
+            displayMessageWithNewline(F("FAIL: no wait "));
         }
 #endif
         return;
@@ -3162,7 +3162,7 @@ void doTone()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("SOUNDOK");
+            displayMessageWithNewline(F("SOUNDOK"));
         }
 #endif
         break;
@@ -3172,7 +3172,7 @@ void doTone()
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessageWithNewline("FAIL: no wait ");
+            displayMessageWithNewline(F("FAIL: no wait "));
         }
 #endif
     }
@@ -3183,19 +3183,19 @@ void remoteSoundPlay()
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing sound command character");
+        displayMessageWithNewline(F("FAIL: missing sound command character"));
 #endif
         return;
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**sound playback: ");
+    displayMessageWithNewline(F(".**sound playback: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".   Download command : ");
+    displayMessage(F(".   Download command : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -3214,14 +3214,14 @@ void doRemoteWriteText()
 {
     while (*decodePos != STATEMENT_TERMINATOR & decodePos != decodeLimit)
     {
-        displayMessage("%c",*decodePos);
+        displayMessage(F("%c"),*decodePos);
         decodePos++;
     }
 }
 
 void doRemoteWriteLine()
 {
-    displayMessage("\n");
+    displayMessage(F("\n"));
 }
 
 void doRemotePrintValue()
@@ -3230,7 +3230,7 @@ void doRemotePrintValue()
 
     if (getValue(&valueToPrint))
     {
-        displayMessage("%d",valueToPrint);
+        displayMessage(F("%d"),valueToPrint);
     }
 }
 
@@ -3239,19 +3239,19 @@ void remoteWriteOutput()
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 #ifdef DIAGNOSTICS_ACTIVE
-        displayMessageWithNewline("FAIL: missing write output command character");
+        displayMessageWithNewline(F("FAIL: missing write output command character"));
 #endif
         return;
     }
 
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**write output: ");
+    displayMessageWithNewline(F(".**write output: "));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".   Download command : ");
+    displayMessage(F(".   Download command : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -3293,20 +3293,20 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 
     dumpRunningProgram();
 
-    displayMessage(".**processCommand:");
+    displayMessage(F(".**processCommand:"));
     char *dump_pos = commandDecodePos;
     while (dump_pos != comandDecodeLimit)
     {
-        displayMessage("%c", *dump_pos);
+        displayMessage(F("%c"), *dump_pos);
         dump_pos++;
     }
-    displayMessage("\n");
+    displayMessage(F("\n"));
 #endif
 
     char commandCh = *decodePos;
 
 #ifdef COMMAND_DEBUG
-    displayMessage(".  Command code : ");
+    displayMessage(F(".  Command code : "));
     displayMessageWithNewline(commandCh);
 #endif
 
@@ -3358,12 +3358,12 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 
     default:
 #ifdef COMMAND_DEBUG
-        displayMessageWithNewline(".  Invalid command : ");
+        displayMessageWithNewline(F(".  Invalid command : "));
 #endif
 #ifdef DIAGNOSTICS_ACTIVE
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage("Invalid Command:%c code:%d\n", commandCh, (int)commandCh);
+            displayMessage(F("Invalid Command:%c code:%d\n"), commandCh, (int)commandCh);
         }
 #endif
         break;
@@ -3393,7 +3393,7 @@ void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit)
         hullOSStoreStatement(commandDecodePos, comandDecodeLimit);
         break;
     default:
-        displayMessageWithNewline("Invalid interpreter state");
+        displayMessageWithNewline(F("Invalid interpreter state"));
         break;
     }
 }
@@ -3401,7 +3401,7 @@ void hullOSActOnStatement(char *commandDecodePos, char *comandDecodeLimit)
 void setupHullOSReceiver()
 {
 #ifdef COMMAND_DEBUG
-    displayMessageWithNewline(".**setupHullOSReceiver");
+    displayMessageWithNewline(F(".**setupHullOSReceiver"));
 #endif
     resetCommand();
     resetSerialBuffer();
@@ -3414,13 +3414,13 @@ bool executeProgramStatement()
     char programByte;
 
 #ifdef PROGRAM_DEBUG
-    displayMessageWithNewline(".Executing statement");
+    displayMessageWithNewline(F(".Executing statement"));
 #endif
 
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & LINE_NUMBERS)
     {
-        displayMessageWithNewline("Offset:%d",(int)programCounter);
+        displayMessageWithNewline(F("Offset:%d"),(int)programCounter);
     }
 #endif
 
@@ -3432,7 +3432,7 @@ bool executeProgramStatement()
         programByte = HullOScodeRunningCode[programCounter++];
 
 #ifdef PROGRAM_DEBUG
-        displayMessage(".    program byte: ");
+        displayMessage(F(".    program byte: "));
         displayMessageWithNewline(programByte);
 #endif
 

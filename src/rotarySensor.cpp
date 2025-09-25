@@ -270,7 +270,7 @@ void rotarySensorTest()
 {
 	pinMode(rotarySensorSettings.rotarySensorDataPinNo, INPUT);
 
-	displayMessage("Rotary Sensor test\nPress the ESC key to end the test\n");
+	displayMessage(F("Rotary Sensor test\nPress the ESC key to end the test\n"));
 
 	while (true)
 	{
@@ -283,12 +283,12 @@ void rotarySensorTest()
 			}
 		}
 
-		displayMessage("Direction:%d Counter:%d\n", forward, counter);
+		displayMessage(F("Direction:%d Counter:%d\n"), forward, counter);
 
 		delay(100);
 	}
 
-	displayMessage("Rotary test ended");
+	displayMessage(F("Rotary test ended"));
 }
 
 void startRotarySensor()

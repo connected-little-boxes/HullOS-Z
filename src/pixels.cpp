@@ -281,7 +281,7 @@ bool buildDecodeArray()
 	case 2: // line of pixels
 		if (pixelSettings.noOfYPixels != 1)
 		{
-			displayMessage("Invalid pixel setup: a pixel ring or line must have a y height of 1\n");
+			displayMessage(F("Invalid pixel setup: a pixel ring or line must have a y height of 1\n"));
 			return false;
 		}
 
@@ -297,7 +297,7 @@ bool buildDecodeArray()
 	case 3: // Single panel
 		if (pixelSettings.noOfYPixels == 1)
 		{
-			displayMessage("Invalid pixel setup: a pixel panel must have a y height of more than 1\n");
+			displayMessage(F("Invalid pixel setup: a pixel panel must have a y height of more than 1\n"));
 			return false;
 		}
 
@@ -334,7 +334,7 @@ bool buildDecodeArray()
 	case 4: // Multiple panels
 		if (pixelSettings.noOfYPixels < pixelSettings.panelHeight || pixelSettings.noOfXPixels < pixelSettings.panelWidth)
 		{
-			displayMessage("Invalid pixel setup: in a multiple panel configuration sizes must be larger than panel dimensions\n");
+			displayMessage(F("Invalid pixel setup: in a multiple panel configuration sizes must be larger than panel dimensions\n"));
 			return false;
 		}
 
@@ -369,7 +369,7 @@ bool startPixelStrip()
 {
 	if (!buildDecodeArray())
 	{
-		displayMessage("********* Pixel dimensions invalid\n");
+		displayMessage(F("********* Pixel dimensions invalid\n"));
 		return false;
 	}
 
@@ -399,7 +399,7 @@ bool startPixelStrip()
 
 	if (strip == NULL)
 	{
-		displayMessage("********* Pixel config invalid");
+		displayMessage(F("********* Pixel config invalid"));
 		return false;
 	}
 
@@ -1163,7 +1163,7 @@ void setPixel(int no, float r, float g, float b)
 	unsigned char gs = (unsigned char)round(g * 255);
 	unsigned char bs = (unsigned char)round(b * 255);
 	if (rs > 255 || gs > 255 || bs > 255)
-		displayMessage("setPixel no:%d raster:%d r:%f g:%f b:%f\n", no, rasterLookup[no], r, g, b);
+		displayMessage(F("setPixel no:%d raster:%d r:%f g:%f b:%f\n"), no, rasterLookup[no], r, g, b);
 	strip->setPixelColor(rasterLookup[no], rs, gs, bs);
 }
 

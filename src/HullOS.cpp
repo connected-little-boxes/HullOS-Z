@@ -19,7 +19,7 @@ struct HullOSSettings hullosSettings;
 
 int hullOSdecodeScriptLine(char *input)
 {
-    //    displayMessage("Hullos decoding: %s\n", input);
+    //    displayMessage(F("Hullos decoding: %s\n"), input);
 
     if (strcasecmp(input, "exit") == 0)
     {
@@ -42,7 +42,7 @@ void HullOSStartProgramOnReset();
 
 void hullOSDecoderStart()
 {
-    displayMessage("Starting HullOS decoder");
+    displayMessage(F("Starting HullOS decoder"));
     HullOSStartProgramOnReset();
 }
 
@@ -58,11 +58,11 @@ void HullOSShowPrompt()
 {
     if (storingProgram())
     {
-        displayMessage("H*>");
+        displayMessage(F("H*>"));
     }
     else
     {
-        displayMessage("H>");
+        displayMessage(F("H>"));
     }
 }
 
@@ -91,7 +91,7 @@ struct LanguageHandler *findLanguage(char *languageName)
 
 void stopLanguageDecoding()
 {
-    displayMessage("Returning to CLB command prompt\n");
+    displayMessage(F("Returning to CLB command prompt\n"));
     currentLanguageHandler = NULL;
 }
 
@@ -116,7 +116,7 @@ bool processLanguageLine(char *line)
 
     if (strcasecmp(line, "Exit") == 0)
     {
-        displayMessage("%s session ended\n", currentLanguageHandler->hullosLanguage);
+        displayMessage(F("%s session ended\n"), currentLanguageHandler->hullosLanguage);
         stopLanguageDecoding();
         return true;
     }
@@ -236,7 +236,7 @@ bool getProgramTextLine()
     {
 
         char ch = *programTextPos;
-        //        displayMessage("Got a: %d %c\n", ch, ch);
+        //        displayMessage(F("Got a: %d %c\n"), ch, ch);
 
         if (ch == 0)
         {
@@ -251,7 +251,7 @@ bool getProgramTextLine()
 
         if (ch == STATEMENT_TERMINATOR)
         {
-            //            displayMessage("Reached the end of the string\n");
+            //            displayMessage(F("Reached the end of the string\n"));
             programTextLineBuffer[chCount] = 0;
             programTextPos++;
             return true;
@@ -272,16 +272,16 @@ bool getProgramTextLine()
 
 void sendMessageToHullOS(char *programText)
 {
-    displayMessage("Got command via MQTT from the server: %s\n", programText);
+    displayMessage(F("Got command via MQTT from the server: %s\n"), programText);
 
     if (programText[0] == '*')
     {
-        displayMessage("Performing HullOS command\n ");
+        displayMessage(F("Performing HullOS command\n "));
         hullOSdecodeScriptLine(programText + 1);
         return;
     }
 
-    displayMessage("Processing a PythonIsh program\n");
+    displayMessage(F("Processing a PythonIsh program\n"));
 
     pythonIshdecodeScriptLine("begin");
 
@@ -289,7 +289,7 @@ void sendMessageToHullOS(char *programText)
 
     while (getProgramTextLine())
     {
-        displayMessage("   got a line:%s\n", programTextLineBuffer);
+        displayMessage(F("   got a line:%s\n"), programTextLineBuffer);
         pythonIshdecodeScriptLine(programTextLineBuffer);
     }
 
@@ -302,7 +302,7 @@ void sendMessageToHullOS(char *programText)
 
 bool HullOSStartLanguage(char *languageName)
 {
-    displayMessage("Starting %s\n", languageName);
+    displayMessage(F("Starting %s\n"), languageName);
 
     LanguageHandler *handler = findLanguage(languageName);
 
@@ -323,15 +323,15 @@ void HullOSStartProgramOnReset()
 {
     if (hullosSettings.hullosEnabled)
     {
-        displayMessage("HullOS Enabled\n");
+        displayMessage(F("HullOS Enabled\n"));
 
         if (loadFromFile(RUNNING_PROGRAM_FILENAME, HullOScodeRunningCode, HULLOS_PROGRAM_SIZE))
         {
-            displayMessage("HullOS program loaded\n");
+            displayMessage(F("HullOS program loaded\n"));
             dumpProgram(HullOScodeRunningCode);
             if (hullosSettings.runProgramOnStart)
             {
-                displayMessage("Starting execution\n");
+                displayMessage(F("Starting execution\n"));
                 startProgramExecution(true);
             }
         }
@@ -432,7 +432,7 @@ int doSetState(char *destination, unsigned char *settingBase)
 
     if (strcasecmp(command, "no") == 0)
     {
-        displayMessageWithNewline("Doing stop");
+        displayMessageWithNewline(F("Doing stop"));
         commandPerformed = true;
     }
 

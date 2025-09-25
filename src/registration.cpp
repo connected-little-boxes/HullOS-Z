@@ -250,7 +250,7 @@ int doRemoteRegistrationCommand(char *destination, unsigned char *settingBase)
 		return publishCommandToRemoteDevice(buffer, destination);
 	}
 
-	displayMessage("\nPerforming remote registration\n");
+	displayMessage(F("\nPerforming remote registration\n"));
 
 	saveSettings();
 	return WORKED_OK;

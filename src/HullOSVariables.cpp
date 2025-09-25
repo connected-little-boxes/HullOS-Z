@@ -29,12 +29,14 @@ int evaluateMinus(int op1, int op2)
 {
 	return op1 - op2;
 }
+
 struct op minusOp = {'-', evaluateMinus};
 
 int evaluateTimes(int op1, int op2)
 {
 	return op1 * op2;
 }
+
 struct op timesOp = {'*', evaluateTimes};
 
 int evaluateDivide(int op1, int op2)
@@ -249,7 +251,7 @@ bool validReading(char *text)
 	{
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("Reading name first character not valid");
+			displayMessage(F("Reading name first character not valid"));
 		}
 		return false;
 	}
@@ -295,7 +297,7 @@ struct reading *getReading(char *text)
 	{
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("Reading name first character not valid");
+			displayMessage(F("Reading name first character not valid"));
 		}
 		return NULL;
 	}
@@ -412,7 +414,7 @@ int checkIdentifier(char *var)
 bool matchVariable(int position, char *text)
 {
 #ifdef VAR_DEBUG
-	displayMessage("Match variable: ");
+	displayMessage(F("Match variable: "));
 	messageLogf(position);
 #endif
 
@@ -420,7 +422,7 @@ bool matchVariable(int position, char *text)
 	{
 		// position is empty - not a match
 #ifdef VAR_DEBUG
-		displayMessage("    Empty slot");
+		displayMessage(F("    Empty slot"));
 		messageLogf(position);
 #endif
 
@@ -428,7 +430,7 @@ bool matchVariable(int position, char *text)
 	}
 
 #ifdef VAR_DEBUG
-	displayMessage("    Matching: ");
+	displayMessage(F("    Matching: "));
 	messageLogf(position);
 #endif
 
@@ -436,9 +438,9 @@ bool matchVariable(int position, char *text)
 	{
 #ifdef VAR_DEBUG
 		displayMessage(variables[position].name[i]);
-		displayMessage(":");
+		displayMessage(F(":"));
 		displayMessage(*text);
-		displayMessage("  ");
+		displayMessage(F("  "));
 #endif
 		if ((variables[position].name[i] == 0) & !isVariableNameChar(text))
 		{
@@ -495,7 +497,7 @@ parseOperandResult findVariable(char *name, int *position)
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 	{
 #ifdef VAR_DEBUG
-		displayMessage("    Checking variable: ");
+		displayMessage(F("    Checking variable: "));
 		messageLogf(i);
 #endif
 		if (matchVariable(i, name))
@@ -541,7 +543,7 @@ parseOperandResult createVariable(char *namePos, int *varPos)
 	{
 
 #ifndef VAR_DEBUG
-		displayMessage("   no room for variable");
+		displayMessage(F("   no room for variable"));
 #endif
 		return parseOperandResult::NO_ROOM_FOR_VARIABLE;
 	}
@@ -566,9 +568,9 @@ parseOperandResult createVariable(char *namePos, int *varPos)
 
 #ifdef VAR_DEBUG
 		displayMessage(variables[position].name[i]);
-		displayMessage(":");
+		displayMessage(F(":"));
 		displayMessage(*decodePos);
-		displayMessage("  ");
+		displayMessage(F("  "));
 #endif
 
 		if (!isVariableNameChar(decodePos))
@@ -625,7 +627,7 @@ bool readInteger(int *result)
 		char ch = *decodePos;
 
 #ifdef READ_INTEGER_DEBUG
-		displayMessage(".  processing: ");
+		displayMessage(F(".  processing: "));
 		messageLogf((char)ch);
 #endif
 
@@ -640,7 +642,7 @@ bool readInteger(int *result)
 		resultValue = (resultValue * 10) + (ch - '0');
 
 #ifdef READ_INTEGER_DEBUG
-		displayMessage(".  result: ");
+		displayMessage(F(".  result: "));
 		messageLogf(resultValue);
 #endif
 
@@ -651,7 +653,7 @@ bool readInteger(int *result)
 	resultValue = resultValue * sign;
 
 #ifdef READ_INTEGER_DEBUG
-	displayMessage(".  returning: ");
+	displayMessage(F(".  returning: "));
 	messageLogf(resultValue);
 #endif
 
@@ -709,7 +711,7 @@ parseOperandResult parseOperand(int *result)
 	if (isdigit(*decodePos) | (*decodePos == '+') | (*decodePos == '-'))
 	{
 #ifdef VAR_DEBUG
-		displayMessage("    Getting literal operand");
+		displayMessage(F("    Getting literal operand"));
 #endif
 		if (readInteger(result))
 		{
@@ -750,8 +752,8 @@ bool getOperand(int *result)
 
 	if (getResult != parseOperandResult::OPERAND_OK)
 	{
-		displayMessage("Operand error: ");
-		displayMessage("%d", getResult);
+		displayMessage(F("Operand error: "));
+		displayMessage(F("%d"), getResult);
 		return false;
 	}
 	return true;
@@ -784,7 +786,7 @@ bool getValue(int *result)
 
 	if (!validOperator(*decodePos))
 	{
-		displayMessage("Invalid operator");
+		displayMessage(F("Invalid operator"));
 		return false;
 	}
 
@@ -800,7 +802,7 @@ bool getValue(int *result)
 	}
 
 #ifdef VAR_DEBUG
-	displayMessage("    get operand result");
+	displayMessage(F("    get operand result"));
 	messageLogf(getOperandResult);
 #endif
 
@@ -831,13 +833,13 @@ bool testCondition(bool *result)
 	{
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("invalid logical operator in logical operation");
+			displayMessage(F("invalid logical operator in logical operation"));
 		}
 		return false;
 	}
 
 #ifdef TEST_CONDITION_DEBUG
-	displayMessage("    operator: ");
+	displayMessage(F("    operator: "));
 	messageLogf(op->operatorCh);
 #endif
 
@@ -851,16 +853,16 @@ bool testCondition(bool *result)
 	}
 
 #ifdef TEST_CONDITION_DEBUG
-	displayMessage("    get operand result");
+	displayMessage(F("    get operand result"));
 	messageLogf(getOperandResult);
-	displayMessage("    second operand");
+	displayMessage(F("    second operand"));
 	messageLogf(secondOperand);
 #endif
 
 	*result = op->evaluator(firstOperand, secondOperand);
 
 #ifdef TEST_CONDITION_DEBUG
-	displayMessage("    comparision result");
+	displayMessage(F("    comparision result"));
 	messageLogf(*result);
 #endif
 
@@ -882,14 +884,14 @@ void setVariable()
 	case INVALID_VARIABLE_NAME:
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("VS invalid variable name");
+			displayMessage(F("VS invalid variable name"));
 		}
 		return;
 
 	case VARIABLE_NAME_TOO_LONG:
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("VS variable name too long");
+			displayMessage(F("VS variable name too long"));
 		}
 		return;
 	}
@@ -903,7 +905,7 @@ void setVariable()
 	{
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("VS invalid variable name ");
+			displayMessage(F("VS invalid variable name "));
 		}
 		return;
 	}
@@ -918,7 +920,7 @@ void setVariable()
 		{
 			if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 			{
-				displayMessage("VS no room for variable");
+				displayMessage(F("VS no room for variable"));
 			}
 			return;
 		}
@@ -935,7 +937,7 @@ void setVariable()
 	{
 		if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 		{
-			displayMessage("VS no equals after variable name");
+			displayMessage(F("VS no equals after variable name"));
 		}
 		return;
 	}
@@ -953,7 +955,7 @@ void setVariable()
 
 	if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
 	{
-		displayMessage("VSOK");
+		displayMessage(F("VSOK"));
 	}
 }
 
@@ -965,21 +967,21 @@ void viewVariable()
 	{
 
 	case VARIABLE_NOT_FOUND:
-		displayMessageWithNewline("VV variable not found");
+		displayMessageWithNewline(F("VV variable not found"));
 		return;
 
 	case INVALID_VARIABLE_NAME:
-		displayMessageWithNewline("VV invalid variable name");
+		displayMessageWithNewline(F("VV invalid variable name"));
 		return;
 
 	case OPERAND_OK:
 		if (!isAssigned(position))
 		{
-			displayMessageWithNewline("Unassigned");
+			displayMessageWithNewline(F("Unassigned"));
 		}
 		else
 		{
-			displayMessage("Variable has value: %d\n", getVariable(position));
+			displayMessage(F("Variable has value: %d\n"), getVariable(position));
 		}
 	}
 }

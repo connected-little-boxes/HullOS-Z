@@ -589,7 +589,7 @@ void printSetting(SettingItem *item)
 	char itemBuffer[SETTING_VALUE_OUTPUT_LENGTH];
 	printSettingValue(item, itemBuffer, SETTING_VALUE_OUTPUT_LENGTH);
 
-	displayMessage("%s=%s\n", item->formName, itemBuffer);
+	displayMessage(F("%s=%s\n"), item->formName, itemBuffer);
 }
 
 void dumpSetting(SettingItem *item)
@@ -597,7 +597,7 @@ void dumpSetting(SettingItem *item)
 	char itemBuffer[SETTING_VALUE_OUTPUT_LENGTH];
 	printSettingValue(item, itemBuffer, SETTING_VALUE_OUTPUT_LENGTH);
 
-	displayMessage("%s=%s\n", item->formName, itemBuffer);
+	displayMessage(F("%s=%s\n"), item->formName, itemBuffer);
 }
 
 File saveFile;
@@ -815,7 +815,7 @@ void resetSettingCollection(SettingItemCollection *settingCollection)
 
 void PrintSettingCollection(SettingItemCollection *settingCollection)
 {
-	displayMessage("\n%s\n", settingCollection->collectionName);
+	displayMessage(F("\n%s\n"), settingCollection->collectionName);
 	for (int settingNo = 0; settingNo < settingCollection->noOfSettings; settingNo++)
 	{
 		printSetting(settingCollection->settings[settingNo]);
@@ -857,7 +857,7 @@ void PrintSettingCollectionFiltered(SettingItemCollection *settingCollection)
 
 	if (gotSetting)
 	{
-		displayMessage("\n%s\n", settingCollection->collectionName);
+		displayMessage(F("\n%s\n"), settingCollection->collectionName);
 		for (int settingNo = 0; settingNo < settingCollection->noOfSettings; settingNo++)
 		{
 			if (strContains(settingCollection->settings[settingNo]->formName, settingsPrintFilter))
@@ -883,9 +883,9 @@ void PrintAllSettings()
 	PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
 
 	displayMessage(deviceNameBuffer);
-	displayMessage("\n\nSensors\n");
+	displayMessage(F("\n\nSensors\n"));
 	iterateThroughSensorSettingCollections(PrintSettingCollection);
-	displayMessage("\nProcesses\n");
+	displayMessage(F("\nProcesses\n"));
 	iterateThroughProcessSettingCollections(PrintSettingCollection);
 }
 
@@ -895,20 +895,20 @@ void PrintSomeSettings(char *filter)
 	char deviceNameBuffer[DEVICE_NAME_LENGTH];
 	PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
 	displayMessage(deviceNameBuffer);
-	displayMessage("\n\nSensors\n");
+	displayMessage(F("\n\nSensors\n"));
 	iterateThroughSensorSettingCollections(PrintSettingCollectionFiltered);
-	displayMessage("\nProcesses\n");
+	displayMessage(F("\nProcesses\n"));
 	iterateThroughProcessSettingCollections(PrintSettingCollectionFiltered);
 }
 
 void printSettingStorage(sensor *sensor)
 {
-	displayMessage("   %s Setting Storage:%d\n", sensor->sensorName, sensor->settingsStoreLength);
+	displayMessage(F("   %s Setting Storage:%d\n"), sensor->sensorName, sensor->settingsStoreLength);
 }
 
 void printProcessStorage(process *process)
 {
-	displayMessage("   %s Setting Storage:%d Command parameter Storage:%d\n",
+	displayMessage(F("   %s Setting Storage:%d Command parameter Storage:%d\n"),
 				  process->processName, process->settingsStoreLength, process->commandItemSize);
 }
 
@@ -917,9 +917,9 @@ void PrintStorage()
 	char deviceNameBuffer[DEVICE_NAME_LENGTH];
 	PrintSystemDetails(deviceNameBuffer, DEVICE_NAME_LENGTH);
 	displayMessage(deviceNameBuffer);
-	displayMessage("Sensors\n");
+	displayMessage(F("Sensors\n"));
 	iterateThroughSensors(printSettingStorage);
-	displayMessage("Processes\n");
+	displayMessage(F("Processes\n"));
 	iterateThroughAllProcesses(printProcessStorage);
 }
 
@@ -958,7 +958,7 @@ void DumpSettingCollectionFiltered(SettingItemCollection *settingCollection)
 
 void DumpAllSettings()
 {
-	displayMessage("\n");
+	displayMessage(F("\n"));
 	iterateThroughSensorSettingCollections(DumpSettingCollection);
 	iterateThroughProcessSettingCollections(DumpSettingCollection);
 }
@@ -966,7 +966,7 @@ void DumpAllSettings()
 void DumpSomeSettings(char *filter)
 {
 	settingsPrintFilter = filter;
-	displayMessage("\n");
+	displayMessage(F("\n"));
 	iterateThroughSensorSettingCollections(DumpSettingCollectionFiltered);
 	iterateThroughProcessSettingCollections(DumpSettingCollectionFiltered);
 }
@@ -987,6 +987,8 @@ void iterateThroughAllSettings(void (*func)(SettingItem *s))
 	iterateThroughSensorSettings(func);
 }
 
+bool defaultsApplied;
+
 void validateSettingValues(SettingItem * s){
 	if(s->settingType ==password){
 		// do not validate passwords
@@ -995,20 +997,23 @@ void validateSettingValues(SettingItem * s){
 	char itemBuffer[SETTING_VALUE_OUTPUT_LENGTH];
 	printSettingValue(s, itemBuffer, SETTING_VALUE_OUTPUT_LENGTH);
 	if(!s->validateValue(s->value,itemBuffer)){
-		displayMessage("Invalid setting %s for:%s\n",itemBuffer, s->formName);
+		displayMessage(F("Invalid setting %s for:%s\n"),itemBuffer, s->formName);
 		s->setDefault(s->value);
+		defaultsApplied=true;
 	}
 }
 
-void validateSettings(){
+ bool validateSettings(){
+	defaultsApplied = false;
 	iterateThroughAllSettings(validateSettingValues);
+	return defaultsApplied;
 }
 
 void saveSettings()
 {
 	if(settingsStoreStatus != SETTING_STATUS_OK)
 	{
-		displayMessage("Settings store unavailable %d\n", settingsStoreStatus);
+		displayMessage(F("Settings store unavailable %d\n"), settingsStoreStatus);
 		return;
 	}
 	saveAllSettingsToFile(SETTINGS_FILENAME);
@@ -1201,7 +1206,7 @@ SettingsSetupStatus setupSettings()
 	case SETTINGS_STATUS_JUST_BOOTED:
 		if (!LittleFS.begin())
 		{
-			displayMessage("An Error has occurred while mounting SPIFFS");
+			displayMessage(F("An Error has occurred while mounting SPIFFS"));
 			settingsStoreStatus = SETTING_STATUS_FILE_SYSTEM_FAILED;
 			return SETTINGS_FILE_SYSTEM_FAIL;
 		}
@@ -1209,7 +1214,10 @@ SettingsSetupStatus setupSettings()
 
 	if (loadSettings())
 	{
-		validateSettings();
+		if(validateSettings()){
+			// returns true if a setting was set to a default value - need to save the settings 
+  		    saveAllSettingsToFile(SETTINGS_FILENAME);
+		}
 		settingsStoreStatus = SETTING_STATUS_OK;
 		result = SETTINGS_SETUP_OK;
 	}

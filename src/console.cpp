@@ -77,7 +77,7 @@ void doShowSettings(char *commandLine)
 	{
 		PrintAllSettings();
 	}
-	displayMessage("\nSettings complete\n");
+	displayMessage(F("\nSettings complete\n"));
 }
 
 void doDumpSettings(char *commandLine)
@@ -93,7 +93,7 @@ void doDumpSettings(char *commandLine)
 	{
 		DumpAllSettings();
 	}
-	displayMessage("\nDump complete\n");
+	displayMessage(F("\nDump complete\n"));
 }
 
 #define CONSOLE_MESSAGE_SIZE 800
@@ -105,7 +105,7 @@ void doStartWebServer(char *commandLine)
 #if defined(SETTINGS_WEB_SERVER)
 	internalReboot(CONFIG_HOST_BOOT_NO_TIMEOUT_MODE);
 #else
-	displayMessage("The settings web server not installed on this box");
+	displayMessage(F("The settings web server not installed on this box"));
 #endif
 }
 
@@ -121,33 +121,33 @@ void doDumpStatus(char *commandLine)
 		if(dumpProcessStatusFiltered(filterStart)){
 			return;
 		}
-		displayMessage("\nItem %s not found\n", filterStart);
+		displayMessage(F("\nItem %s not found\n"), filterStart);
 		return;
 	}
 	else
 	{
 		DumpAllSettings();
 	}
-	displayMessage("\nDump complete\n");
+	displayMessage(F("\nDump complete\n"));
 	dumpSensorStatus();
 	dumpProcessStatus();
 
 #if defined(ARDUINO_ARCH_ESP8266)
 
-	displayMessage("Heap: ");
-	displayMessage("%u\n", ESP.getFreeHeap());
+	displayMessage(F("Heap: "));
+	displayMessage(F("%u\n"), ESP.getFreeHeap());
 
 #endif
 
 #if defined(ARDUINO_ARCH_ESP32)
-	displayMessage("Heap: ");
-	displayMessage("%u\n", ESP.getFreeHeap());
+	displayMessage(F("Heap: "));
+	displayMessage(F("%u\n"), ESP.getFreeHeap());
 #endif
 }
 
 void doRestart(char *commandLine)
 {
-	displayMessage("Restarting...");
+	displayMessage(F("Restarting..."));
 	saveSettings();
 	delay(2000);
 	internalReboot(COLD_BOOT_MODE);
@@ -155,7 +155,7 @@ void doRestart(char *commandLine)
 
 void doClear(char *commandLine)
 {
-	displayMessage("Clearing settings and restarting...");
+	displayMessage(F("Clearing settings and restarting..."));
 	resetSettings();
 	saveSettings();
 	internalReboot(COLD_BOOT_MODE);
@@ -164,7 +164,7 @@ void doClear(char *commandLine)
 void doSaveSettings(char *commandline)
 {
 	saveSettings();
-	displayMessage("\nSettings saved");
+	displayMessage(F("\nSettings saved"));
 }
 
 #ifdef SENSOR_BUTTON
@@ -197,7 +197,7 @@ void doTestPotSensor(char *commandline)
 
 void doDumpListeners(char *commandline)
 {
-	displayMessage("\nSensor Listeners\n");
+	displayMessage(F("\nSensor Listeners\n"));
 	printControllerListeners();
 }
 
@@ -220,7 +220,7 @@ void printCommandsJson(process *p)
 	{
 		// have got some commands in the collection
 
-		displayMessage("{\"name\":\"%s\",\"desc\":\"%s\",\n\"commands\":[", p->processName, c->description);
+		displayMessage(F("{\"name\":\"%s\",\"desc\":\"%s\",\n\"commands\":["), p->processName, c->description);
 
 		for (int i = 0; i < c->noOfCommands; i++)
 		{
@@ -230,11 +230,11 @@ void printCommandsJson(process *p)
 			displayMessage(consoleMessageBuffer);
 			if (i < (c->noOfCommands - 1))
 			{
-				displayMessage(",");
+				displayMessage(F(","));
 			}
 		}
 
-		displayMessage("]}");
+		displayMessage(F("]}"));
 	}
 }
 
@@ -242,7 +242,7 @@ void doShowRemoteCommandsJson(char *commandLine)
 {
 	struct process *procPtr = getAllProcessList();
 
-	displayMessage("\n { \n\"processes\": [\n");
+	displayMessage(F("\n { \n\"processes\": [\n"));
 
 	while (procPtr != NULL)
 	{
@@ -256,12 +256,12 @@ void doShowRemoteCommandsJson(char *commandLine)
 			procPtr = procPtr->nextAllProcesses;
 			if (procPtr != NULL)
 			{
-				displayMessage(",");
+				displayMessage(F(","));
 			}
 		}
 	}
 
-	displayMessage("]}");
+	displayMessage(F("]}"));
 }
 
 void printCommandsText(process *p)
@@ -278,7 +278,7 @@ void printCommandsText(process *p)
 	{
 		// have got some commands in the collection
 
-		displayMessage("Process:%s commands:%s\n", p->processName, c->description);
+		displayMessage(F("Process:%s commands:%s\n"), p->processName, c->description);
 
 		for (int i = 0; i < c->noOfCommands; i++)
 		{
@@ -292,7 +292,7 @@ void printCommandsText(process *p)
 
 void doShowRemoteCommandsText(char *commandLine)
 {
-	displayMessage("\n");
+	displayMessage(F("\n"));
 	iterateThroughAllProcesses(printCommandsText);
 }
 
@@ -323,12 +323,12 @@ void printSensorTriggersJson(sensor *s)
 
 	snprintf(consoleMessageBuffer, CONSOLE_MESSAGE_SIZE, "Sensor: %s\n     ", s->sensorName);
 	appendSensorDescriptionToJson(s, consoleMessageBuffer, CONSOLE_MESSAGE_SIZE);
-	displayMessage("%s\n", consoleMessageBuffer);
+	displayMessage(F("%s\n"), consoleMessageBuffer);
 }
 
 void doShowSensorsJson(char *commandLine)
 {
-	displayMessage("\n");
+	displayMessage(F("\n"));
 	iterateThroughSensors(printSensorTriggersJson);
 }
 
@@ -353,7 +353,7 @@ void printSensorTriggersText(sensor *s)
 	consoleMessageBuffer[0] = 0;
 
 	appendSensorDescriptionToText(s, consoleMessageBuffer, CONSOLE_MESSAGE_SIZE);
-	displayMessage("%s\n", consoleMessageBuffer);
+	displayMessage(F("%s\n"), consoleMessageBuffer);
 }
 
 void doShowSensorsText(char *commandLine)
@@ -375,7 +375,7 @@ void performRemoteCommand(char *commandLine)
 
 void doClearAllListeners(char *commandLine)
 {
-	displayMessage("\nClearing all the listeners\n");
+	displayMessage(F("\nClearing all the listeners\n"));
 	clearAllListeners();
 }
 
@@ -385,11 +385,11 @@ void doClearSensorListeners(char *commandLine)
 
 	if (clearSensorNameListeners(sensorName))
 	{
-		displayMessage("Sensor listeners cleared");
+		displayMessage(F("Sensor listeners cleared"));
 	}
 	else
 	{
-		displayMessage("Sensor not found");
+		displayMessage(F("Sensor not found"));
 	}
 }
 
@@ -404,7 +404,7 @@ void doOTAUpdate(char *commandLine)
 {
 	if (needWifiConfigBootMode())
 	{
-		displayMessage("Can't perform OTA update as no WiFi networks have been configured");
+		displayMessage(F("Can't perform OTA update as no WiFi networks have been configured"));
 		return;
 	}
 
@@ -414,8 +414,8 @@ void doOTAUpdate(char *commandLine)
 
 void doColourDisplay(char *commandLine)
 {
-	displayMessage("Press space to step through each colour");
-	displayMessage("Press the ESC key to exit");
+	displayMessage(F("Press space to step through each colour"));
+	displayMessage(F("Press the ESC key to exit"));
 
 	for (int i = 0; i < noOfColours; i++)
 	{
@@ -424,11 +424,11 @@ void doColourDisplay(char *commandLine)
 			int ch = Serial.read();
 			if (ch == ESC_KEY)
 			{
-				displayMessage("Colour display ended");
+				displayMessage(F("Colour display ended"));
 				return;
 			}
 		}
-		displayMessage("Colour:%s\n", colourNames[i].name);
+		displayMessage(F("Colour:%s\n"), colourNames[i].name);
 		frame->fadeToColour(colourNames[i].col, 5);
 		do
 		{
@@ -436,7 +436,7 @@ void doColourDisplay(char *commandLine)
 			delay(20);
 		} while (Serial.available() == 0);
 	}
-	displayMessage("Colour display finished");
+	displayMessage(F("Colour display finished"));
 }
 
 void doDumpSprites(char *commandLine)
@@ -462,7 +462,7 @@ void dumpFilesInStores()
 		if (storeDir.isDirectory())
 		{
 			// Only dump the contents of directories
-			displayMessage(" Store:%s\n", storeDir.name());
+			displayMessage(F(" Store:%s\n"), storeDir.name());
 			while (true)
 			{
 				File storeFile = storeDir.openNextFile();
@@ -472,11 +472,11 @@ void dumpFilesInStores()
 					break;
 				}
 
-				displayMessage("   Command:%s\n", storeFile.name());
+				displayMessage(F("   Command:%s\n"), storeFile.name());
 
 				String line = storeFile.readStringUntil(LINE_FEED);
 				const char *lineChar = line.c_str();
-				displayMessage("      %s\n", lineChar);
+				displayMessage(F("      %s\n"), lineChar);
 				storeFile.close();
 			}
 		}
@@ -486,7 +486,7 @@ void dumpFilesInStores()
 
 void deleteFileInStore(char *deleteName)
 {
-	displayMessage("Deleting file:%s\n", deleteName);
+	displayMessage(F("Deleting file:%s\n"), deleteName);
 
 	File dir = fileOpen("/", "r");
 
@@ -510,7 +510,7 @@ void deleteFileInStore(char *deleteName)
 		{
 			const char *storeName = storeDir.name();
 
-			displayMessage("   Searching store:%s\n", storeName);
+			displayMessage(F("   Searching store:%s\n"), storeName);
 
 			while (fullDeleteFileName[0] == 0)
 			{
@@ -535,7 +535,7 @@ void deleteFileInStore(char *deleteName)
 				strcpy(compareFileName, deleteName);
 #endif
 
-				displayMessage("       Checking:%s for %s\n", filename, compareFileName);
+				displayMessage(F("       Checking:%s for %s\n"), filename, compareFileName);
 
 				if (strcasecmp(compareFileName, filename) == 0)
 				{
@@ -557,27 +557,27 @@ void deleteFileInStore(char *deleteName)
 
 	if (fullDeleteFileName[0] != 0)
 	{
-		displayMessage("\nRemoving:%s", fullDeleteFileName);
+		displayMessage(F("\nRemoving:%s"), fullDeleteFileName);
 		if (LittleFS.remove(fullDeleteFileName))
 		{
-			displayMessage("\n   done\n");
+			displayMessage(F("\n   done\n"));
 		}
 		else
 		{
-			displayMessage("\n   failed\n");
+			displayMessage(F("\n   failed\n"));
 		};
 	}
 	else
 	{
-		displayMessage("\nFile:%s not found", deleteName);
+		displayMessage(F("\nFile:%s not found"), deleteName);
 	}
 }
 
 void doDumpStores(char *commandLine)
 {
-	displayMessage("\nStored commands\n");
+	displayMessage(F("\nStored commands\n"));
 	dumpFilesInStores();
-	displayMessage("\nend of stored commands\n");
+	displayMessage(F("\nend of stored commands\n"));
 }
 
 void doDeleteCommand(char *commandLine)
@@ -590,7 +590,7 @@ void doDeleteCommand(char *commandLine)
 
 void doFirmwareUpgradeReset(char *commandLine)
 {
-	displayMessage("Booting into USB drive mode for firmware update...");
+	displayMessage(F("Booting into USB drive mode for firmware update..."));
 	saveSettings();
 	delay(2000);
 	reset_usb_boot(1, 0);
@@ -697,30 +697,30 @@ struct consoleCommand userCommands[] =
 
 void doHelp(char *commandLine)
 {
-	displayMessage("\n\nConnected Little Boxes\nDevice Version %s\n\nThese are all the available commands.\n\n",
+	displayMessage(F("\n\nConnected Little Boxes\nDevice Version %s\n\nThese are all the available commands.\n\n"),
 				   Version);
 
 	int noOfCommands = sizeof(userCommands) / sizeof(struct consoleCommand);
 
 	for (int i = 0; i < noOfCommands; i++)
 	{
-		displayMessage("    %s - %s\n", userCommands[i].name, userCommands[i].commandDescription);
+		displayMessage(F("    %s - %s\n"), userCommands[i].name, userCommands[i].commandDescription);
 	}
 
-	displayMessage("\nYou can view the value of any setting just by typing the setting name, for example:\n\n");
-	displayMessage("    mqttdevicename\n\n");
-	displayMessage("- would show you the MQTT device name.\n");
-	displayMessage("You can assign a new value to a setting, for example:\n\n");
-	displayMessage("     mqttdevicename=Rob\n\n");
-	displayMessage("- would set the name of the mqttdevicename to Rob.\n\n");
-	displayMessage("To see a list of all the setting names use the command settings.\n");
-	displayMessage("This displays all the settings, their values and names.\n");
-	displayMessage("To see a dump of settings (which can be restored to the device later) use dump.\n");
-	displayMessage("The dump and settings can be followed by a filter string to match setting names\n\n");
-	displayMessage("   dump pix\n\n");
-	displayMessage("- would dump all the settings that contain the string pix\n\n");
-	displayMessage("If you enter a JSON string this will be interpreted as a remote command.\n");
-	displayMessage("See the remote command documentation for more details of this.\n");
+	displayMessage(F("\nYou can view the value of any setting just by typing the setting name, for example:\n\n"));
+	displayMessage(F("    mqttdevicename\n\n"));
+	displayMessage(F("- would show you the MQTT device name.\n"));
+	displayMessage(F("You can assign a new value to a setting, for example:\n\n"));
+	displayMessage(F("     mqttdevicename=Rob\n\n"));
+	displayMessage(F("- would set the name of the mqttdevicename to Rob.\n\n"));
+	displayMessage(F("To see a list of all the setting names use the command settings.\n"));
+	displayMessage(F("This displays all the settings, their values and names.\n"));
+	displayMessage(F("To see a dump of settings (which can be restored to the device later) use dump.\n"));
+	displayMessage(F("The dump and settings can be followed by a filter string to match setting names\n\n"));
+	displayMessage(F("   dump pix\n\n"));
+	displayMessage(F("- would dump all the settings that contain the string pix\n\n"));
+	displayMessage(F("If you enter a JSON string this will be interpreted as a remote command.\n"));
+	displayMessage(F("See the remote command documentation for more details of this.\n"));
 }
 
 boolean findCommandName(consoleCommand *com, char *name)
@@ -759,7 +759,7 @@ struct consoleCommand *findCommand(char *commandLine, consoleCommand *commands, 
 
 int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands)
 {
-	displayMessage("Got command: %s\n", commandLine);
+	displayMessage(F("Got command: %s\n"), commandLine);
 
 	if (commandLine[0] == '{')
 	{
@@ -787,20 +787,20 @@ int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands
 	switch (result)
 	{
 	case displayedOK:
-		displayMessage("setting displayed OK\n");
+		displayMessage(F("setting displayed OK\n"));
 		return true;
 	case setOK:
-		displayMessage("setting set OK\n");
+		displayMessage(F("setting set OK\n"));
 		if (consoleSettings.autoSaveSettings)
 		{
 			saveSettings();
 		}
 		return WORKED_OK;
 	case settingNotFound:
-		displayMessage("setting not found\n");
+		displayMessage(F("setting not found\n"));
 		return COMMAND_SETTING_NOT_FOUND;
 	case settingValueInvalid:
-		displayMessage("setting value invalid\n");
+		displayMessage(F("setting value invalid\n"));
 		return COMMAND_SETTING_VALUE_INVALID;
 	}
 
@@ -856,7 +856,7 @@ void bufferSerialChar(char ch)
 		{
 			serialReceiveBuffer[serialReceiveBufferPos] = 0;
 
-			displayMessage("\n\r");
+			displayMessage(F("\n\r"));
 
 			if (serialReceiveBuffer[0] == '*')
 			{
@@ -894,14 +894,14 @@ void checkSerialBuffer()
 
 void sendMessageToConsole(char *message)
 {
-	displayMessage("Acting on received command\n");
+	displayMessage(F("Acting on received command\n"));
 	while (*message)
 	{
 		bufferSerialChar(*message);
 		message++;
 	}
 	bufferSerialChar('\r');
-	displayMessage("Received command complete\n");
+	displayMessage(F("Received command complete\n"));
 }
 
 void initConsole()
@@ -950,7 +950,7 @@ void consoleStatusMessage(char *buffer, int bufferLength)
 
 boolean validateConsoleCommandString(void *dest, const char *newValueStr)
 {
-	displayMessage("  Validate console command %s\n", newValueStr);
+	displayMessage(F("  Validate console command %s\n"), newValueStr);
 	return (validateString((char *)dest, newValueStr, CONSOLE_COMMAND_SIZE));
 }
 
@@ -1160,7 +1160,7 @@ int doRemoteConsoleCommand(char *destination, unsigned char *settingBase)
 
 	char *command = (char *)(settingBase + CONSOLE_COMMAND_OFFSET);
 
-	displayMessage("Performing remote command: %s\n", command);
+	displayMessage(F("Performing remote command: %s\n"), command);
 
 	if (performCommand(command, userCommands, sizeof(userCommands) / sizeof(struct consoleCommand)))
 	{

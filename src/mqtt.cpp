@@ -221,7 +221,7 @@ void handleIncomingMQTTMessage()
 {
 	if (receivedIncomingMQTTMessage())
 	{
-		displayMessage("Received from MQTT: %s\n", mqtt_receive_buffer);
+		displayMessage(F("Received from MQTT: %s\n"), mqtt_receive_buffer);
 
 		if((mqtt_receive_buffer[0]=='*') && (mqtt_receive_buffer[1]=='*')){
 			sendMessageToConsole(mqtt_receive_buffer+2);
@@ -299,42 +299,42 @@ void restartMQTT()
 		
 		int state =  mqttPubSubClient->state();
 
-		displayMessage("Bad MQTT client state %d ",state);
+		displayMessage(F("Bad MQTT client state %d "),state);
 
 		hardwareDisplayMessage(MQTT_STATUS_BAD_STATE_MESSAGE_NUMBER, ledFlashAlertState, MQTT_STATUS_BAD_STATE_MESSAGE_TEXT);
 
 		switch (state)
 		{
 		case MQTT_CONNECT_BAD_PROTOCOL:
-			displayMessage("bad protocol\n");
+			displayMessage(F("bad protocol\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_PROTOCOL;
 			break;
 		case MQTT_CONNECT_BAD_CLIENT_ID:
-			displayMessage("bad client ID\n");
+			displayMessage(F("bad client ID\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_CLIENT_ID;
 			break;
 		case MQTT_CONNECT_UNAVAILABLE:
-			displayMessage("connect unavailable\n");
+			displayMessage(F("connect unavailable\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_UNAVAILABLE;
 			break;
 		case MQTT_CONNECT_BAD_CREDENTIALS:
-			displayMessage("bad credentials\n");
+			displayMessage(F("bad credentials\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_CREDENTIALS;
 			break;
 		case MQTT_CONNECT_UNAUTHORIZED:
-			displayMessage("connect unauthorized\n");
+			displayMessage(F("connect unauthorized\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_UNAUTHORIZED;
 			break;
 		case MQTT_CONNECTION_TIMEOUT:
-			displayMessage("connection timeout\n");
+			displayMessage(F("connection timeout\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_PROTOCOL;
 			break;
 		case MQTT_CONNECT_FAILED:
-			displayMessage("connect failed\n");
+			displayMessage(F("connect failed\n"));
 			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_FAILED;
 			break;
 		default:
-			displayMessage("no error description\n");
+			displayMessage(F("no error description\n"));
 			mqttConnectErrorNumber = mqttPubSubClient->state();
 			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_ERROR;
 			break;
@@ -349,7 +349,7 @@ void restartMQTT()
 		mqttSettings.mqttSubscribeTopic,
 		mqttSettings.mqttDeviceName);
 
-	displayMessage("Subscribing to:%s\n", topicBuffer);
+	displayMessage(F("Subscribing to:%s\n"), topicBuffer);
 
 	mqttPubSubClient->subscribe(topicBuffer);
 
@@ -390,25 +390,25 @@ int publishBufferToMQTTTopic(char *buffer, char *topic)
 			snprintf(topicBuffer,MQTT_TOPIC_PREFIX_LENGTH+MQTT_TOPIC_LENGTH,"%s/%s", mqttSettings.mqttTopicPrefix,topic);
 		}
 
-		displayMessage("MQTT publishing:%s to topic:%s\n", buffer, topicBuffer);
+		displayMessage(F("MQTT publishing:%s to topic:%s\n"), buffer, topicBuffer);
 
 		boolean result = mqttPubSubClient->publish(topicBuffer, buffer);
 
 		if(result)
 		{
-			displayMessage("\n");
+			displayMessage(F("\n"));
 			hardwareDisplayMessage(MQTT_STATUS_TRANSMIT_OK_MESSAGE_NUMBER, ledFlashNormalState, MQTT_STATUS_TRANSMIT_OK_MESSAGE_TEXT);
 			return MQTT_STATUS_TRANSMIT_OK_MESSAGE_NUMBER;
 		}
 		else
 		{
-			displayMessage(" - Failed");
+			displayMessage(F(" - Failed"));
 			hardwareDisplayMessage(MQTT_STATUS_PUBLISH_FAILED_MESSAGE_NUMBER, ledFlashAlertState, MQTT_STATUS_PUBLISH_FAILED_MESSAGE_TEXT);
 			return MQTT_STATUS_PUBLISH_FAILED_MESSAGE_NUMBER;
 		}
 	}
 
-	displayMessage("Not publishing message");
+	displayMessage(F("Not publishing message"));
 
 	hardwareDisplayMessage(MQTT_STATUS_MESSAGE_CANT_SEND_MESSAGE_NUMBER, ledFlashAlertState, MQTT_STATUS_MESSAGE_CANT_SEND_MESSAGE_TEXT);
 

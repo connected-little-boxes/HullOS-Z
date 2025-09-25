@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 
 #if defined(PICO_USE_UART)
@@ -9,6 +11,10 @@
 #include "settings.h"
 #include "messages.h"
 #include "processes.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
 
 struct MessagesSettings messagesSettings;
 
@@ -55,72 +61,66 @@ void messagesOn()
     saveSettings();
 }
 
-void displayMessage(const char *format, ...)
-{
+#ifndef MSG_FMT_BUF
+#define MSG_FMT_BUF 256
+#endif
 
-    // don't send messages when turned off or the robot not enabled
-    
-    if (!messagesSettings.messagesEnabled)
-    {
-        return;
-    }
+#ifndef MSG_FLASH_FMT_BUF
+#define MSG_FLASH_FMT_BUF 160
+#endif
 
-    // Use va_list to handle variable number of arguments
-    va_list args;
-    va_start(args, format);
-
-    // Use vsnprintf to format the string
-    // Assumes a maximum buffer size of 256 characters
-    char buffer[512];
-    int len = vsnprintf(buffer, sizeof(buffer), format, args);
-
-    // Check if vsnprintf was successful
-    if (len >= 0 && len < (int) sizeof(buffer))
-    {
-        // Print the formatted string
-        #if defined(PICO_USE_UART)
-        uart_puts(uart0, buffer);
-        #else
-        Serial.print(buffer);
-        #endif
-    }
-
-    va_end(args);
+static void vprintFromRamFmt(const char* fmt, va_list ap, bool newline) {
+  char out[MSG_FMT_BUF];
+  vsnprintf(out, sizeof(out), fmt ? fmt : "", ap);
+  if (newline) Serial.println(out);
+  else         Serial.print(out);
 }
 
-void displayMessageWithNewline(const char *format, ...)
-{
+static void vprintFromFlashFmt(const __FlashStringHelper* ffmt, va_list ap, bool newline) {
+  char fmt[MSG_FLASH_FMT_BUF];
+  // Copy flash-resident format into RAM; strncpy_P works across cores that support F()
+  strncpy_P(fmt, reinterpret_cast<PGM_P>(ffmt), sizeof(fmt) - 1);
+  fmt[sizeof(fmt) - 1] = '\0';
 
-    // don't send messages when turned off or the robot not enabled
-    
-    if (!messagesSettings.messagesEnabled)
-    {
-        return;
-    }
+  char out[MSG_FMT_BUF];
+  vsnprintf(out, sizeof(out), fmt, ap);
+  if (newline) Serial.println(out);
+  else         Serial.print(out);
+}
 
-    // Use va_list to handle variable number of arguments
-    va_list args;
-    va_start(args, format);
+// -------- printf-style (flash) --------
+void displayMessage(const __FlashStringHelper* fmt, ...) {
+  va_list ap; va_start(ap, fmt);
+  vprintFromFlashFmt(fmt, ap, /*newline*/false);
+  va_end(ap);
+}
 
-    // Use vsnprintf to format the string
-    // Assumes a maximum buffer size of 256 characters
-    char buffer[512];
-    int len = vsnprintf(buffer, sizeof(buffer), format, args);
+void displayMessageWithNewline(const __FlashStringHelper* fmt, ...) {
+  va_list ap; va_start(ap, fmt);
+  vprintFromFlashFmt(fmt, ap, /*newline*/true);
+  va_end(ap);
+}
 
-    // Check if vsnprintf was successful
-    if (len >= 0 && len < (int) sizeof(buffer))
-    {
-        // Print the formatted string
-        #if defined(PICO_USE_UART)
-        uart_puts(uart0, buffer);
-        #else
-        Serial.print(buffer);
-        #endif
-    }
+// -------- printf-style (RAM) --------
+void displayMessage(const char* fmt, ...) {
+  va_list ap; va_start(ap, fmt);
+  vprintFromRamFmt(fmt, ap, /*newline*/false);
+  va_end(ap);
+}
 
-    Serial.println();
+void displayMessageWithNewline(const char* fmt, ...) {
+  va_list ap; va_start(ap, fmt);
+  vprintFromRamFmt(fmt, ap, /*newline*/true);
+  va_end(ap);
+}
 
-    va_end(args);
+// -------- String convenience (no formatting) --------
+void displayMessage(const String& s) {
+  Serial.print(s);
+}
+
+void displayMessageWithNewline(const String& s) {
+  Serial.println(s);
 }
 
 

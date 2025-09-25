@@ -237,7 +237,7 @@ void initStatusLed()
 // Can't use both at once....
         if(printerSettings.printerEnabled && statusLedSettings.statusLedOutputPin==LED_BUILTIN)
         {
-            displayMessage("The built in status led is disabled when using the printer output.");
+            displayMessage(F("The built in status led is disabled when using the printer output."));
         }
         else {
             initStatusLedHardware();

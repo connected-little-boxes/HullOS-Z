@@ -125,11 +125,11 @@ void display_memory_monitor( char * item)
     int newHeap = (int)ESP.getFreeHeap();
     int heapChange = currentHeap - newHeap;
     if(heapChange != 0) {
-        displayMessage("   %s has grabbed %d of memory %d left\n", item, heapChange, newHeap);
+        displayMessage(F("   %s has grabbed %d of memory %d left\n"), item, heapChange, newHeap);
         currentHeap = newHeap;
     }
 #else
-    displayMessage("   Memory monitoring not enabled for this platform\n", item);
+    displayMessage(F("   Memory monitoring not enabled for this platform\n"), item);
 #endif
 }
 
@@ -287,13 +287,13 @@ bool removeFile(char *path){
         LittleFS.remove(path);
         if (fileExists(path)) 
             {
-                displayMessage("Failed to delete:");displayMessageWithNewline(path);
+                displayMessage(F("Failed to delete:"));displayMessageWithNewline(path);
                 return false;
             }
-        displayMessage("Deleted:");displayMessageWithNewline(path);
+        displayMessage(F("Deleted:"));displayMessageWithNewline(path);
         return true;
         }
-    displayMessage(path);displayMessageWithNewline(" does not exist");
+    displayMessage(path);displayMessageWithNewline(F(" does not exist"));
     return false;
 }
 
@@ -336,21 +336,21 @@ bool loadFromFile(char * path, char * dest, int length){
 
 void listLittleFSContents()
 {
-    displayMessageWithNewline("Listing LittleFS contents:");
+    displayMessageWithNewline(F("Listing LittleFS contents:"));
     if (!LittleFS.begin()) {
-        displayMessageWithNewline("Failed to mount LittleFS");
+        displayMessageWithNewline(F("Failed to mount LittleFS"));
         return;
     }
 
     File root = fileOpen("/","r");
     if (!root || !root.isDirectory()) {
-        displayMessageWithNewline("Failed to open root directory");
+        displayMessageWithNewline(F("Failed to open root directory"));
         return;
     }
 
     File file = root.openNextFile();
     while (file) {
-        displayMessage("File: %s = size %d\n", file.name(), (int)file.size());
+        displayMessage(F("File: %s = size %d\n"), file.name(), (int)file.size());
         file = root.openNextFile();
     }
 }
@@ -359,20 +359,20 @@ void printFileContents(const char *filename) {
   // Attempt to open the file for reading
   File file = fileOpen(filename, "r");
   if (!file) {
-    displayMessage("Failed to open file: ");
+    displayMessage(F("Failed to open file: "));
     displayMessageWithNewline(filename);
     return;
   }
 
-  displayMessage("Contents of ");
+  displayMessage(F("Contents of "));
   displayMessage(filename);
-  displayMessageWithNewline(":");
+  displayMessageWithNewline(F(":"));
 
   // Read and print each character
   while (file.available()) {
     char ch = file.read();
     if(ch==STATEMENT_TERMINATOR){
-        displayMessage("\n");
+        displayMessage(F("\n"));
     }
     else {
         Serial.write(ch);
@@ -380,5 +380,5 @@ void printFileContents(const char *filename) {
   }
 
   file.close();
-  displayMessage("\n"); // Final newline after content
+  displayMessage(F("\n")); // Final newline after content
 }

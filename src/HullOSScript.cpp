@@ -89,9 +89,9 @@ const char* getErrorMessage(int code) {
 }
 
 void printError(int code) {
-    displayMessage("Error ");
-    displayMessage("%d",code);
-    displayMessage(": ");
+    displayMessage(F("Error "));
+    displayMessage(F("%d"),code);
+    displayMessage(F(": "));
     displayMessageWithNewline(getErrorMessage(code));
 }
 
@@ -246,7 +246,7 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 				// we've found an alias for the command
 				bufferPos = comparePos;
 	#ifdef COMPARE_COMMAND_DEBUG
-				displayMessageWithNewline("..match with command");
+				displayMessageWithNewline(F("..match with command"));
 	#endif
 				return COMMAND_MATCHED;
 			}			
@@ -263,13 +263,13 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 				// reset the input position to the start
 				comparePos = bufferPos;
 #ifdef COMPARE_COMMAND_DEBUG
-				displayMessageWithNewline("..separator");
+				displayMessageWithNewline(F("..separator"));
 #endif
 			}
 			else
 			{
 #ifdef COMPARE_COMMAND_DEBUG
-				displayMessageWithNewline("..fail");
+				displayMessageWithNewline(F("..fail"));
 #endif
 				return COMMAND_NOT_MATCHED;
 			}
@@ -320,14 +320,14 @@ int decodeCommandName(const char * commandNames)
 		switch (result)
 		{
 		case COMMAND_MATCHED:
-//			displayMessage("Command matched: %d\n", commandNumber);
+//			displayMessage(F("Command matched: %d\n"), commandNumber);
 			return commandNumber;
 
 		case COMMAND_NOT_MATCHED:
 			if (!spinToCommandEnd(commandNames))
 			{
 #ifdef SCRIPT_DEBUG
-				displayMessage("Command not matched: %d\n", commandNumber);
+				displayMessage(F("Command not matched: %d\n"), commandNumber);
 #endif
 				return -1;
 			}
@@ -336,7 +336,7 @@ int decodeCommandName(const char * commandNames)
 
 		case END_OF_COMMANDS:
 #ifdef SCRIPT_DEBUG
-			displayMessage("Hit the end\n");
+			displayMessage(F("Hit the end\n"));
 #endif
 			return -1;
 			break;
@@ -819,12 +819,12 @@ void endCompilingStatements()
 	if (programError)
 	{
 		sendCommand(failedCommandText);
-		displayMessageWithNewline("Errors");
+		displayMessageWithNewline(F("Errors"));
 	}
 	else
 	{
 		sendCommand(endCommandText);
-		displayMessageWithNewline("OK");
+		displayMessageWithNewline(F("OK"));
 	}
 }
 
@@ -1184,7 +1184,7 @@ int getProgramFilenameFromCode()
 
 		ch = *bufferPos;
 
-//		displayMessage("  Copying:%d %c\n", ch, ch);
+//		displayMessage(F("  Copying:%d %c\n"), ch, ch);
 
 		if (ch == 0)
 		{
@@ -1248,7 +1248,7 @@ int compileDirectCommand()
 int compileProgramSave()
 {
 
-	displayMessageWithNewline("Compiling program save command");
+	displayMessageWithNewline(F("Compiling program save command"));
 
 	if (storingProgram())
 	{
@@ -1264,7 +1264,7 @@ int compileProgramSave()
 
 	// If we get here the filename is valid
 
-	displayMessage("Storing the program in:%s\n", HullOScommandsFilenameBuffer);
+	displayMessage(F("Storing the program in:%s\n"), HullOScommandsFilenameBuffer);
 	saveToFile(HullOScommandsFilenameBuffer, HullOScodeCompileOutput);
 
 	return ERROR_OK;
@@ -1272,7 +1272,7 @@ int compileProgramSave()
 
 int compileProgramLoad(bool clearVariablesBeforeRun)
 {
-	displayMessageWithNewline("Compiling program load or chain command");
+	displayMessageWithNewline(F("Compiling program load or chain command"));
 
 	int result = getProgramFilenameFromCode();
 
@@ -1296,7 +1296,7 @@ int compileProgramLoad(bool clearVariablesBeforeRun)
 
 int compileProgramDump()
 {
-	displayMessageWithNewline("Compiling program dump command");
+	displayMessageWithNewline(F("Compiling program dump command"));
 
 	if (storingProgram())
 	{

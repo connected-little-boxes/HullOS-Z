@@ -482,7 +482,7 @@ void handleNotFound()
 
   if (strcasecmp(settingBuffer, "reset") == 0)
   {
-    displayMessage("Resetting device");
+    displayMessage(F("Resetting device"));
     sendPageText(sensorResetMessage);
     // reset the device
     delay(5000);
@@ -554,7 +554,7 @@ void startHostingConfigWebsite(bool timeout)
 
   timeoutActive = timeout;
 
-  displayMessage("Hosting the configuration website\nPress any key to reboot\n");
+  displayMessage(F("Hosting the configuration website\nPress any key to reboot\n"));
 
   beginStatusDisplay(VERY_DARK_GREY_COLOUR);
 
@@ -570,7 +570,7 @@ void startHostingConfigWebsite(bool timeout)
   server = new fs_WebServer(80);
   if (MDNS.begin(SETTINGS_MDNS_NAME))
   {
-    displayMessage("MDNS responder started");
+    displayMessage(F("MDNS responder started"));
   }
 #endif
 
@@ -578,7 +578,7 @@ void startHostingConfigWebsite(bool timeout)
   server = new ESP8266WebServer(80);
   if (MDNS.begin(SETTINGS_MDNS_NAME))
   {
-    displayMessage("MDNS responder started\n");
+    displayMessage(F("MDNS responder started\n"));
   }
 #endif
 
@@ -596,7 +596,7 @@ void startHostingConfigWebsite(bool timeout)
   server->onNotFound(handleNotFound);
 
   server->begin();
-  displayMessage("HTTP server started");
+  displayMessage(F("HTTP server started"));
 
   initStatusLedHardware();
   statusLedOn();
@@ -608,7 +608,7 @@ void startHostingConfigWebsite(bool timeout)
     unsigned long time = millis();
     if (timeoutActive && time > endTime)
     {
-      displayMessage("Rebooting after timeout ");
+      displayMessage(F("Rebooting after timeout "));
       internalReboot(WARM_BOOT_MODE);
     }
 

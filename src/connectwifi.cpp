@@ -132,7 +132,7 @@ int findWifiSetting(String ssidName)
 
 	ssidName.toCharArray(ssidBuffer, WIFI_SSID_LENGTH);
 
-	displayMessage("*       Checking SSID:%s\n", ssidBuffer);
+	displayMessage(F("*       Checking SSID:%s\n"), ssidBuffer);
 
 	for (unsigned int i = 0; i < sizeof(wifiSettings) / sizeof(struct WiFiSetting); i++)
 	{
@@ -217,7 +217,7 @@ void handleConnectFailure()
 
 void handleFailedWiFiScan()
 {
-	displayMessage("No networks found that match stored network names\n");
+	displayMessage(F("No networks found that match stored network names\n"));
 	handleConnectFailure();
 	hardwareDisplayMessage(WIFI_STATUS_NO_MATCHING_NETWORKS_MESSAGE_NUMBER, ledFlashAlertState, WIFI_STATUS_NO_MATCHING_NETWORKS_MESSAGE_TEXT);
 	startReconnectTimer();
@@ -236,14 +236,14 @@ void checkWiFiScanResult()
 		if (ulongDiff(millis(), WiFiTimerStart) > WIFI_SCAN_TIMEOUT_MILLIS)
 		{
 			WiFiProcessDescriptor.status = WIFI_ERROR_SCAN_TIMEOUT;
-			displayMessage("WiFi scan timeout\n");
+			displayMessage(F("WiFi scan timeout\n"));
 		}
 		return;
 	}
 
 	int settingNumber;
 
-	displayMessage("*       WiFi scan complete %d networks found.\n", noOfNetworks);
+	displayMessage(F("*       WiFi scan complete %d networks found.\n"), noOfNetworks);
 	// if we get here we have some networks
 	for (int i = 0; i < noOfNetworks; ++i)
 	{
@@ -252,7 +252,7 @@ void checkWiFiScanResult()
 		if (settingNumber != WIFI_SETTING_NOT_FOUND)
 		{
 			snprintf(wifiActiveAPName, WIFI_SSID_LENGTH, "%s", wifiSettings[settingNumber].wifiSsid);
-			displayMessage("*       Connecting to %s\n", wifiActiveAPName);
+			displayMessage(F("*       Connecting to %s\n"), wifiActiveAPName);
 
 #ifdef PICO
 			WiFi.beginNoBlock(
@@ -277,7 +277,7 @@ bool syncConnectToAP(char *wifiSsid, char *wifiPassword)
 	int timeoutCount = 0;
 	WiFi.begin(wifiSsid, wifiPassword);
 
-	displayMessage("Connecting to WiFi %s\n", wifiSsid);
+	displayMessage(F("Connecting to WiFi %s\n"), wifiSsid);
 
 	while ((WiFi.status() != WL_CONNECTED) && (timeoutCount++ < 20))
 	{
@@ -287,19 +287,19 @@ bool syncConnectToAP(char *wifiSsid, char *wifiPassword)
 
 	if (WiFi.status() == WL_CONNECTED)
 	{
-		displayMessage("\nConnected OK\n");
+		displayMessage(F("\nConnected OK\n"));
 		return true;
 	}
 	else
 	{
-		displayMessage("\nConnect failed\n");
+		displayMessage(F("\nConnect failed\n"));
 		return false;
 	}
 }
 
 bool syncWiFiConnect()
 {
-	displayMessage("Performing Synchronous WiFi connect");
+	displayMessage(F("Performing Synchronous WiFi connect"));
 
 	#if defined(ARDUINO_ARCH_ESP32)
 
@@ -311,17 +311,17 @@ bool syncWiFiConnect()
 	delay(200);
 	WiFi.mode(WIFI_STA);
 	delay(200);
-	displayMessage("Starting scan");
+	displayMessage(F("Starting scan"));
 
 	int networkCount = WiFi.scanNetworks();
 
 	if (networkCount == 0)
 	{
-		displayMessage("No WiFi networks found.");
+		displayMessage(F("No WiFi networks found."));
 	}
 	else
 	{
-		displayMessage("*       WiFi scan complete %d networks found.\n", networkCount);
+		displayMessage(F("*       WiFi scan complete %d networks found.\n"), networkCount);
 		int settingNumber;
 
 		// Print SSID and signal strength for each network
