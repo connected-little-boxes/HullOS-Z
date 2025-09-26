@@ -1192,7 +1192,7 @@ void sendSettingItemToJSONString(struct SettingItem *item, char *buffer, int buf
 	}
 }
 
-SettingsSetupStatus setupSettings()
+SettingsSetupStatus setupSettings(bool completeReset)
 {
 	SettingsSetupStatus result;
 
@@ -1210,6 +1210,14 @@ SettingsSetupStatus setupSettings()
 			settingsStoreStatus = SETTING_STATUS_FILE_SYSTEM_FAILED;
 			return SETTINGS_FILE_SYSTEM_FAIL;
 		}
+	}
+
+	if(completeReset){
+		displayMessage(F("Complete reset requested\n"));
+		resetSettings();
+		saveSettings();
+		settingsStoreStatus = SETTING_STATUS_OK;
+		return SETTINGS_RESET_TO_DEFAULTS;
 	}
 
 	if (loadSettings())

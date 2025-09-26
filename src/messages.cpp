@@ -33,7 +33,7 @@ struct SettingItem speedMessagesEnabled = {
     &messagesSettings.speedMessagesEnabled,
     ONOFF_INPUT_LENGTH,
     yesNo,
-    setTrue,
+    setFalse,
     validateYesNo};
 
 

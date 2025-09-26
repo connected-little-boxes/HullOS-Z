@@ -102,7 +102,7 @@ enum SettingsStoreStatus{
 	SETTINGS_STATUS_JUST_BOOTED
 };
 
-SettingsSetupStatus setupSettings();
+SettingsSetupStatus setupSettings(bool completeReset);
 
 extern SettingsStoreStatus settingsStoreStatus;
 

@@ -269,7 +269,10 @@ void startDevice()
 
   Serial.printf("Setup settings complete\n");
 
-  SettingsSetupStatus status = setupSettings();
+  // set the parameter to true to force a setting request
+  // useful if one of the settings as broken the boot
+  
+  SettingsSetupStatus status = setupSettings(false);
 
   switch (status)
   {

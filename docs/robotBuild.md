@@ -11,6 +11,8 @@ You can build the circuit on a breadboard as shown above. The signal pins for th
 
 These are the robot motor coil connections. At present the motors are solely controlled from HullOS and PythonIsh. They can't be bound to sensor based triggers. These are the setting items for the robot motors. The diameter and spacing dimensions are in mm. 
 
+## PICO Motor Wiring
+
 ```
 motors=yes
 motorleftwheeldiam=69
@@ -24,4 +26,21 @@ rightmotorpin1=8
 rightmotorpin2=9
 rightmotorpin3=10
 rightmotorpin4=11
+```
+
+## ESP32 Motor Wiring
+
+```
+motors=yes
+motorleftwheeldiam=69
+motorrightwheeldiam=69
+motorwheelspacing=110
+leftmotorpin1=16
+leftmotorpin2=17
+leftmotorpin3=18
+leftmotorpin4=19
+rightmotorpin1=21
+rightmotorpin2=22
+rightmotorpin3=23
+rightmotorpin4=25
 ```
