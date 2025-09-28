@@ -10,3 +10,16 @@ You can edit the Platform.ini file in this workspace to select the target device
 default_envs = d1_mini
 ;default_envs = rpipico2
 ```
+If you are using a Raspberry Pi to perform the build you may need to manually install the inteHex library for the ESP32:
+```
+# 1) Find PlatformIO�s Python (usually here):
+~/.platformio/penv/bin/python -V
+
+# 2) Install intelhex into that exact interpreter:
+~/.platformio/penv/bin/python -m pip install --upgrade pip
+~/.platformio/penv/bin/python -m pip install intelhex
+
+# 3) Sanity-check:
+~/.platformio/penv/bin/python -c "import intelhex, sys; print('intelhex', intelhex.__version__, 'on', sys.executable)"
+
+```

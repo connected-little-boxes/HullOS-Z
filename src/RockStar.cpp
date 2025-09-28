@@ -5,7 +5,7 @@
 #include "HullOSVariables.h"
 #include "HullOSCommands.h"
 #include "console.h"
-#include "Utils.h"
+#include "utils.h"
 #include "messages.h"
 
 #define MAX_TOKENS 10
