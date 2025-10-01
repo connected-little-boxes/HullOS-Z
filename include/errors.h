@@ -56,5 +56,7 @@
 #define COMMAND_SETTING_VALUE_INVALID -49
 #define COMMAND_NO_COMMAND_FOUND -50
 #define JSON_MESSAGE_LCD_NOT_ENABLED -51
+#define JSON_MESSAGE_ROBOT_NOT_ENABLED -52
+
 
 void decodeError(int errorNo, char *buffer, int bufferLength);

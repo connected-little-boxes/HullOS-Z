@@ -43,4 +43,8 @@ void performRemoteCommand(char * commandLine);
 int actOnConsoleCommandText(char * buffer);
 void sendMessageToConsole(char * message);
 
+#ifdef PROCESS_ROBOT
+extern bool forceConsole;
+#endif
+
 

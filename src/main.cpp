@@ -93,6 +93,7 @@ void loop() {
 #include "distance.h"
 #include "codeEditorProcess.h"
 #include "lcdPanel.h"
+#include "robotProcess.h"
 
 #ifdef PROCESS_MOTOR
 
@@ -165,6 +166,9 @@ void populateProcessList()
 #endif
 #if defined(PROCESS_CODE_EDITOR)
   addProcessToAllProcessList(&codeEditorProcess);
+#endif
+#if defined(PROCESS_ROBOT)
+  addProcessToAllProcessList(&robotProcess);
 #endif
 }
 
@@ -252,6 +256,28 @@ void startDevice()
   Serial.printf("Powered by HULLOS-X\n");
   Serial.printf("www.connectedlittleboxes.com\n");
   Serial.printf("Version %s build date: %s %s\n", Version, __DATE__, __TIME__);
+
+  #if defined(PROCESS_ROBOT)
+  // If we are using an ESP8266 to connect to a robot (or other serial device) we will
+  // use the alternative serial port connection for this. This means when the robot is active
+  // it will be impossible to interact with the serial terminal
+  // this lets you interrupt the start process and retail the serial connection if you are using a terminal
+
+  Serial.printf("Press any key to force console mode.\n");
+
+  delay(1000);
+
+  if(Serial.available()){
+    forceConsole = true;
+    Serial.printf("  forcing console mode\n");
+  }
+  else {
+    forceConsole = false;
+    Serial.printf("  console mode not forced\n");
+  }
+
+#endif
+
 
 #ifdef DEBUG
   messageLogf("**** Debug output enabled");

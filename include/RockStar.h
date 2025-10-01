@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef LANGUAGE_ROCKSTAR
+
 #include "HullOS.h"
 
 extern struct LanguageHandler RockstarLanguage;
@@ -54,3 +56,8 @@ void rockstarShowPrompt();
 #define ROCKSTAR_COMMAND_DANCE 44
 #define ROCKSTAR_COMMON_VARIABLE 45
 #define ROCKSTAR_IS_OPERATOR 46
+#define ROCKSTAR_TRUE 47
+#define ROCKSTAR_FALSE 48
+
+
+#endif

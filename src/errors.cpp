@@ -169,6 +169,9 @@ void decodeError(int errorNo, char *buffer, int bufferLength)
     case JSON_MESSAGE_LCD_NOT_ENABLED:
         message = F("LCD not enabled");
         break;
+    case JSON_MESSAGE_ROBOT_NOT_ENABLED:
+        message =  F("Robot not enabled");
+        break;
     }
 
     snprintf(buffer, bufferLength, message.c_str());

@@ -612,10 +612,14 @@ void doStartPythonIsh(char *commandLine)
 	HullOSStartLanguage("PythonIsh");
 }
 
+#ifdef LANGUAGE_ROCKSTAR
+
 void doStartRockstar(char *commandLine)
 {
 	HullOSStartLanguage(commandLine);
 }
+
+#endif
 
 void doStartHullOS(char *commandLine)
 {
@@ -669,7 +673,9 @@ struct consoleCommand userCommands[] =
 #endif
 
 #ifdef PROCESS_HULLOS
+#ifdef LANGUAGE_ROCKSTAR
 		{"rockstar", "open the Rockstar programming interface", doStartRockstar},
+#endif
 #endif
 
 #ifdef SENSOR_ROTARY
@@ -806,6 +812,10 @@ int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands
 
 	return COMMAND_NO_COMMAND_FOUND;
 }
+
+#ifdef PROCESS_ROBOT
+bool forceConsole = false;
+#endif
 
 void showHelp()
 {

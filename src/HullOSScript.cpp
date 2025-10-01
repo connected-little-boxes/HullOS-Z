@@ -5,94 +5,177 @@
 #include "utils.h"
 #include "messages.h"
 
-const char* getErrorMessage(int code) {
-    switch (code) {
-        case ERROR_OK: return "No error.";
-        case ERROR_MISSING_TIME_VALUE_IN_INTIME: return "Missing time value in 'intime'.";
-        case ERROR_INVALID_INTIME: return "Invalid 'intime' value.";
-        case ERROR_MISSING_MOVE_DISTANCE: return "Missing move distance.";
-        case ERROR_NOT_IMPLEMENTED: return "Feature not implemented.";
-        case ERROR_MISSING_ANGLE_IN_TURN: return "Missing angle in 'turn'.";
-        case ERROR_INVAILD_ANGLE_SEPARATOR_IN_ARC: return "Invalid angle separator in 'arc'.";
-        case VARIABLE_USED_BEFORE_IT_WAS_CREATED: return "Variable used before it was created.";
-        case ERROR_INVALID_DIGIT_IN_NUMBER: return "Invalid digit in number.";
-        case ERROR_INVALID_HARDWARE_READ_DEVICE: return "Invalid hardware read device.";
-        case ERROR_INVALID_VARIABLE_NAME_IN_SET: return "Invalid variable name in 'set'.";
-        case ERROR_TOO_MANY_VARIABLES: return "Too many variables declared.";
-        case ERROR_NO_EQUALS_IN_SET: return "No equals sign in 'set' statement.";
-        case ERROR_CHARACTERS_ON_THE_END_OF_THE_LINE_AFTER_WAIT: return "Unexpected characters after 'wait'.";
-        case ERROR_INVALID_OPERATOR_IN_EXPRESSION: return "Invalid operator in expression.";
-        case ERROR_MISSING_TIME_IN_DELAY: return "Missing time value in 'delay'.";
-        case ERROR_MISSING_RED_VALUE_IN_COLOUR: return "Missing red value in 'colour'.";
-        case ERROR_MISSING_GREEN_VALUE_IN_COLOUR: return "Missing green value in 'colour'.";
-        case ERROR_MISSING_BLUE_VALUE_IN_COLOUR: return "Missing blue value in 'colour'.";
-        case ERROR_MISSING_OPERATOR_IN_COMPARE: return "Missing operator in comparison.";
-        case ERROR_ENDIF_BEFORE_IF: return "'endif' before 'if'.";
-        case ERROR_INVALID_CONSTRUCTION_MATCHING_ENDIF: return "No matching 'if' for 'endif'.";
-        case FOREVER_BEFORE_DO: return "'forever' before 'do'.";
-        case ERROR_INVALID_CONSTRUCTION_MATCHING_FOREVER: return "Invalid block for 'forever'.";
-        case UNTIL_BEFORE_DO: return "'until' before 'do'.";
-        case ERROR_INVALID_CONSTRUCTION_MATCHING_UNTIL: return "Invalid block for 'until'.";
-        case ERROR_INVALID_COMMAND: return "Invalid command.";
-        case ERROR_MISSING_OPERATOR_IN_WHILE: return "Missing operator in 'while'.";
-        case ERROR_INVALID_CONSTRUCTION_MATCHING_ENDWHILE: return "No matching 'while' for 'endwhile'.";
-        case ENDWHILE_BEFORE_WHILE: return "'endwhile' before 'while'.";
-        case ERROR_SCRIPT_INPUT_BUFFER_OVERFLOW: return "Script input buffer overflow.";
-        case ERROR_INTIME_EXPECTED_BUT_NOT_SUPPLIED: return "'intime' expected but not supplied.";
-        case ERROR_ELSE_WITHOUT_IF: return "'else' without matching 'if'.";
-        case ERROR_INDENT_OUTWARDS_WITHOUT_ENCLOSING_COMMAND: return "Indent outwards without enclosing command.";
-        case ERROR_INDENT_INWARDS_WITHOUT_A_VALID_ENCLOSING_STATEMENT: return "Indent inwards without valid enclosing statement.";
-        case ERROR_INDENT_OUTWARDS_HAS_INVALID_OPERATION_ON_STACK: return "Indent outwards with invalid operation on stack.";
-        case ERROR_INDENT_OUTWARDS_DOES_NOT_MATCH_ENCLOSING_STATEMENT_INDENT: return "Indent outwards mismatch.";
-        case ERROR_MISSING_CLOSE_QUOTE_ON_PRINT: return "Missing close quote on 'print'.";
-        case ERROR_MISSING_PITCH_VALUE_IN_SOUND: return "Missing pitch value in 'sound'.";
-        case ERROR_MISSING_DURATION_VALUE_IN_SOUND: return "Missing duration in 'sound'.";
-        case ERROR_NOT_A_WAIT_AT_THE_END_OF_SOUND: return "Missing 'wait' at end of 'sound'.";
-        case ERROR_BEGIN_WHEN_COMPILING_PROGRAM: return "'begin' not allowed inside another program.";
-        case ERROR_END_WHEN_NOT_COMPILING_PROGRAM: return "'end' outside of program.";
-        case ERROR_STOP_WHEN_COMPILING_PROGRAM: return "'stop' not allowed inside program definition.";
-        case ERROR_RUN_WHEN_COMPILING_PROGRAM: return "'run' not allowed inside program definition.";
-        case ERROR_CLEAR_WHEN_COMPILING_PROGRAM: return "'clear' not allowed inside program definition.";
-        case ERROR_FOREVER_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'forever' used outside a program.";
-        case ERROR_WHILE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'while' used outside a program.";
-        case ERROR_IF_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'if' used outside a program.";
-        case ERROR_ELSE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'else' used outside a program.";
-        case ERROR_ELSE_MUST_BE_PART_OF_AN_INDENTED_BLOCK: return "'else' must be indented.";
-        case ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_BREAK: return "'break' without enclosing loop.";
-        case ERROR_BREAK_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'break' outside a program.";
-        case ERROR_INVALID_COMMAND_AFTER_DURATION_SHOULD_BE_NO_WAIT: return "Expected 'nowait' after 'duration'.";
-        case ERROR_SECOND_COMMAND_IN_SOUND_IS_NOT_DURATION: return "Second command in 'sound' is not 'duration'.";
-        case ERROR_CONTINUE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM: return "'continue' outside a program.";
-        case ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_CONTINUE: return "'continue' without enclosing loop.";
-        case ERROR_NO_RADIUS_IN_ARC: return "Missing radius in 'arc'.";
-        case ERROR_NO_ANGLE_IN_ARC: return "Missing angle in 'arc'.";
-        case ERROR_NO_COMMAND_START_CHAR: return "Missing command start character.";
-        case ERROR_INVALID_VARIABLE_NAME_IN_SET_COMMON_VARIABLE: return "Invalid variable name in common variable 'set'.";
-		case ERROR_NO_ASSIGNMENT_NAME_IN_SET: return "No valid assignment name in 'set'.";
-		case ERROR_TOKEN_TOO_LARGE: return "Token too large.";
-		case ERROR_EMPTY_TOKEN: return "Missing token.";
-		case ERROR_MISSING_VARIABLE_IN_SIMPLE_ASSIGNMENT: return "Missing variable in simple assignment.";
-		case ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START: return "Missing quote in filename start";
-		case ERROR_MISSING_QUOTE_IN_FILENAME_STRING_END: return "Missing quote in filename end";
-		case ERROR_FILENAME_TOO_LONG: return "Filename too long";
-		case ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING: return "Save not available when compiling. End compile before saving";
-		case ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING: return "Load not available when compiling. End compile before loading";
-		case ERROR_FILE_LOAD_FAILED: return "File load failed";
-		case ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING: return "Dump not available when compiling. End compile before dumping";
-		case ERROR_FILE_DUMP_FAILED: return "File dump failed";
-		case ERROR_TOKEN_TOO_LARGE_FOR_BUFFER: return "Token too large for buffer";
-		case ERROR_MISSING_CLOSE_QUOTE_ON_SEND: return "Missing close quote on send";
-		case ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE: return "Nowait should be the last thing on the line";
-		case ERROR_INVALID_FILENAME_IN_BEGIN: return "Begin is not followed by a valid filename";
-        default: return "Unknown error.";
-    }
+const char *getErrorMessage(int code)
+{
+	switch (code)
+	{
+	case ERROR_OK:
+		return "No error.";
+	case ERROR_MISSING_TIME_VALUE_IN_INTIME:
+		return "Missing time value in 'intime'.";
+	case ERROR_INVALID_INTIME:
+		return "Invalid 'intime' value.";
+	case ERROR_MISSING_MOVE_DISTANCE:
+		return "Missing move distance.";
+	case ERROR_NOT_IMPLEMENTED:
+		return "Feature not implemented.";
+	case ERROR_MISSING_ANGLE_IN_TURN:
+		return "Missing angle in 'turn'.";
+	case ERROR_INVAILD_ANGLE_SEPARATOR_IN_ARC:
+		return "Invalid angle separator in 'arc'.";
+	case VARIABLE_USED_BEFORE_IT_WAS_CREATED:
+		return "Variable used before it was created.";
+	case ERROR_INVALID_DIGIT_IN_NUMBER:
+		return "Invalid digit in number.";
+	case ERROR_INVALID_HARDWARE_READ_DEVICE:
+		return "Invalid hardware read device.";
+	case ERROR_INVALID_VARIABLE_NAME_IN_SET:
+		return "Invalid variable name in 'set'.";
+	case ERROR_TOO_MANY_VARIABLES:
+		return "Too many variables declared.";
+	case ERROR_NO_EQUALS_IN_SET:
+		return "No equals sign in 'set' statement.";
+	case ERROR_CHARACTERS_ON_THE_END_OF_THE_LINE_AFTER_WAIT:
+		return "Unexpected characters after 'wait'.";
+	case ERROR_INVALID_OPERATOR_IN_EXPRESSION:
+		return "Invalid operator in expression.";
+	case ERROR_MISSING_TIME_IN_DELAY:
+		return "Missing time value in 'delay'.";
+	case ERROR_MISSING_RED_VALUE_IN_COLOUR:
+		return "Missing red value in 'colour'.";
+	case ERROR_MISSING_GREEN_VALUE_IN_COLOUR:
+		return "Missing green value in 'colour'.";
+	case ERROR_MISSING_BLUE_VALUE_IN_COLOUR:
+		return "Missing blue value in 'colour'.";
+	case ERROR_MISSING_OPERATOR_IN_COMPARE:
+		return "Missing operator in comparison.";
+	case ERROR_ENDIF_BEFORE_IF:
+		return "'endif' before 'if'.";
+	case ERROR_INVALID_CONSTRUCTION_MATCHING_ENDIF:
+		return "No matching 'if' for 'endif'.";
+	case FOREVER_BEFORE_DO:
+		return "'forever' before 'do'.";
+	case ERROR_INVALID_CONSTRUCTION_MATCHING_FOREVER:
+		return "Invalid block for 'forever'.";
+	case UNTIL_BEFORE_DO:
+		return "'until' before 'do'.";
+	case ERROR_INVALID_CONSTRUCTION_MATCHING_UNTIL:
+		return "Invalid block for 'until'.";
+	case ERROR_INVALID_COMMAND:
+		return "Invalid command.";
+	case ERROR_MISSING_OPERATOR_IN_WHILE:
+		return "Missing operator in 'while'.";
+	case ERROR_INVALID_CONSTRUCTION_MATCHING_ENDWHILE:
+		return "No matching 'while' for 'endwhile'.";
+	case ENDWHILE_BEFORE_WHILE:
+		return "'endwhile' before 'while'.";
+	case ERROR_SCRIPT_INPUT_BUFFER_OVERFLOW:
+		return "Script input buffer overflow.";
+	case ERROR_INTIME_EXPECTED_BUT_NOT_SUPPLIED:
+		return "'intime' expected but not supplied.";
+	case ERROR_ELSE_WITHOUT_IF:
+		return "'else' without matching 'if'.";
+	case ERROR_INDENT_OUTWARDS_WITHOUT_ENCLOSING_COMMAND:
+		return "Indent outwards without enclosing command.";
+	case ERROR_INDENT_INWARDS_WITHOUT_A_VALID_ENCLOSING_STATEMENT:
+		return "Indent inwards without valid enclosing statement.";
+	case ERROR_INDENT_OUTWARDS_HAS_INVALID_OPERATION_ON_STACK:
+		return "Indent outwards with invalid operation on stack.";
+	case ERROR_INDENT_OUTWARDS_DOES_NOT_MATCH_ENCLOSING_STATEMENT_INDENT:
+		return "Indent outwards mismatch.";
+	case ERROR_MISSING_CLOSE_QUOTE_ON_PRINT:
+		return "Missing close quote on 'print'.";
+	case ERROR_MISSING_PITCH_VALUE_IN_SOUND:
+		return "Missing pitch value in 'sound'.";
+	case ERROR_MISSING_DURATION_VALUE_IN_SOUND:
+		return "Missing duration in 'sound'.";
+	case ERROR_NOT_A_WAIT_AT_THE_END_OF_SOUND:
+		return "Missing 'wait' at end of 'sound'.";
+	case ERROR_BEGIN_WHEN_COMPILING_PROGRAM:
+		return "'begin' not allowed inside another program.";
+	case ERROR_END_WHEN_NOT_COMPILING_PROGRAM:
+		return "'end' outside of program.";
+	case ERROR_STOP_WHEN_COMPILING_PROGRAM:
+		return "'stop' not allowed inside program definition.";
+	case ERROR_RUN_WHEN_COMPILING_PROGRAM:
+		return "'run' not allowed inside program definition.";
+	case ERROR_CLEAR_WHEN_COMPILING_PROGRAM:
+		return "'clear' not allowed inside program definition.";
+	case ERROR_FOREVER_CANNOT_BE_USED_OUTSIDE_A_PROGRAM:
+		return "'forever' used outside a program.";
+	case ERROR_WHILE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM:
+		return "'while' used outside a program.";
+	case ERROR_IF_CANNOT_BE_USED_OUTSIDE_A_PROGRAM:
+		return "'if' used outside a program.";
+	case ERROR_ELSE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM:
+		return "'else' used outside a program.";
+	case ERROR_ELSE_MUST_BE_PART_OF_AN_INDENTED_BLOCK:
+		return "'else' must be indented.";
+	case ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_BREAK:
+		return "'break' without enclosing loop.";
+	case ERROR_BREAK_CANNOT_BE_USED_OUTSIDE_A_PROGRAM:
+		return "'break' outside a program.";
+	case ERROR_INVALID_COMMAND_AFTER_DURATION_SHOULD_BE_NO_WAIT:
+		return "Expected 'nowait' after 'duration'.";
+	case ERROR_SECOND_COMMAND_IN_SOUND_IS_NOT_DURATION:
+		return "Second command in 'sound' is not 'duration'.";
+	case ERROR_CONTINUE_CANNOT_BE_USED_OUTSIDE_A_PROGRAM:
+		return "'continue' outside a program.";
+	case ERROR_NO_LABEL_FOR_LOOP_ON_STACK_IN_CONTINUE:
+		return "'continue' without enclosing loop.";
+	case ERROR_NO_RADIUS_IN_ARC:
+		return "Missing radius in 'arc'.";
+	case ERROR_NO_ANGLE_IN_ARC:
+		return "Missing angle in 'arc'.";
+	case ERROR_NO_COMMAND_START_CHAR:
+		return "Missing command start character.";
+	case ERROR_INVALID_VARIABLE_NAME_IN_SET_COMMON_VARIABLE:
+		return "Invalid variable name in common variable 'set'.";
+	case ERROR_NO_ASSIGNMENT_NAME_IN_SET:
+		return "No valid assignment name in 'set'.";
+	case ERROR_TOKEN_TOO_LARGE:
+		return "Token too large.";
+	case ERROR_EMPTY_TOKEN:
+		return "Missing token.";
+	case ERROR_MISSING_VARIABLE_IN_SIMPLE_ASSIGNMENT:
+		return "Missing variable in simple assignment.";
+	case ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START:
+		return "Missing quote in filename start";
+	case ERROR_MISSING_QUOTE_IN_FILENAME_STRING_END:
+		return "Missing quote in filename end";
+	case ERROR_FILENAME_TOO_LONG:
+		return "Filename too long";
+	case ERROR_SAVE_NOT_AVAILABLE_WHEN_COMPILING:
+		return "Save not available when compiling. End compile before saving";
+	case ERROR_LOAD_NOT_AVAILABLE_WHEN_COMPILING:
+		return "Load not available when compiling. End compile before loading";
+	case ERROR_FILE_LOAD_FAILED:
+		return "File load failed";
+	case ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING:
+		return "Dump not available when compiling. End compile before dumping";
+	case ERROR_FILE_DUMP_FAILED:
+		return "File dump failed";
+	case ERROR_TOO_MANY_TOKENS_IN_LINE:
+		return "Too many tokens in the line";
+	case ERROR_MISSING_CLOSE_QUOTE_ON_SEND:
+		return "Missing close quote on send";
+	case ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE:
+		return "Nowait should be the last thing on the line";
+	case ERROR_INVALID_FILENAME_IN_BEGIN:
+		return "Begin is not followed by a valid filename";
+	case ERROR_MISSING_END_QUOTE_IN_STRING_LITERAL:
+		return "Missing end quote in string literal";
+	default:
+		return "Unknown error.";
+	}
 }
 
-void printError(int code) {
-    displayMessage(F("Error "));
-    displayMessage(F("%d"),code);
-    displayMessage(F(": "));
-    displayMessageWithNewline(getErrorMessage(code));
+void printError(int code)
+{
+	displayMessage(F("Error "));
+	displayMessage(F("%d"), code);
+	displayMessage(F(": "));
+	displayMessageWithNewline(getErrorMessage(code));
 }
 
 int scriptInputBufferPos;
@@ -106,11 +189,6 @@ int scriptLineNumber;
 // Used for error reporting
 
 bool programError;
-
-// The start position of the command in the input buffer
-// Set by decodeCommand
-// Shared with all the functions below
-char *commandStartPos;
 
 // THIS MEANS THAT THIS COMPILER IS NOT REENTRANT
 
@@ -163,7 +241,7 @@ int skipInputSpaces()
 	return result;
 }
 
-bool spinToCommandEnd(const char * commandNames)
+bool spinToCommandEnd(const char *commandNames)
 {
 	while (true)
 	{
@@ -185,7 +263,7 @@ bool spinToCommandEnd(const char * commandNames)
 	}
 }
 
-bool spinToNextCommandAlias(const char * commandNames)
+bool spinToNextCommandAlias(const char *commandNames)
 {
 	while (true)
 	{
@@ -213,10 +291,9 @@ bool spinToNextCommandAlias(const char * commandNames)
 	}
 }
 
-
 // #define COMPARE_COMMAND_DEBUG
 
-ScriptCompareCommandResult compareCommand(const char * commandNames)
+ScriptCompareCommandResult compareCommand(const char *commandNames)
 {
 	// Start at the buffer position
 
@@ -234,22 +311,24 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 		if (ch == 0)
 			return END_OF_COMMANDS;
 
- 		char inputCh = toLowerCase(*comparePos);
+		char inputCh = toLowerCase(*comparePos);
 
 		// If we have reached the end of the command and the end of the input at the same time
 		// we have a match. End of the input is a space or the end of the line
 
-		if (ch == COMMAND_ALIAS_SEPARATOR | ch == COMMAND_NAME_TERMINATOR){
+		if (ch == COMMAND_ALIAS_SEPARATOR | ch == COMMAND_NAME_TERMINATOR)
+		{
 			// found the end of the command name
 			// have we also reached the end of the input string
-			if (inputCh== 0 || inputCh==' ' ){
+			if (inputCh == 0 || inputCh == ' ')
+			{
 				// we've found an alias for the command
 				bufferPos = comparePos;
-	#ifdef COMPARE_COMMAND_DEBUG
+#ifdef COMPARE_COMMAND_DEBUG
 				displayMessageWithNewline(F("..match with command"));
-	#endif
+#endif
 				return COMMAND_MATCHED;
-			}			
+			}
 		}
 
 		if (ch != inputCh)
@@ -274,7 +353,8 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 				return COMMAND_NOT_MATCHED;
 			}
 		}
-		else {
+		else
+		{
 			scriptCommandPos++;
 			comparePos++;
 		}
@@ -282,9 +362,9 @@ ScriptCompareCommandResult compareCommand(const char * commandNames)
 }
 
 // Decodes the command held in the area of memory referred to by bufferPos
-int decodeCommandName(const char * commandNames)
+int decodeCommandName(const char *commandNames)
 {
- 	// Set the position in the command list to the start of the list
+	// Set the position in the command list to the start of the list
 	scriptCommandPos = 0;
 
 	// Set the command counter to 0
@@ -295,11 +375,6 @@ int decodeCommandName(const char * commandNames)
 	// ignore empty lines
 	if (*bufferPos == 0)
 		return COMMAND_EMPTY_LINE;
-
-	// Set commandStartPos to point to the start of the statement being decoded
-	// Used when decoding colour names
-
-	commandStartPos = bufferPos;
 
 	// it is a system command - just return this immediately
 
@@ -320,7 +395,7 @@ int decodeCommandName(const char * commandNames)
 		switch (result)
 		{
 		case COMMAND_MATCHED:
-//			displayMessage(F("Command matched: %d\n"), commandNumber);
+			//			displayMessage(F("Command matched: %d\n"), commandNumber);
 			return commandNumber;
 
 		case COMMAND_NOT_MATCHED:
@@ -339,6 +414,169 @@ int decodeCommandName(const char * commandNames)
 			displayMessage(F("Hit the end\n"));
 #endif
 			return -1;
+			break;
+		}
+	}
+}
+
+bool spinToNextCommandAlias(int *scriptCommandPos, const char *commandNames)
+{
+	while (true)
+	{
+		char ch = commandNames[*scriptCommandPos];
+
+		if (ch == 0)
+			// end of the string in memory
+			return false;
+
+		if (ch == COMMAND_ALIAS_SEPARATOR)
+		{
+			// move past the separator
+			(*scriptCommandPos)++;
+			return true;
+		}
+
+		if (ch == COMMAND_NAME_TERMINATOR)
+		{
+			// move past the terminator
+			return false;
+		}
+
+		// move to the next character
+		*(scriptCommandPos)++;
+	}
+}
+
+ScriptCompareCommandResult compareCommand(char *command, const char *commandNames)
+{
+	// Start at the buffer position
+
+	char *comparePos = command;
+	char *startPos = command;
+	int scriptCommandPos = 0;
+
+	while (true)
+	{
+		char ch = commandNames[scriptCommandPos];
+
+#ifdef COMPARE_COMMAND_DEBUG
+		displayMessage(ch);
+#endif
+
+		if (ch == 0)
+			return END_OF_COMMANDS;
+
+		char inputCh = toLowerCase(*comparePos);
+
+		// If we have reached the end of the command and the end of the input at the same time
+		// we have a match. End of the input is a space or the end of the line
+
+		if (ch == COMMAND_ALIAS_SEPARATOR | ch == COMMAND_NAME_TERMINATOR)
+		{
+			// found the end of the command name
+			// have we also reached the end of the input string
+			if (inputCh == 0 || inputCh == ' ')
+			{
+				// we've found an alias for the command
+#ifdef COMPARE_COMMAND_DEBUG
+				displayMessageWithNewline(F("..match with command"));
+#endif
+				return COMMAND_MATCHED;
+			}
+		}
+
+		if (ch != inputCh)
+		{
+			// this doesn't match the command - but it might match an alias
+			// see if we can find one
+			// move past the alias terminator
+			scriptCommandPos++;
+
+			while (true)
+			{
+				char ch = commandNames[scriptCommandPos];
+
+				if (ch == 0)
+					// end of the string in memory
+					return END_OF_COMMANDS;
+
+				if (ch == COMMAND_NAME_TERMINATOR)
+				{
+					// move past the terminator
+					return COMMAND_NOT_MATCHED;
+				}
+
+				if (ch == COMMAND_ALIAS_SEPARATOR)
+				{
+					// move past the separator
+					scriptCommandPos++;
+					comparePos = command;
+					// break out to repeat the comparison
+					break;
+				}
+
+				// move to the next character
+				scriptCommandPos++;
+			}
+		}
+		else
+		{
+			scriptCommandPos++;
+			comparePos++;
+		}
+	}
+}
+
+int decodeCommandName(char *bufferPos, const char *commandNames)
+{
+	// Set the position in the command list to the start of the list
+	scriptCommandPos = 0;
+
+	// Set the command counter to 0
+	int commandNumber = 0;
+
+	// ignore empty lines
+	if (*bufferPos == 0)
+		return COMMAND_EMPTY_LINE;
+
+	// it is a system command - just return this immediately
+
+	if (*bufferPos == '*')
+	{
+		// skip past the *
+		bufferPos++;
+		// return the command type
+		return COMMAND_SYSTEM_COMMAND;
+	}
+
+	while (true)
+	{
+		char *nameStart = bufferPos;
+
+		ScriptCompareCommandResult result = compareCommand(bufferPos, commandNames + scriptCommandPos);
+
+		switch (result)
+		{
+		case COMMAND_MATCHED:
+			//			displayMessage(F("Command matched: %d\n"), commandNumber);
+			return commandNumber;
+
+		case COMMAND_NOT_MATCHED:
+			if (!spinToCommandEnd(commandNames))
+			{
+#ifdef SCRIPT_DEBUG
+				displayMessage(F("Command not matched: %d\n"), commandNumber);
+#endif
+				return COMMAND_NO_KEYWORD_FOUND;
+			}
+			commandNumber++;
+			break;
+
+		case END_OF_COMMANDS:
+#ifdef SCRIPT_DEBUG
+			displayMessage(F("Hit the end\n"));
+#endif
+			return COMMAND_NO_KEYWORD_FOUND;
 			break;
 		}
 	}
@@ -1111,8 +1349,6 @@ int compileWait()
 	// Not allowed to indent after a wait
 	previousStatementStartedBlock = false;
 
-	
-
 	sendCommand(waitCommand);
 
 	return ERROR_OK;
@@ -1135,7 +1371,6 @@ int compileStop()
 	return ERROR_OK;
 }
 
-
 int compileBegin()
 {
 	// Not allowed to indent after a begin
@@ -1143,14 +1378,16 @@ int compileBegin()
 
 	int result = getProgramFilenameFromCode();
 
-	if (result==ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START){
+	if (result == ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START)
+	{
 		// there is no filename - use default
 		clearHullOSFilename();
 		startCompiling();
 		return ERROR_OK;
 	}
 
-	if(result == ERROR_OK){
+	if (result == ERROR_OK)
+	{
 		// start compiling and copy the filename into the command
 		startCompiling();
 		sendCommand(HullOScommandsFilenameBuffer);
@@ -1184,7 +1421,7 @@ int getProgramFilenameFromCode()
 
 		ch = *bufferPos;
 
-//		displayMessage(F("  Copying:%d %c\n"), ch, ch);
+		//		displayMessage(F("  Copying:%d %c\n"), ch, ch);
 
 		if (ch == 0)
 		{
@@ -1223,7 +1460,8 @@ int compileEnd()
 
 	int result = getProgramFilenameFromCode();
 
-	if ((result==ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START) || (result == ERROR_OK)){
+	if ((result == ERROR_MISSING_QUOTE_IN_FILENAME_STRING_START) || (result == ERROR_OK))
+	{
 		// either no filename or user entered filename
 		endCompilingStatements();
 		return ERROR_OK;
@@ -1281,10 +1519,11 @@ int compileProgramLoad(bool clearVariablesBeforeRun)
 		return result;
 	}
 
-	if(clearVariablesBeforeRun){
+	if (clearVariablesBeforeRun)
+	{
 		sendCommand("RF");
 	}
-	else 
+	else
 	{
 		sendCommand("RE");
 	}
@@ -1342,6 +1581,3 @@ int compileDeleteFile()
 
 	return ERROR_OK;
 }
-
-
-

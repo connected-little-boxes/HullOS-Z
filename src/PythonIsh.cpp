@@ -350,24 +350,12 @@ int compileColour()
 
 const char namedColourCommand[] = "PN";
 
-int compileSimpleColor()
+int compileSimpleColor(char colourCh)
 {
 	sendCommand(namedColourCommand);
 
 	// Send the first character of the colour name
-	HullOSProgramoutputFunction(*commandStartPos);
-
-	previousStatementStartedBlock = false;
-
-	return ERROR_OK;
-}
-
-int compileBlack()
-{
-	sendCommand(namedColourCommand);
-
-	// Send the black colour name
-	HullOSProgramoutputFunction('k');
+	HullOSProgramoutputFunction(colourCh);
 
 	previousStatementStartedBlock = false;
 
@@ -574,16 +562,28 @@ int processCommand(byte commandNo)
 		return compileAssignment();
 
 	case COMMAND_RED:
+		return compileSimpleColor('R');
+
 	case COMMAND_BLUE:
+		return compileSimpleColor('B');
+
 	case COMMAND_GREEN:
+		return compileSimpleColor('G');
+
 	case COMMAND_MAGENTA:
+		return compileSimpleColor('M');
+
 	case COMMAND_CYAN:
+		return compileSimpleColor('C');
+
 	case COMMAND_YELLOW:
+		return compileSimpleColor('Y');
+		
 	case COMMAND_WHITE:
-		return compileSimpleColor();
+		return compileSimpleColor('W');
 
 	case COMMAND_BLACK:
-		return compileBlack();
+		return compileSimpleColor('K');
 
 	case COMMAND_WAIT:
 		return compileWait();

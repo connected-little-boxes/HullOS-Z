@@ -1,3 +1,5 @@
+#ifdef LANGUAGE_ROCKSTAR
+
 #include <Arduino.h>
 #include "HullOS.h"
 #include "HullOSScript.h"
@@ -27,14 +29,12 @@ struct LanguageHandler RockstarLanguage = {
     rockstarDecoderStart,
     RockstarIshDecodeScriptLine,
     rockstarShowPrompt,
-    '$'
-};
+    '$'};
 
 void rockstarShowPrompt()
 {
-	displayMessage(F("R>"));
+    displayMessage(F("R>"));
 }
-
 
 const char rockstarCommandNames[] =
     "angry,cross,mad#"                // ROCKSTAR_COMMAND_ANGRY       0
@@ -84,20 +84,68 @@ const char rockstarCommandNames[] =
     "dance#"                          // ROCKSTAR_COMMAND_DANCE      44
     "an,a,the,my,your,our#"           // ROCKSTAR_COMMON_VARIABLE    45
     "is,are,am,was,were#"             // ROCKSTAR_IS_OPERATOR        46
+    "true#"                           // ROCKSTAR_TRUE               47
+    "false#"                          // ROCKSTAR_FALSE              48
     ;
 
-int splitInput(const char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH])
+#define TOKEN_LENGTH 20
+#define MAX_NO_OF_TOKENS 20
+
+enum RockTokenTypes_enum
+{
+    rockEmpty,
+    rockText,
+    rockKeyword,
+    rockNumber,
+    rockString,
+    rockStatementEnd
+};
+
+char *typeNames[] = {
+    "empty", "text", "keyword", "number", "string", "end"};
+
+struct RockToken
+{
+    // text content of the token
+    char content[TOKEN_LENGTH];
+    // length of the token
+    int contentLength;
+    // type of the token
+    RockTokenTypes_enum type;
+    // token number - if it is a token
+    int tokenNumber;
+
+
+    void dump()
+    {
+        displayMessage(F("Content:%s type:%s number:%d\n"), content, typeNames[(int)type], tokenNumber);
+    }
+
+    void clear()
+    {
+        type = rockEmpty;
+        content[0] = 0;
+        contentLength=0;
+        tokenNumber = 0;
+    }
+};
+
+struct RockToken inputTokens[MAX_NO_OF_TOKENS];
+
+int splitInput(const char *input, struct RockToken tokens[], int max_tokens, int *noOfTokensFound)
 {
     int tokenIndex = 0;
     int charIndex = 0;
 
     // Clear output tokens
-    for (int i = 0; i < MAX_TOKENS; i++)
+    for (int i = 0; i < max_tokens; i++)
     {
-        tokens[i][0] = '\0';
+        tokens[i].clear();
     }
 
-    while (*input)
+    bool scanning = true;
+
+    while (scanning)
     {
         // Skip leading spaces
         while (*input == ' ')
@@ -105,33 +153,96 @@ int splitInput(const char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH])
 
         // End of input
         if (*input == '\0')
-            break;
+        {
+            scanning = false;
+            continue;
+        }
 
         // Start filling token
         charIndex = 0;
 
-        while (*input && *input != ' ')
+        switch (*input)
         {
-            if (charIndex >= MAX_TOKEN_LENGTH - 1)
+
+        case '.':
+            // end of statement
+            tokens[tokenIndex].content[charIndex] = '\0';
+            // set the type of the token
+            tokens[tokenIndex].type = rockStatementEnd;
+            // move past the .
+            input++;
+            break;
+
+            // Split into space separated strings
+
+        case '\"':
+            // It's a string literal - assemble it here
+            // move past the double quote
+            input++;
+            while (*input && *input != '\"')
             {
-                displayMessage(F("Error: Token too long at token "));
-                displayMessageWithNewline(F("%d"),tokenIndex);
-                return tokenIndex;
+                if (charIndex >= MAX_TOKEN_LENGTH - 1)
+                {
+                    displayMessage(F("Error: Token too long at token %d\n"), tokenIndex);
+                    return ERROR_TOKEN_TOO_LARGE;
+                }
+                tokens[tokenIndex].content[charIndex++] = *input++;
             }
-            tokens[tokenIndex][charIndex++] = *input++;
+            if (*input != '\"')
+            {
+                // hit the end of the line before we found the closing quote
+                return ERROR_MISSING_END_QUOTE_IN_STRING_LITERAL;
+            }
+
+            // put the terminator on the stored string
+            tokens[tokenIndex].content[charIndex] = '\0';
+            // set the type of the token
+            tokens[tokenIndex].type = rockString;
+            // move past the closing quotes
+            input++;
+            break;
+
+        default:
+            // either a keyword or text
+            while (*input && *input != ' ' && *input != '.')
+            {
+                if (charIndex >= MAX_TOKEN_LENGTH - 1)
+                {
+                    displayMessage(F("Error: Token too long at token %d\n"), tokenIndex);
+                    return ERROR_TOKEN_TOO_LARGE;
+                }
+                tokens[tokenIndex].content[charIndex++] = *input++;
+            }
+
+            tokens[tokenIndex].content[charIndex] = '\0';
+
+            int keywordNumber = decodeCommandName(tokens[tokenIndex].content, rockstarCommandNames);
+
+            if (keywordNumber == COMMAND_NO_KEYWORD_FOUND)
+            {
+                tokens[tokenIndex].type = rockText;
+            }
+            else
+            {
+                tokens[tokenIndex].type = rockKeyword;
+                tokens[tokenIndex].tokenNumber = keywordNumber;
+            }
         }
 
-        tokens[tokenIndex][charIndex] = '\0';
         tokenIndex++;
+        
+        tokens[tokenIndex].contentLength = charIndex;
 
-        if (tokenIndex >= MAX_TOKENS)
+        if (tokenIndex >= max_tokens)
         {
             displayMessageWithNewline(F("Error: Too many tokens."));
-            return tokenIndex;
+            return ERROR_TOO_MANY_TOKENS_IN_LINE;
         }
     }
 
-    return tokenIndex;
+    *noOfTokensFound = tokenIndex;
+
+    return ERROR_OK;
 }
 
 inline bool atRockStarStatementEnd()
@@ -165,7 +276,7 @@ int copyIntoToken(int startPos)
         nextToken[tokenOffset] = ch;
         bufferPos++;
         tokenOffset++;
-        if (tokenOffset>= MAX_TOKEN_LENGTH-1)
+        if (tokenOffset >= MAX_TOKEN_LENGTH - 1)
         {
             return ERROR_TOKEN_TOO_LARGE;
         }
@@ -177,24 +288,27 @@ int getStartToken()
     return copyIntoToken(0);
 }
 
-int appendStringToToken(char * str){
+int appendStringToToken(char *str)
+{
     int tokenOffset = strlen(nextToken);
 
-    while(true){
+    while (true)
+    {
 
         char ch = *str;
 
-        if(ch==0){
-            nextToken[tokenOffset]=0;
+        if (ch == 0)
+        {
+            nextToken[tokenOffset] = 0;
             return ERROR_OK;
         }
 
-        nextToken[tokenOffset]=ch;
+        nextToken[tokenOffset] = ch;
 
         tokenOffset++;
         str++;
 
-        if (tokenOffset>= MAX_TOKEN_LENGTH-1)
+        if (tokenOffset >= MAX_TOKEN_LENGTH - 1)
         {
             return ERROR_TOKEN_TOO_LARGE;
         }
@@ -376,29 +490,26 @@ int processRockstarCommand(int commandNo)
 
 // Parses the poetic number at *bufferPos
 
-int RockstarPoeticParse()
+int RockstarPoeticParse(char *token)
 {
 
 #ifdef ROCKSTAR_DEBUG
-    displayMessage(F("Poetic parse from here %s\n"), bufferPos);
+    displayMessage(F("Poetic parse from %s\n"), token);
 #endif
 
     int result = 0;
-
-    skipInputSpaces();
 
     int digit = 0;
 
     while (true)
     {
+        char ch = *token;
 
-        if (atRockStarStatementEnd())
+        if (ch == 0)
         {
             result = (result * 10) + digit;
             return result;
         }
-
-        char ch = *bufferPos;
 
         if (isAlpha(ch) || ch == '-')
         {
@@ -408,34 +519,82 @@ int RockstarPoeticParse()
         if (ch == ' ')
         {
             result = (result * 10) + digit;
+
             digit = 0;
-            skipInputSpaces();
+
+            while ((ch == ' ') && (ch != 0))
+            {
+                token++;
+                ch = *token;
+            }
+
+            if (ch == 0)
+            {
+                return result;
+            }
         }
         else
         {
-            bufferPos++;
+            token++;
         }
-
-#ifdef ROCKSTAR_DEBUG
-        displayMessage(F("ch:%c digit:%d result:%d"), ch, digit, result);
-#endif
     }
 }
 
 int RockstarIshDecodeScriptLine(char *input)
 {
-    char ch;
+
+    struct RockToken inputTokens[MAX_NO_OF_TOKENS];
+
+    int noOfTokens;
+
+    int result = splitInput(input, inputTokens, MAX_NO_OF_TOKENS, &noOfTokens);
+
+    if (result != ERROR_OK)
+    {
+        return result;
+    }
+
+    // Clear dump tokens
+    for (int i = 0; i < noOfTokens; i++)
+    {
+        inputTokens[i].dump();
+    }
+
+    if (noOfTokens == 0)
+    {
+    }
+
+    return ERROR_OK;
 
 #ifdef ROCKSTAR_DEBUG
     displayMessage(F("Got a line of Rockstar to decode %s\n"), input);
 #endif
 
+    if (*input == '#')
+    {
+        // lines starting with # are comments - ignore them
+        return ERROR_OK;
+    }
+
+    if (*input == '{')
+    {
+        // lines starting with { are json commands - just send them through to the compiled output
+        while (*input != 0)
+        {
+            HullOSProgramoutputFunction(*input);
+            input++;
+        }
+        endCommand();
+        return ERROR_OK;
+    }
+
+    // Set the shared buffer pointer to point to the statement being decoded
     bufferPos = input;
 
     byte indent = skipInputSpaces();
 
     // Lines that start with a # are comments
-    int result = getStartToken();
+    result = getStartToken();
 
     if (result != ERROR_OK)
     {
@@ -492,32 +651,37 @@ int RockstarIshDecodeScriptLine(char *input)
 
         bufferPos = bufferPos + strlen(nextToken);
 
-        while(true){
+        while (true)
+        {
 
             commandNo = decodeCommandName(rockstarCommandNames);
 
-            if (commandNo != ROCKSTAR_IS_OPERATOR){
+            if (commandNo != ROCKSTAR_IS_OPERATOR)
+            {
 #ifdef ROCKSTAR_DEBUG
-            displayMessage(F("Space terminated element in variable name. Moved input position to here:%s\n"), bufferPos);
+                displayMessage(F("Space terminated element in variable name. Moved input position to here:%s\n"), bufferPos);
 #endif
 
-                // Add a space to the end of the variable name 
+                // Add a space to the end of the variable name
 
-                if(appendStringToToken(" ")!=ERROR_OK){
-                    return ERROR_TOKEN_TOO_LARGE_FOR_BUFFER;
+                if (appendStringToToken(" ") != ERROR_OK)
+                {
+                    return ERROR_TOKEN_TOO_LARGE;
                 }
 
                 // add the next word from the variable name
 
-                if(appendToToken()!=ERROR_OK){
-                    return ERROR_TOKEN_TOO_LARGE_FOR_BUFFER;
+                if (appendToToken() != ERROR_OK)
+                {
+                    return ERROR_TOKEN_TOO_LARGE;
                 }
                 continue;
             }
-            else {
-    #ifdef ROCKSTAR_DEBUG
+            else
+            {
+#ifdef ROCKSTAR_DEBUG
                 displayMessage(F("Is assignment of possibly poetic number\n"));
-    #endif
+#endif
                 sendCommand("VS");
 
                 sendCommand(nextToken);
@@ -526,7 +690,7 @@ int RockstarIshDecodeScriptLine(char *input)
 
                 skipInputSpaces();
 
-                ch = *bufferPos;
+                char ch = *bufferPos;
 
                 // if the value starts with a digit we parse it as an expression
 
@@ -543,11 +707,11 @@ int RockstarIshDecodeScriptLine(char *input)
                     return result;
                 }
 
-                int val = RockstarPoeticParse();
+                int val = RockstarPoeticParse(bufferPos);
 
-    #ifdef ROCKSTAR_DEBUG
+#ifdef ROCKSTAR_DEBUG
                 displayMessage(F("Poetic number to assign:%d\n"), val);
-    #endif
+#endif
                 char numberBuffer[20];
 
                 snprintf(numberBuffer, 20, "%d", val);
@@ -568,7 +732,7 @@ int RockstarIshDecodeScriptLine(char *input)
 
         if (storingProgram())
         {
-            displayMessage(F("Line:  %d "),scriptLineNumber);
+            displayMessage(F("Line:  %d "), scriptLineNumber);
         }
 
         displayMessage(F("Error: %d %s\n"), result);
@@ -579,3 +743,5 @@ int RockstarIshDecodeScriptLine(char *input)
 
     return result;
 }
+
+#endif

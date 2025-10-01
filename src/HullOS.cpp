@@ -68,9 +68,12 @@ void HullOSShowPrompt()
 
 struct LanguageHandler *allLanguages[] =
     {
-        &hullOSLanguage,
         &PythonIshLanguage,
-        &RockstarLanguage};
+#ifdef LANGUAGE_ROCKSTAR
+        &RockstarLanguage,
+#endif
+        &hullOSLanguage
+    };
 
 struct LanguageHandler *currentLanguageHandler = NULL;
 

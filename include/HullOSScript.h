@@ -81,14 +81,16 @@
 #define ERROR_FILE_LOAD_FAILED 70
 #define ERROR_DUMP_NOT_AVAILABLE_WHEN_COMPILING 71
 #define ERROR_FILE_DUMP_FAILED 72
-#define ERROR_TOKEN_TOO_LARGE_FOR_BUFFER 73
+#define ERROR_TOO_MANY_TOKENS_IN_LINE 73
 #define ERROR_MISSING_CLOSE_QUOTE_ON_SEND 74
 #define ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE 75
 #define ERROR_INVALID_FILENAME_IN_BEGIN 76
+#define ERROR_MISSING_END_QUOTE_IN_STRING_LITERAL 77
 
 
 #define COMMAND_SYSTEM_COMMAND 100
 #define COMMAND_EMPTY_LINE 101
+#define COMMAND_NO_KEYWORD_FOUND 102
 
 void printError(int code);
 
@@ -106,11 +108,6 @@ extern bool programError;
 
 extern bool storingProgram()
 ;
-
-// The start position of the command in the input buffer
-// Set by decodeCommand
-// Shared with all the functions below
-extern char *commandStartPos;
 
 // THIS MEANS THAT THIS COMPILER IS NOT REENTRANT
 
@@ -163,7 +160,9 @@ int skipInputSpaces();
 bool spinToNextCommandAlias(const char * commandNames);
 bool spinToCommandEnd(const char * commandNames);
 int decodeCommandName(const char * commandNames);
+int decodeCommandName(char * bufferPos, const char * commandNames);
 ScriptCompareCommandResult compareCommand(const char * commandNames);
+ScriptCompareCommandResult compareCommand(char * command, const char * commandNames);
 void writeBytesFromBuffer(int length);
 void writeMatchingStringFromBuffer(char *string);
 int processSingleValue();
