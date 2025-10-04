@@ -147,7 +147,7 @@ struct SettingItem hullosEnabled = {
     &hullosSettings.hullosEnabled,
     ONOFF_INPUT_LENGTH,
     yesNo,
-    setFalse,
+    setTrue,
     validateYesNo};
 
 struct SettingItem runProgramOnStart = {

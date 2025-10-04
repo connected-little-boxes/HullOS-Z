@@ -813,10 +813,6 @@ int performCommand(char *commandLine, consoleCommand *commands, int noOfCommands
 	return COMMAND_NO_COMMAND_FOUND;
 }
 
-#ifdef PROCESS_ROBOT
-bool forceConsole = false;
-#endif
-
 void showHelp()
 {
 	doHelp("help");

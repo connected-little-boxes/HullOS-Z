@@ -2,12 +2,12 @@
 
 #ifdef silly
 
- /*!
-	@file     HelloWorldSTM32.ino
-	@author   Gavin Lyons
-	@brief 
-		 Hello World for HD44780_LCD_PCF8574 arduino library  for STM32 "blue pill"
-	@note Allows testing of both I2C ports 1 and 2 on the STM32 "blue pill" board
+/*!
+ @file     HelloWorldSTM32.ino
+ @author   Gavin Lyons
+ @brief
+    Hello World for HD44780_LCD_PCF8574 arduino library  for STM32 "blue pill"
+ @note Allows testing of both I2C ports 1 and 2 on the STM32 "blue pill" board
 */
 
 #include <Wire.h>
@@ -15,14 +15,14 @@
 // Section: Included library
 #include "HD44780_LCD_PCF8574.h"
 
-
-HD44780LCD myLCD(4, 20, 0x27, &Wire); 
+HD44780LCD myLCD(4, 20, 0x27, &Wire);
 
 // Section: Setup
 
-void setup() {
+void setup()
+{
   delay(300);
-  Wire.setSDA(4); 
+  Wire.setSDA(4);
   Wire.setSCL(5);
   Wire.begin();
 
@@ -35,17 +35,20 @@ void setup() {
 
 // Section: Main Loop
 
-void loop() {
+void loop()
+{
   char testString[] = "Hello World";
   myLCD.PCF8574_LCDSendString(testString);
-  myLCD.PCF8574_LCDSendChar('!');  // Display a single character
+  myLCD.PCF8574_LCDSendChar('!'); // Display a single character
   myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberTwo, 0);
   myLCD.PCF8574_LCDSendString(testString);
   myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberThree, 0);
   myLCD.PCF8574_LCDSendString(testString);
   myLCD.PCF8574_LCDGOTO(myLCD.LCDLineNumberFour, 0);
   myLCD.PCF8574_LCDSendString(testString);
-  while (true) {};
+  while (true)
+  {
+  };
 }
 
 // EOF
@@ -239,8 +242,9 @@ void startDevice()
   for (int i = 0; i < 10; i++)
   {
     delay(1000);
-    displayMessageWithNewline(F("%d"),10 - i);
-    if(Serial.available()){
+    displayMessageWithNewline(F("%d"), 10 - i);
+    if (Serial.available())
+    {
       break;
     }
   }
@@ -256,28 +260,6 @@ void startDevice()
   Serial.printf("Powered by HULLOS-X\n");
   Serial.printf("www.connectedlittleboxes.com\n");
   Serial.printf("Version %s build date: %s %s\n", Version, __DATE__, __TIME__);
-
-  #if defined(PROCESS_ROBOT)
-  // If we are using an ESP8266 to connect to a robot (or other serial device) we will
-  // use the alternative serial port connection for this. This means when the robot is active
-  // it will be impossible to interact with the serial terminal
-  // this lets you interrupt the start process and retail the serial connection if you are using a terminal
-
-  Serial.printf("Press any key to force console mode.\n");
-
-  delay(1000);
-
-  if(Serial.available()){
-    forceConsole = true;
-    Serial.printf("  forcing console mode\n");
-  }
-  else {
-    forceConsole = false;
-    Serial.printf("  console mode not forced\n");
-  }
-
-#endif
-
 
 #ifdef DEBUG
   messageLogf("**** Debug output enabled");
@@ -297,7 +279,7 @@ void startDevice()
 
   // set the parameter to true to force a setting request
   // useful if one of the settings as broken the boot
-  
+
   SettingsSetupStatus status = setupSettings(false);
 
   switch (status)
@@ -356,7 +338,7 @@ void startDevice()
   initialiseAllProcesses();
 
   DISPLAY_MEMORY_MONITOR("Initialise all processes\n");
-  
+
   buildActiveProcessListFromMask(BOOT_PROCESS);
 
   startProcesses();
@@ -370,9 +352,8 @@ void startDevice()
   DISPLAY_MEMORY_MONITOR("Start all sensors\n");
 
   delay(1000); // show the status for a while
-  
+
   displayMessage(F("Start complete\n\nType help and press enter for help\n\n"));
-  
 }
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)

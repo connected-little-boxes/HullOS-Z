@@ -12,6 +12,8 @@
 #define FIRST_SHUTDOWN_PROCESS 16
 #define SECOND_SHUTDOWN_PROCESS 32
 
+#define STATUS_DESCRIPTION_LENGTH 200
+
 // If a process takes longer than this to complete an update
 // a "slow" message will be displayed. Set to display a message if the 
 // time exceeds a millisecond.

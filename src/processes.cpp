@@ -7,8 +7,6 @@
 #include "utils.h"
 #include "messages.h"
 
-#define STATUS_DESCRIPTION_LENGTH 200
-
 struct process *activeProcessList = NULL;
 
 struct process *allProcessList = NULL;

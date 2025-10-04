@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "robotProcess.h"
+#include "HullOSScript.h"
 #include "processes.h"
 #include "mqtt.h"
 #include "errors.h"
@@ -13,23 +14,46 @@
 #include "statusled.h"
 #include "console.h"
 
+#if defined(ARDUINO_ARCH_ESP8266)
+
+#include "SoftwareSerial.h"
+
+EspSoftwareSerial::UART robotSwSer;
+
+#endif
+
 #define ROBOT_MESSAGE_BUFFER_SIZE 256
 
 struct robotSettings robotSettings;
 
-void setDefaultrobotDataPinNo(void *dest)
+void setDefaultrobotTXpinNo(void *dest)
 {
     int *destInt = (int *)dest;
-    *destInt = 16;
+    *destInt = 15;
 }
 
-struct SettingItem robotDataPinNo = {
-    "robot Data Pin",
-    "robotdatapin",
-    &robotSettings.dataPin,
+struct SettingItem robotTXpinNo = {
+    "robot TX Pin",
+    "robotTXPin",
+    &robotSettings.robotTXPin,
     NUMBER_INPUT_LENGTH,
     integerValue,
-    setDefaultrobotDataPinNo,
+    setDefaultrobotTXpinNo,
+    validateInt};
+
+void setDefaultrobotRXpinNo(void *dest)
+{
+    int *destInt = (int *)dest;
+    *destInt = 13;
+}
+
+struct SettingItem robotRXpinNo = {
+    "robot RX Pin",
+    "robotRXPin",
+    &robotSettings.robotRXPin,
+    NUMBER_INPUT_LENGTH,
+    integerValue,
+    setDefaultrobotRXpinNo,
     validateInt};
 
 void setDefaultrobotBaudRate(void *dest)
@@ -56,21 +80,12 @@ struct SettingItem robotEnabledSetting = {
     setFalse,
     validateYesNo};
 
-struct SettingItem robotSwapSerialSetting = {
-    "Robot swap serial",
-    "robotswapserial",
-    &robotSettings.robotSwapSerial,
-    ONOFF_INPUT_LENGTH,
-    yesNo,
-    setFalse,
-    validateYesNo};
-
 struct SettingItem *robotSettingItemPointers[] =
     {
         &robotEnabledSetting,
         &robotBaudRate,
-        &robotDataPinNo,
-        &robotSwapSerialSetting};
+        &robotTXpinNo,
+        &robotRXpinNo};
 
 struct SettingItemCollection robotMessagesSettingItems = {
     "robotSettings",
@@ -108,10 +123,34 @@ void sendRobotMessageToServer(char *messageText)
 void sendMessageToRobot(char *messageText)
 {
     statusLedToggle();
-    Serial.print((char)0x0d);
-    Serial.print(messageText);
-    Serial.print((char)0x0d);
-    Serial.print((char)0x0a);
+
+#if defined(ARDUINO_ARCH_ESP8266)
+    robotSwSer.print((char)0x0d);
+    robotSwSer.print(messageText);
+    robotSwSer.print((char)0x0d);
+    robotSwSer.print((char)0x0a);
+#endif
+}
+
+#define STATEMENT_BUFFER_SIZE 100
+char buffer[STATEMENT_BUFFER_SIZE];
+
+void sendStatementToRobot(char *statementText)
+{
+    int bpos = 0;
+
+    buffer[bpos++] = '*';
+
+    while (*statementText != STATEMENT_TERMINATOR)
+    {
+        buffer[bpos++] = *statementText++;
+        if (bpos == STATEMENT_BUFFER_SIZE - 1)
+        {
+            break;
+        }
+    }
+    buffer[bpos] = 0;
+    sendMessageToRobot(buffer);
 }
 
 #define robot_FLOAT_VALUE_OFFSET 0
@@ -141,14 +180,12 @@ struct CommandItem *RobotCommandItems[] =
 
 int doSendRobotMessage(char *destination, unsigned char *settingBase);
 
-struct Command robotMessageCommand
-{
+struct Command robotMessageCommand{
     "Send",
-        "Sends a message to the robot",
-        RobotCommandItems,
-        sizeof(RobotCommandItems) / sizeof(struct CommandItem *),
-        doSendRobotMessage
-};
+    "Sends a message to the robot",
+    RobotCommandItems,
+    sizeof(RobotCommandItems) / sizeof(struct CommandItem *),
+    doSendRobotMessage};
 
 int doSendRobotMessage(char *destination, unsigned char *settingBase)
 {
@@ -209,27 +246,21 @@ void startRobotProcess()
 
     if (robotSettings.robotEnabled)
     {
-        if (forceConsole)
-        {
-            displayMessage("Robot not enabled as console has been forced");
-            robotProcess.status = ROBOT_OFF;
-        }
-        else
-        {
-            robotProcess.status = ROBOT_CONNECTED;
-            displayMessage("Enabling robot connection");
-            delay(200);
-            Serial.end();
-            Serial.begin(robotSettings.robotBaudRate);
+        robotProcess.status = ROBOT_CONNECTED;
 
 #if defined(ARDUINO_ARCH_ESP8266)
 
-            if (robotSettings.robotSwapSerial)
-            {
-                Serial.swap();
-            }
+        robotSwSer.begin(
+            robotSettings.robotBaudRate,
+            EspSoftwareSerial::SWSERIAL_8N1,
+            robotSettings.robotRXPin,
+            robotSettings.robotTXPin);
+        robotSwSer.enableIntTx(true);
+
+        sendMessageToRobot("*rh");
+
 #endif
-        }
+
     }
     else
     {
@@ -271,10 +302,14 @@ void bufferRobotSerialChar(char ch)
 
 void checkRobotBuffer()
 {
-    while (Serial.available())
+
+#if defined(ARDUINO_ARCH_ESP8266)
+
+    while (robotSwSer.available())
     {
-        bufferRobotSerialChar(Serial.read());
+        bufferRobotSerialChar(robotSwSer.read());
     }
+#endif
 }
 
 void updateRobotProcess()

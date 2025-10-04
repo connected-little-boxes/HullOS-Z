@@ -15,11 +15,13 @@ struct robotSettings
 {
     bool robotEnabled;
     int robotBaudRate;
-    int dataPin;
-    bool robotSwapSerial;
+    int robotTXPin;
+    int robotRXPin;
 };
 
 void sendMessageToRobot(char *messageText);
+
+void sendStatementToRobot(char *statementText);
 
 void robotOff();
 

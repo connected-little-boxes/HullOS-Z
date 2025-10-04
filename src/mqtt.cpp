@@ -4,7 +4,7 @@
 #include "controller.h"
 #include "HullOS.h"
 #include "console.h"
-
+#include "processes.h"
 #include <PubSubClient.h>
 
 struct MqttSettings mqttSettings;
@@ -236,9 +236,23 @@ void handleIncomingMQTTMessage()
 int mqttConnectErrorNumber;
 bool mqttStartCommandsPerformed ;
 
+int oldMQTTstatus = -1;
+
+void mqttStatusMessage(char *buffer, int bufferLength);
+
+void setMQTTstatus(int status){
+	MQTTProcessDescriptor.status = status;
+	if(oldMQTTstatus != status){
+		char buffer [STATUS_DESCRIPTION_LENGTH];
+		mqttStatusMessage(buffer,STATUS_DESCRIPTION_LENGTH);
+		displayMessage("New MQTT state %d %s\n",status,buffer);
+//		oldMQTTstatus = status;
+	}
+}
+
 void initMQTT()
 {
-	MQTTProcessDescriptor.status = MQTT_OFF;
+	setMQTTstatus(MQTT_OFF);
 	mqttStartCommandsPerformed = false;
 }
 
@@ -246,29 +260,30 @@ void startMQTT()
 {
 	if (mqttSettings.mqtt_enabled)
 	{
-		MQTTProcessDescriptor.status = MQTT_STARTING;
+		setMQTTstatus(MQTT_STARTING);
 	}
 	else
 	{
-		MQTTProcessDescriptor.status = MQTT_OFF;
+		setMQTTstatus(MQTT_OFF);
 	}
 }
 
 void restartMQTT()
 {
+	displayMessage("Starting MQTT\n");
 	messagesReceived = 0;
 	messagesSent = 0;
 	clearIncomingMQTTMessage();
 
 	if (mqttSettings.mqttServer[0]==0)
 	{
-		MQTTProcessDescriptor.status = MQTT_ERROR_NOT_CONFIGURED;
+		setMQTTstatus(MQTT_ERROR_NOT_CONFIGURED);
 		return;
 	}
 
 	if (WiFiProcessDescriptor.status != WIFI_OK)
 	{
-		MQTTProcessDescriptor.status = MQTT_ERROR_NO_WIFI;
+		setMQTTstatus(MQTT_WAITING_FOR_WIFI);
 		return;
 	}
 
@@ -289,6 +304,7 @@ void restartMQTT()
 		}
 
 		mqttPubSubClient->setBufferSize(MQTT_BUFFER_SIZE_MAX);
+		mqttPubSubClient->setSocketTimeout(MQTT_CONNECT_TIMEOUT_SECS);
 
 		mqttPubSubClient->setServer(mqttSettings.mqttServer, mqttSettings.mqttPort);
 		mqttPubSubClient->setCallback(callback);
@@ -307,36 +323,36 @@ void restartMQTT()
 		{
 		case MQTT_CONNECT_BAD_PROTOCOL:
 			displayMessage(F("bad protocol\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_PROTOCOL;
+			setMQTTstatus(MQTT_ERROR_BAD_PROTOCOL);
 			break;
 		case MQTT_CONNECT_BAD_CLIENT_ID:
 			displayMessage(F("bad client ID\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_CLIENT_ID;
+			setMQTTstatus(MQTT_ERROR_BAD_CLIENT_ID);
 			break;
 		case MQTT_CONNECT_UNAVAILABLE:
 			displayMessage(F("connect unavailable\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_UNAVAILABLE;
+			setMQTTstatus(MQTT_ERROR_CONNECT_UNAVAILABLE);
 			break;
 		case MQTT_CONNECT_BAD_CREDENTIALS:
 			displayMessage(F("bad credentials\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_CREDENTIALS;
+			setMQTTstatus(MQTT_ERROR_BAD_CREDENTIALS);
 			break;
 		case MQTT_CONNECT_UNAUTHORIZED:
 			displayMessage(F("connect unauthorized\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_UNAUTHORIZED;
+			setMQTTstatus(MQTT_ERROR_CONNECT_UNAUTHORIZED);
 			break;
 		case MQTT_CONNECTION_TIMEOUT:
 			displayMessage(F("connection timeout\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_BAD_PROTOCOL;
+			setMQTTstatus(MQTT_ERROR_CONNECT_TIMEOUT);
 			break;
 		case MQTT_CONNECT_FAILED:
 			displayMessage(F("connect failed\n"));
-			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_FAILED;
+			setMQTTstatus(MQTT_ERROR_CONNECT_FAILED);
 			break;
 		default:
 			displayMessage(F("no error description\n"));
 			mqttConnectErrorNumber = mqttPubSubClient->state();
-			MQTTProcessDescriptor.status = MQTT_ERROR_CONNECT_ERROR;
+			setMQTTstatus(MQTT_ERROR_CONNECT_ERROR);
 			break;
 		}
 		return;
@@ -366,7 +382,7 @@ void restartMQTT()
 
 	hardwareDisplayMessage(MQTT_STATUS_OK_MESSAGE_NUMBER, ledFlashNormalState, MQTT_STATUS_OK_MESSAGE_TEXT);
 
-	MQTTProcessDescriptor.status = MQTT_OK;
+	setMQTTstatus(MQTT_OK);
 }
 
 int mqttRetries = 0;
@@ -437,7 +453,7 @@ int publishBufferToMQTT(char *buffer)
 void stopMQTT()
 {
 	// don't do anything because we are all going to die anyway
-	MQTTProcessDescriptor.status = MQTT_OFF;
+	setMQTTstatus(MQTT_OFF);
 }
 
 unsigned long timeOfLastMQTTsuccess = 0;
@@ -453,7 +469,7 @@ void updateMQTT()
 
 		if (WiFi.status() != WL_CONNECTED)
 		{
-			MQTTProcessDescriptor.status = MQTT_ERROR_NO_WIFI;
+			setMQTTstatus(MQTT_WAITING_FOR_WIFI);
 			mqttPubSubClient->disconnect();
 		}
 
@@ -462,7 +478,7 @@ void updateMQTT()
 		if (!mqttPubSubClient->loop())
 		{
 			mqttPubSubClient->disconnect();
-			MQTTProcessDescriptor.status = MQTT_ERROR_LOOP_FAILED;
+			setMQTTstatus(MQTT_ERROR_LOOP_FAILED);
 		}
 
 		if(!mqttStartCommandsPerformed)
@@ -475,7 +491,7 @@ void updateMQTT()
 
 	case MQTT_OFF:
 		if (mqttSettings.mqtt_enabled)
-			MQTTProcessDescriptor.status = MQTT_STARTING;
+			setMQTTstatus(MQTT_STARTING);
 		break;
 
 	case MQTT_STARTING:
@@ -485,11 +501,11 @@ void updateMQTT()
 	case MQTT_ERROR_NOT_CONFIGURED:
 		if (mqttSettings.mqttServer[0]!=0)
 		{
-			MQTTProcessDescriptor.status = MQTT_STARTING;
+			setMQTTstatus(MQTT_STARTING);
 			return;
 		}
 
-	case MQTT_ERROR_NO_WIFI:
+	case MQTT_WAITING_FOR_WIFI:
 		if (WiFiProcessDescriptor.status == WIFI_OK)
 		{
 			restartMQTT();
@@ -505,6 +521,7 @@ void updateMQTT()
 	case MQTT_ERROR_CONNECT_ERROR:
 	case MQTT_ERROR_CONNECT_MESSAGE_FAILED:
 	case MQTT_ERROR_LOOP_FAILED:
+	case MQTT_ERROR_CONNECT_TIMEOUT:
 		if (ulongDiff(millis(), timeOfLastMQTTsuccess) > MQTT_CONNECT_RETRY_INTERVAL_MSECS)
 		{
 			restartMQTT();
@@ -538,7 +555,7 @@ void mqttStatusMessage(char *buffer, int bufferLength)
 	case MQTT_OFF:
 		snprintf(buffer, bufferLength, "MQTT OFF");
 		break;
-	case MQTT_ERROR_NO_WIFI:
+	case MQTT_WAITING_FOR_WIFI:
 		snprintf(buffer, bufferLength, "MQTT waiting for WiFi");
 		break;
 	case MQTT_ERROR_BAD_PROTOCOL:
@@ -558,6 +575,9 @@ void mqttStatusMessage(char *buffer, int bufferLength)
 		break;
 	case MQTT_ERROR_CONNECT_FAILED:
 		snprintf(buffer, bufferLength, "MQTT error connect failed");
+		break;
+	case MQTT_ERROR_CONNECT_TIMEOUT:
+		snprintf(buffer, bufferLength, "MQTT error connect timeout");
 		break;
 	case MQTT_ERROR_CONNECT_ERROR:
 		snprintf(buffer, bufferLength, "MQTT error connect error %d", mqttConnectErrorNumber);

@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 struct MessagesSettings messagesSettings;
 
 struct SettingItem messagesEnabled = {

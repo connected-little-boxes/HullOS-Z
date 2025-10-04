@@ -24,6 +24,10 @@
 #include "version.h"
 #include "mqtt.h"
 
+#ifdef PROCESS_ROBOT
+#include "robotProcess.h"
+#endif
+
 // #define DIAGNOSTICS_ACTIVE
 // #define PROGRAM_DEBUG
 // #define HullOS_DEBUG
@@ -1777,6 +1781,14 @@ void remoteSetRandomColors()
 
 void remotePixelControl()
 {
+
+#ifdef PROCESS_ROBOT
+
+    sendStatementToRobot(decodePos-1);
+    return;
+
+#endif
+
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 
