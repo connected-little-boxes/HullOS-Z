@@ -806,8 +806,8 @@ int pythonIshdecodeScriptLine(char *input)
 		return ERROR_OK;
 	}
 	
-	if (*input == '{'){
-		// lines starting with { are json commands - just send them through to the compiled output
+	if (*input == '{' || *input == '!'){
+		// send json and console commands straight into the code
 		while (*input != 0)
 		{
 			HullOSProgramoutputFunction(*input);
@@ -816,7 +816,6 @@ int pythonIshdecodeScriptLine(char *input)
 		endCommand();
 		return ERROR_OK;
 	}
-
 
 	// Set the shared buffer pointer to point to the statement being decoded
 	bufferPos = input;

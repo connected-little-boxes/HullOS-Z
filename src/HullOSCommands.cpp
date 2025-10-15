@@ -9,6 +9,7 @@
 #include "sensors.h"
 #include "processes.h"
 #include "controller.h"
+#include "console.h"
 #include "pixels.h"
 #include "Motors.h"
 #include "stepperDrive.h"
@@ -3288,6 +3289,24 @@ void absorbCommandResult(char *resultText)
     displayMessage(resultText);
 }
 
+#define CONSOLE_COMMAND_BUFFER_SIZE 200
+
+void buildAndExecuteConsoleCommand(){
+    char buffer[CONSOLE_COMMAND_BUFFER_SIZE];
+    int bpos = 0;
+
+    while (*decodePos != STATEMENT_TERMINATOR && decodePos != decodeLimit && bpos<CONSOLE_COMMAND_BUFFER_SIZE-1 )
+    {
+        buffer[bpos] = *decodePos;
+        bpos++;
+        decodePos++;
+    }
+
+    buffer[bpos]=0;
+
+    actOnConsoleCommandText(buffer);
+}
+
 void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 {
     decodePos = commandDecodePos;
@@ -3320,6 +3339,11 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 
     switch (commandCh)
     {
+
+    case '!':
+        buildAndExecuteConsoleCommand();
+        break;
+
     case '{':
         // It's a JSON formatted command
         act_onJson_message(commandDecodePos, absorbCommandResult);

@@ -510,11 +510,11 @@ You can perform HullOS commands (or embed them in PythonIsh stored programs) by 
 ```
 The above command would run the HullOS "iv" command which displays the version of HullOS.
 ## Entering Console commands
-You can enter Console commands (but not embed them in programs) by preceding a command with the ! character:
+You can enter Console commands by preceding a command with the ! character:
 ```
 !help
 ```
-This would output the console help description at the console. 
+This would output the console help description at the console. You can embed console commands in programs too. 
 ## Entering JSON commands
 You can enter JSON commands directly. PythonIsh will detect the opening { character and decode the string as a HullOS command.
 ```

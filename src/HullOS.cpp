@@ -124,18 +124,11 @@ bool processLanguageLine(char *line)
         return true;
     }
 
-    if (*line == '!')
-    {
-        actOnConsoleCommandText(line + 1);
-    }
-    else
-    {
-        int result = currentLanguageHandler->consoleInputHandler(line);
+    int result = currentLanguageHandler->consoleInputHandler(line);
 
-        if (result != ERROR_OK)
-        {
-            printError(result);
-        }
+    if (result != ERROR_OK)
+    {
+        printError(result);
     }
 
     return true;

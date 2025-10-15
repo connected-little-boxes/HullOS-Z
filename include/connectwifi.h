@@ -87,3 +87,6 @@ bool needWifiConfigBootMode();
 bool syncWiFiConnect();
 bool syncConnectToAP(char *wifiSsid, char *wifiPassword);
 
+void beginWiFiScanning();
+
+

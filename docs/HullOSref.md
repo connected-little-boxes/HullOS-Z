@@ -642,7 +642,7 @@ The above statements would send the message "99" to the MQTT data topic for this
 ```
 *VS<variable name>=<value>
 ```
-Creates a variable which can be accessed from pythonish
+Creates a variable which can be accessed from PythonIsh
 
 ## View variable
 ```

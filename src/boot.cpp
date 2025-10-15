@@ -295,9 +295,16 @@ void getBootMode()
             Serial.printf("  Config boot with timeout\n");
             bootMode = storedCode;
             break;
-
         case OTA_UPDATE_BOOT_MODE:
             Serial.printf("  OTA update\n");
+            bootMode = storedCode;
+            break;
+        case MQTT_CONNECT_FAILED_REBOOT:
+            Serial.printf("  MQTT connect failed\n");
+            bootMode = storedCode;
+            break;
+        case MQTT_CONNECTION_TIMEOUT_REBOOT:
+            Serial.printf("  MQTT connection timeout\n");
             bootMode = storedCode;
             break;
         default:
