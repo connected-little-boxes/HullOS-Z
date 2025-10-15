@@ -7,7 +7,11 @@
 #define MOTORS_OK 500
 #define MOTORS_OFF 501
 
+#define MIN_MOTOR_INTERRUPT_INTERVAL_MICROSECS 1200
+
 void updateMotorsCore1();
+int motorsMoving();
+
 
 enum MotorStatusLevels
 {
@@ -38,6 +42,8 @@ struct MotorSettings
     int leftWheelDiameter;
     int rightWheelDiameter;
     int wheelSpacing;
+
+#if STEPPER_MOTOR_DRIVE
     int lpin1;
     int lpin2;
     int lpin3;
@@ -46,19 +52,18 @@ struct MotorSettings
     int rpin2;
     int rpin3;
     int rpin4;
+#endif
+
 };
+
+extern struct MotorSettings motorSettings;
 
 extern struct process motorProcessDescriptor;
 
 MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds);
-float fastMoveSteps(long leftStepsToMove, long rightStepsToMove);
 int timedMoveDistanceInMM(float leftMMs, float rightMMs, float timeToMoveInSeconds);
 int fastMoveDistanceInMM(float leftMMs, float rightMMs);
-void rightStop();
-void leftStop();
 void motorStop();
-int motorsMoving(); // was bool
-void waitForMotorsStop();
 void fastRotateRobot(float angle);
 int timedRotateRobot(float angle, float timeToMoveInSeconds);
 void fastMoveArcRobot(float radius, float angle);

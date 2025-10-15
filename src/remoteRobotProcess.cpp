@@ -1,10 +1,10 @@
-#if defined(PROCESS_ROBOT)
+#if defined(PROCESS_REMOTE_ROBOT_DRIVE)
 
 #include <Arduino.h>
 
 #include "utils.h"
 #include "settings.h"
-#include "robotProcess.h"
+#include "remoteRobotProcess.h"
 #include "HullOSScript.h"
 #include "processes.h"
 #include "mqtt.h"
@@ -23,6 +23,7 @@ EspSoftwareSerial::UART robotSwSer;
 #endif
 
 #define ROBOT_MESSAGE_BUFFER_SIZE 256
+#define ROBOT_MESSAGE_INTERVAL_MSECS 50
 
 struct robotSettings robotSettings;
 
@@ -122,13 +123,17 @@ void sendRobotMessageToServer(char *messageText)
 
 void sendMessageToRobot(char *messageText)
 {
-    statusLedToggle();
+    // displayMessage("Sending robot message: %s\n", messageText);
 
 #if defined(ARDUINO_ARCH_ESP8266)
     robotSwSer.print((char)0x0d);
     robotSwSer.print(messageText);
     robotSwSer.print((char)0x0d);
     robotSwSer.print((char)0x0a);
+    robotSwSer.flush();
+#else
+    // TODO: Add the serial transmission for other devices
+    displayMessage("**** Message sending to robots is not yet implemented for this platform.");
 #endif
 }
 
@@ -221,11 +226,145 @@ struct CommandItemCollection robotCommands =
         robotCommandList,
         sizeof(robotCommandList) / sizeof(struct Command *)};
 
-unsigned long robotmillisAtLastScroll;
-
-void initRobotProcess()
+enum RobotCommsState
 {
-    // all the setup is performed in start
+    robotIdle,
+    robotRequestActive
+};
+
+int robotDistanceValue = 0;
+
+RobotCommsState robotCommsState;
+
+unsigned long timeOfLastRobotMessage = 0;
+
+#define ROBOT_MESSAGE_INTERVAL_MILLIS 5
+#define ROBOT_MESSAGE_REPLY_TIMEOUT_MILLIS 100
+
+struct RobotMessage
+{
+    void (*sender)();
+    void (*reader)(char *);
+};
+
+void readRobotDistanceSendRequest()
+{
+    sendMessageToRobot("*id");
+}
+
+void readRobotDistanceProcessResponse(char *buffer)
+{
+    // displayMessage("Read Robot Distance called: %s\n", buffer);
+
+    int receivedDistanceValue;
+
+    if (sscanf(buffer, "%d", &receivedDistanceValue) == 1)
+    {
+        // displayMessage("Got Robot Distance:%d\n", receivedDistanceValue);
+        robotDistanceValue = receivedDistanceValue;
+    }
+}
+
+RobotMessage readRobotDistanceMessage = {
+    readRobotDistanceSendRequest,
+    readRobotDistanceProcessResponse};
+
+volatile bool remoteRobotMoving = false;
+
+unsigned long readMovingRequestLastSent;
+unsigned long moveRobotRequestLastSent;
+
+// Called when the robot is moved 
+// Set the state of the remoteRobotMoving flag to reflect the command and 
+// record the time of the last robot move request to invalidate move status messages
+// requested before the move was performed. 
+
+MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds){
+
+    if((leftStepsToMove==0)&&(rightStepsToMove==0)){
+        // stopping robot
+         remoteRobotMoving = false;
+    }
+    else {
+        // robot is moving
+         remoteRobotMoving = true;
+    }
+
+    moveRobotRequestLastSent = millis();
+
+    return Move_OK;
+}
+
+void motorStop()
+{
+    sendMessageToRobot("*MM0,0");
+    remoteRobotMoving = false;
+    moveRobotRequestLastSent = millis();
+}
+
+int motorsMoving()
+{
+    return remoteRobotMoving;
+}
+
+void readRobotMotorSendRequest()
+{
+    readMovingRequestLastSent = millis();
+    sendMessageToRobot("*MC");
+}
+
+void readRobotMotorProcessResponse(char *buffer)
+{
+    if (moveRobotRequestLastSent > readMovingRequestLastSent)
+    {
+        // move request was sent after last read moving request
+        // ignore this incoming value as it may be out of date
+        return;
+    }
+    if (strcasecmp(buffer, "MCstopped") == 0)
+    {
+        remoteRobotMoving = false;
+    }
+    if (strcasecmp(buffer, "MCmove") == 0)
+    {
+        remoteRobotMoving = true;
+    }
+}
+
+RobotMessage readRobotMotorMessage = {readRobotMotorSendRequest,
+                                      readRobotMotorProcessResponse};
+
+struct RobotMessage *robotMessages[] = {
+    &readRobotDistanceMessage,
+    &readRobotMotorMessage};
+
+#define NO_OF_ROBOT_MESSAGES sizeof(robotMessages) / sizeof(struct robotMessage *)
+
+int currentRobotMessageNumber = 0;
+
+void initRobotMessageSending()
+{
+    currentRobotMessageNumber = 0;
+    timeOfLastRobotMessage = millis();
+    robotCommsState = robotIdle;
+}
+
+void sendNextRobotMessage()
+{
+    RobotMessage *currentMessage = robotMessages[currentRobotMessageNumber];
+    currentMessage->sender();
+}
+
+void performValueUpdate(char *buffer)
+{
+    RobotMessage *currentMessage = robotMessages[currentRobotMessageNumber];
+    void (*reader)(char *) = currentMessage->reader;
+    reader(buffer);
+    currentRobotMessageNumber++;
+    if (currentRobotMessageNumber == NO_OF_ROBOT_MESSAGES)
+    {
+        currentRobotMessageNumber = 0;
+    }
 }
 
 #define ROBOT_BUFFER_SIZE 129
@@ -240,6 +379,45 @@ void reset_robot_buffer()
     robotReceiveBufferPos = 0;
 }
 
+void checkRobotSendMessage()
+{
+    unsigned long now = millis();
+
+    if (ulongDiff(now, timeOfLastRobotMessage) > ROBOT_MESSAGE_INTERVAL_MILLIS)
+    {
+        sendNextRobotMessage();
+        timeOfLastRobotMessage = now;
+        robotCommsState = robotRequestActive;
+    }
+}
+
+void checkRobotReceivedReply()
+{
+    unsigned long now = millis();
+
+    if (ulongDiff(now, timeOfLastRobotMessage) > ROBOT_MESSAGE_REPLY_TIMEOUT_MILLIS)
+    {
+        sendNextRobotMessage();
+        timeOfLastRobotMessage = now;
+        reset_robot_buffer();
+        robotCommsState = robotRequestActive;
+    }
+}
+
+
+void processMessageFromRobot(char *buffer)
+{
+    // displayMessage("Robot Message: %s\n", buffer);
+    performValueUpdate(buffer);
+    robotCommsState = robotIdle;
+}
+
+void initRobotProcess()
+{
+    remoteRobotMoving=false;
+
+    initRobotMessageSending();
+}
 void startRobotProcess()
 {
     reset_robot_buffer();
@@ -257,26 +435,20 @@ void startRobotProcess()
             robotSettings.robotTXPin);
         robotSwSer.enableIntTx(true);
 
+        // stop any program that might be running in the robot
+
         sendMessageToRobot("*rh");
 
-#endif
+#else
 
+        // TODO: add the serial port opening for the other devices
+        displayMessage("**** Serial port opening for robots is not yet implemented for this platform.");
+
+#endif
     }
     else
     {
         robotProcess.status = ROBOT_OFF;
-    }
-}
-
-void processMessageFromRobot()
-{
-    if (robotReceiveBuffer[0] == '#')
-    {
-        performRemoteCommand(robotReceiveBuffer + 1);
-    }
-    else
-    {
-        sendRobotMessageToServer(robotReceiveBuffer);
     }
 }
 
@@ -287,7 +459,7 @@ void bufferRobotSerialChar(char ch)
         if (robotReceiveBufferPos > 0)
         {
             robotReceiveBuffer[robotReceiveBufferPos] = 0;
-            processMessageFromRobot();
+            processMessageFromRobot(robotReceiveBuffer);
             reset_robot_buffer();
         }
         return;
@@ -312,12 +484,28 @@ void checkRobotBuffer()
 #endif
 }
 
+int getDistanceFromRobot()
+{
+    return robotDistanceValue;
+}
+
 void updateRobotProcess()
 {
     if (robotProcess.status != ROBOT_CONNECTED)
     {
         return;
     }
+
+    switch (robotCommsState)
+    {
+    case robotIdle:
+        checkRobotSendMessage();
+        break;
+    case robotRequestActive:
+        checkRobotReceivedReply();
+        break;
+    }
+
     checkRobotBuffer();
 }
 

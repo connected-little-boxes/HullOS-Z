@@ -14,6 +14,10 @@
 #include "HullOSVariables.h"
 #include "Motors.h" // BNN
 
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+#include "remoteRobotProcess.h"
+#endif
+
 #ifdef SENSOR_DISTANCE
 #include "distance.h"
 #endif
@@ -222,6 +226,11 @@ struct reading distanceReading = {(char *)"distance", readDistance};
 
 #endif
 
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+struct reading distanceReadingFromRobot = {(char *)"distance", getDistanceFromRobot};
+#endif
+
+
 #ifdef PROCESS_MOTOR
 struct reading movingReading = {(char *)"moving", motorsMoving}; // BNN
 #endif
@@ -235,6 +244,11 @@ struct reading *readers[] = {
 #ifdef PROCESS_WIFI
 	&wifiStatusReading,
 #endif
+
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+	&distanceReadingFromRobot,
+#endif
+
 
 #ifdef SENSOR_DISTANCE
 	&distanceReading,

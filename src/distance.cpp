@@ -8,6 +8,10 @@
 #include "controller.h"
 #include "pixels.h"
 
+#ifdef PROCESS_REMOTE_ROBOT
+#include "remoteRobotProcess.h"
+#endif
+
 struct DistanceSettings distanceSettings;
 
 void setDefaultDistanceReadingIntervalMillis(void *dest)
@@ -202,7 +206,11 @@ void updateDistanceSensor()
 
 int getDistanceValueInt()
 {
+#ifdef PROCESS_REMOTE_ROBOT
+	return getDistanceFromRobot();
+#else
 	return (int)(pulseWidth / 5.8) + distanceSensorState;
+#endif
 }
 
 float getDistanceValueFloat()
@@ -221,8 +229,6 @@ void updateDistance()
 		(struct DistanceReading *)Distance.activeReading;
 
 	updateDistanceSensor();
-
-	int newDistanceReading = getDistanceValueInt();
 
 	int previousDistanceReading = distanceactiveReading->distance;
 
@@ -293,9 +299,6 @@ void updateDistanceReading()
 
 void addDistanceReading(char *jsonBuffer, int jsonBufferSize)
 {
-	struct DistanceReading *DistanceactiveReading =
-		(struct DistanceReading *)Distance.activeReading;
-
 	if (Distance.status == SENSOR_OK)
 	{
 		appendFormattedString(jsonBuffer, jsonBufferSize, ",\"dist\":\"%d\"",
@@ -305,8 +308,6 @@ void addDistanceReading(char *jsonBuffer, int jsonBufferSize)
 
 void DistanceStatusMessage(char *buffer, int bufferLength)
 {
-	struct DistanceReading *DistanceactiveReading =
-		(struct DistanceReading *)Distance.activeReading;
 
 	switch (Distance.status)
 	{

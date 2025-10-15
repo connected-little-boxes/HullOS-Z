@@ -11,6 +11,7 @@
 #include "controller.h"
 #include "pixels.h"
 #include "Motors.h"
+#include "stepperDrive.h"
 #include "distance.h"
 #include "registration.h"
 #include "HullOSCommands.h"
@@ -24,8 +25,8 @@
 #include "version.h"
 #include "mqtt.h"
 
-#ifdef PROCESS_ROBOT
-#include "robotProcess.h"
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+#include "remoteRobotProcess.h"
 #endif
 
 // #define DIAGNOSTICS_ACTIVE
@@ -100,25 +101,25 @@ void HullOSProgramoutputFunction(char ch)
 
 void displayProgramState()
 {
-    switch(programState){
-	case PROGRAM_STOPPED : 
+    switch (programState)
+    {
+    case PROGRAM_STOPPED:
         displayMessage(F("Program Stopped"));
         break;
-	case PROGRAM_PAUSED :
+    case PROGRAM_PAUSED:
         displayMessage(F("Program Stopped"));
         break;
-	case PROGRAM_ACTIVE:
+    case PROGRAM_ACTIVE:
         displayMessage(F("Program Stopped"));
         break;
-	case PROGRAM_AWAITING_DELAY_COMPLETION:
+    case PROGRAM_AWAITING_DELAY_COMPLETION:
         displayMessage(F("Program Stopped"));
         break;
-	case PROGRAM_AWAITING_MOVE_COMPLETION: 
+    case PROGRAM_AWAITING_MOVE_COMPLETION:
         displayMessage(F("Program Stopped"));
         break;
     }
 };
-
 
 ProgramState programState = PROGRAM_STOPPED;
 
@@ -426,7 +427,8 @@ void endProgramReceive(bool save)
             saveToFile(RUNNING_PROGRAM_FILENAME, HullOScodeCompileOutput);
         }
     }
-    else {
+    else
+    {
         displayMessage(F("Program download aborted\n"));
     }
 
@@ -532,7 +534,7 @@ void storeReceivedByte(byte b)
 
         if (diagnosticsOutputLevel & ECHO_DOWNLOADS)
         {
-            displayMessage(F("%c"),(char)b);
+            displayMessage(F("%c"), (char)b);
         }
 
 #endif
@@ -952,7 +954,7 @@ void remoteMoveMotors()
     {
         if (diagnosticsOutputLevel & STATEMENT_CONFIRMATION)
         {
-            displayMessage(F("MMFail: %d\n"),reply);
+            displayMessage(F("MMFail: %d\n"), reply);
         }
     }
 
@@ -1428,7 +1430,7 @@ bool readColour(byte *r, byte *g, byte *b)
 
 void remoteColouredCandle()
 {
-    
+
 #ifdef PIXEL_COLOUR_DEBUG
     displayMessageWithNewline(F(".**remoteColouredCandle: "));
 #endif
@@ -1781,14 +1783,6 @@ void remoteSetRandomColors()
 
 void remotePixelControl()
 {
-
-#ifdef PROCESS_ROBOT
-
-    sendStatementToRobot(decodePos-1);
-    return;
-
-#endif
-
     if (*decodePos == STATEMENT_TERMINATOR | decodePos == decodeLimit)
     {
 
@@ -2458,7 +2452,8 @@ void compareAndJump(bool jumpIfTrue)
     // otherwise do nothing
 }
 
-#ifdef PROCESS_MOTOR
+
+#if defined(PROCESS_MOTOR) || defined(PROCESS_REMOTE_ROBOT_DRIVE)
 
 // Command CIccc
 // Jump to label if the motors are not running
@@ -2566,7 +2561,7 @@ void programControl()
     switch (commandCh)
     {
 
-#ifdef PROCESS_MOTOR
+#if defined(PROCESS_MOTOR) || defined(PROCESS_REMOTE_ROBOT_DRIVE)
 
     case 'I':
     case 'i':
@@ -2868,7 +2863,7 @@ void remoteManagement()
     case 'h':
         haltProgramExecutionCommand();
         break;
-    case 'k': 
+    case 'k':
     case 'K':
         removeFileCommand();
         break;
@@ -2929,7 +2924,7 @@ void displayDistance()
         displayMessageWithNewline(F("IDOK"));
     }
 #endif
-    displayMessageWithNewline(F("%d"),getDistanceValueInt());
+    displayMessageWithNewline(F("%d"), getDistanceValueInt());
 }
 
 void printStatus()
@@ -2940,7 +2935,7 @@ void printStatus()
         displayMessageWithNewline(F("ISOK"));
     }
 #endif
-    displayMessage(F("state:%d diagnostics:%d\n"), (int) programState, diagnosticsOutputLevel);
+    displayMessage(F("state:%d diagnostics:%d\n"), (int)programState, diagnosticsOutputLevel);
 }
 
 // IMddd - set the debugging diagnostics level
@@ -3226,7 +3221,7 @@ void doRemoteWriteText()
 {
     while (*decodePos != STATEMENT_TERMINATOR & decodePos != decodeLimit)
     {
-        displayMessage(F("%c"),*decodePos);
+        displayMessage(F("%c"), *decodePos);
         decodePos++;
     }
 }
@@ -3242,7 +3237,7 @@ void doRemotePrintValue()
 
     if (getValue(&valueToPrint))
     {
-        displayMessage(F("%d"),valueToPrint);
+        displayMessage(F("%d"), valueToPrint);
     }
 }
 
@@ -3290,9 +3285,8 @@ void remoteWriteOutput()
 
 void absorbCommandResult(char *resultText)
 {
-	displayMessage(resultText);
+    displayMessage(resultText);
 }
-
 
 void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
 {
@@ -3328,7 +3322,7 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     {
     case '{':
         // It's a JSON formatted command
-        act_onJson_message(commandDecodePos,absorbCommandResult);
+        act_onJson_message(commandDecodePos, absorbCommandResult);
         break;
     case '#':
         // Ignore comments
@@ -3337,15 +3331,22 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
     case 'i':
         information();
         break;
-#ifdef PROCESS_MOTOR
     case 'M':
     case 'm':
-        remoteMoveControl();
-        break;
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+        sendStatementToRobot(decodePos - 1);
 #endif
+#ifdef PROCESS_MOTOR
+        remoteMoveControl();
+#endif
+        break;
     case 'P':
     case 'p':
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+        sendStatementToRobot(decodePos - 1);
+#else
         remotePixelControl();
+#endif
         break;
     case 'C':
     case 'c':
@@ -3361,7 +3362,11 @@ void hullOSExecuteStatement(char *commandDecodePos, char *comandDecodeLimit)
         break;
     case 's':
     case 'S':
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+        sendStatementToRobot(decodePos - 1);
+#else
         remoteSoundPlay();
+#endif
         break;
     case 'w':
     case 'W':
@@ -3421,7 +3426,7 @@ void setupHullOSReceiver()
 
 // Executes the statement at the current program counter
 
-bool  executeProgramStatement()
+bool executeProgramStatement()
 {
     char programByte;
 
@@ -3432,7 +3437,7 @@ bool  executeProgramStatement()
 #ifdef DIAGNOSTICS_ACTIVE
     if (diagnosticsOutputLevel & LINE_NUMBERS)
     {
-        displayMessageWithNewline(F("Offset:%d"),(int)programCounter);
+        displayMessageWithNewline(F("Offset:%d"), (int)programCounter);
     }
 #endif
 
@@ -3502,7 +3507,7 @@ void updateRunningProgram()
     case PROGRAM_ACTIVE:
         executeProgramStatement();
         break;
-#ifdef PROCESS_MOTOR
+#if defined(PROCESS_MOTOR) || defined(PROCESS_REMOTE_ROBOT_DRIVE)
     case PROGRAM_AWAITING_MOVE_COMPLETION:
         if (!motorsMoving())
         {

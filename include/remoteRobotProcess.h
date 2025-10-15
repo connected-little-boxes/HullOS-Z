@@ -1,6 +1,9 @@
-#if defined(PROCESS_ROBOT)
+#if defined(PROCESS_REMOTE_ROBOT_DRIVE)
 
 #pragma once
+
+#include <Arduino.h>
+#include "Motors.h"
 
 #define ROBOT_CONNECTED 2000
 #define ROBOT_OFF 2001
@@ -10,6 +13,7 @@
 
 #define ROBOT_TOPIC "robot"
 
+MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds);
 
 struct robotSettings
 {
@@ -22,6 +26,8 @@ struct robotSettings
 void sendMessageToRobot(char *messageText);
 
 void sendStatementToRobot(char *statementText);
+
+int getDistanceFromRobot();
 
 void robotOff();
 

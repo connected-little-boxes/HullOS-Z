@@ -96,7 +96,7 @@ void loop()
 #include "distance.h"
 #include "codeEditorProcess.h"
 #include "lcdPanel.h"
-#include "robotProcess.h"
+#include "remoteRobotProcess.h"
 
 #ifdef PROCESS_MOTOR
 
@@ -170,7 +170,7 @@ void populateProcessList()
 #if defined(PROCESS_CODE_EDITOR)
   addProcessToAllProcessList(&codeEditorProcess);
 #endif
-#if defined(PROCESS_ROBOT)
+#if defined(PROCESS_REMOTE_ROBOT_DRIVE)
   addProcessToAllProcessList(&robotProcess);
 #endif
 }
