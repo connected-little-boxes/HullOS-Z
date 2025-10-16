@@ -17,6 +17,12 @@
 #include "RFID.h"
 #include "HullOSScript.h"
 
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+
+#include "remoteRobotProcess.h"
+
+#endif
+
 struct ConsoleSettings consoleSettings;
 
 struct SettingItem echoSerialInput = {
@@ -203,6 +209,16 @@ void doTestRFIDSensor(char *commandline)
 {
 	pollRFID();
 }
+
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+
+void doRemoteRobotTerminal(char * commandline){
+	robotTerminal();
+}
+
+#endif
+
+
 
 void printCommandsJson(process *p)
 {
@@ -665,7 +681,9 @@ struct consoleCommand userCommands[] =
 #ifdef PROCESS_HULLOS
 		{"pythonish", "open the PythonIsh programming interface", doStartPythonIsh},
 #endif
-
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
+		{"robot", "open the robot remote terminal", doRemoteRobotTerminal},
+#endif
 #ifdef SENSOR_RFID
 		{"rfidtest", "test the RFID sensor", doTestRFIDSensor},
 #endif

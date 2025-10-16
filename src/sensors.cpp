@@ -411,6 +411,8 @@ void resetSensorsToDefaultSettings()
 			{
 				void *dest = allSensorPtr->settingItems->settings[j]->value;
 				allSensorPtr->settingItems->settings[j]->setDefault(dest);
+				displayMessage("Default set: ");
+				printSetting(allSensorPtr->settingItems->settings[j]);
 			}
 		}
 		allSensorPtr = allSensorPtr->nextAllSensors;

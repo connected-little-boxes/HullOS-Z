@@ -38,3 +38,15 @@ Soon to be a major motion picture.
 ## Tidied up PICO motor control
 
 * removed the motor code that used the second core as a motor driver. This is no longer needed as the PICO timer routines now work correctly. 
+
+# Version 4.0.1.8
+
+## Robot Motor Controller
+
+* added a remote terminal connection to the internal robot co-processor. Use the command robot to connect to the Arduino motor driver. Only used on the ESP8266 version of the code with the Arduino motor controller. 
+
+## Settings management
+
+* added the display of settings when clearing to defaults
+
+

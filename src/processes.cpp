@@ -6,6 +6,7 @@
 #include "pixels.h"
 #include "utils.h"
 #include "messages.h"
+#include "settings.h"
 
 struct process *activeProcessList = NULL;
 
@@ -433,6 +434,8 @@ void resetProcessesToDefaultSettings()
 			{
 				void *dest = procPtr->settingItems->settings[j]->value;
 				procPtr->settingItems->settings[j]->setDefault(dest);
+				displayMessage("Default set: ");
+				printSetting(procPtr->settingItems->settings[j]);
 			}
 		}
 		procPtr = procPtr->nextAllProcesses;

@@ -82,6 +82,7 @@ void PrintSomeSettings(char * filter);
 void DumpAllSettings();
 void DumpSomeSettings(char * filter);
 void PrintStorage();
+void printSetting(SettingItem *item);
 
 SettingItem* findSettingByName(const char* settingName);
 

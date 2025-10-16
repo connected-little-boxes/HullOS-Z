@@ -123,8 +123,6 @@ void sendRobotMessageToServer(char *messageText)
 
 void sendMessageToRobot(char *messageText)
 {
-    // displayMessage("Sending robot message: %s\n", messageText);
-
 #if defined(ARDUINO_ARCH_ESP8266)
     robotSwSer.print((char)0x0d);
     robotSwSer.print(messageText);
@@ -479,7 +477,11 @@ struct errorReport testRobotComms(int noOfTests)
         switch (result)
         {
         case blockingReadReadOK:
-            if (strcmp(robotReceiveBuffer, "MCstopped") != 0)
+            if (strcmp(robotReceiveBuffer, "MCstopped") == 0)
+            {
+                displayMessage(".");
+            }
+            else
             {
                 report.errors++;
             }
@@ -550,6 +552,28 @@ void bufferRobotSerialChar(char ch)
     {
         robotReceiveBuffer[robotReceiveBufferPos] = ch;
         robotReceiveBufferPos++;
+    }
+}
+
+void robotTerminal()
+{
+    displayMessage("Robot Terminal\nPress ESC to exit\n");
+
+    while(true){
+
+        while(Serial.available()){
+            char ch = Serial.read();
+            if(ch==ESC_KEY){
+                displayMessage("\nRobot Terminal ended\n");
+                return;
+            }
+            robotSwSer.write(ch);
+        }
+
+        while(robotSwSer.available()){
+            char ch = robotSwSer.read();
+            Serial.write(ch);
+        }
     }
 }
 

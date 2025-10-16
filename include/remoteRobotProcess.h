@@ -33,6 +33,8 @@ void robotOff();
 
 void robotOn();
 
+void robotTerminal();
+
 extern struct robotSettings robotSettings;
 
 extern struct SettingItemCollection robotSettingItems;
