@@ -60,7 +60,7 @@ struct SettingItem robotRXpinNo = {
 void setDefaultrobotBaudRate(void *dest)
 {
     int *destInt = (int *)dest;
-    *destInt = 1200;
+    *destInt = 19200;
 }
 
 struct SettingItem robotBaudRate = {
@@ -274,20 +274,23 @@ volatile bool remoteRobotMoving = false;
 unsigned long readMovingRequestLastSent;
 unsigned long moveRobotRequestLastSent;
 
-// Called when the robot is moved 
-// Set the state of the remoteRobotMoving flag to reflect the command and 
+// Called when the robot is moved
+// Set the state of the remoteRobotMoving flag to reflect the command and
 // record the time of the last robot move request to invalidate move status messages
-// requested before the move was performed. 
+// requested before the move was performed.
 
-MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds){
+MoveFailReason timedMoveSteps(long leftStepsToMove, long rightStepsToMove, float timeToMoveInSeconds)
+{
 
-    if((leftStepsToMove==0)&&(rightStepsToMove==0)){
+    if ((leftStepsToMove == 0) && (rightStepsToMove == 0))
+    {
         // stopping robot
-         remoteRobotMoving = false;
+        remoteRobotMoving = false;
     }
-    else {
+    else
+    {
         // robot is moving
-         remoteRobotMoving = true;
+        remoteRobotMoving = true;
     }
 
     moveRobotRequestLastSent = millis();
@@ -404,7 +407,6 @@ void checkRobotReceivedReply()
     }
 }
 
-
 void processMessageFromRobot(char *buffer)
 {
     // displayMessage("Robot Message: %s\n", buffer);
@@ -414,10 +416,83 @@ void processMessageFromRobot(char *buffer)
 
 void initRobotProcess()
 {
-    remoteRobotMoving=false;
+    remoteRobotMoving = false;
 
     initRobotMessageSending();
 }
+
+enum BlockingReadResult
+{
+    blockingReadReadOK,
+    blockingReadTimedOut
+};
+
+BlockingReadResult blockingReadFromRobot(unsigned long timeoutInMillis)
+{
+
+    unsigned long readStartTime = millis();
+
+    reset_robot_buffer();
+
+    while (ulongDiff(millis(), readStartTime) < timeoutInMillis)
+    {
+        while (robotSwSer.available())
+        {
+
+            char ch = robotSwSer.read();
+
+            if (ch == '\n' || ch == '\r' || ch == 0 || robotReceiveBufferPos == ROBOT_BUFFER_SIZE - 1)
+            {
+                robotReceiveBuffer[robotReceiveBufferPos] = 0;
+                return blockingReadReadOK;
+            }
+
+            robotReceiveBuffer[robotReceiveBufferPos] = ch;
+            robotReceiveBufferPos++;
+        }
+    }
+
+    return blockingReadTimedOut;
+}
+
+struct errorReport {
+    int errors;
+    int timeouts;
+    void clear(){
+        errors=0;
+        timeouts=0;
+    }
+};
+
+struct errorReport testRobotComms(int noOfTests)
+{
+    struct errorReport report;
+
+    report.clear();
+
+    Serial.println("Starting Remote Robot test\n\n");
+
+    for (int i = 0; i < noOfTests; i++)
+    {
+        sendMessageToRobot("*MC");
+        BlockingReadResult result = blockingReadFromRobot(100);
+        switch (result)
+        {
+        case blockingReadReadOK:
+            if (strcmp(robotReceiveBuffer, "MCstopped") != 0)
+            {
+                report.errors++;
+            }
+            break;
+
+        case blockingReadTimedOut:
+            report.timeouts++;
+            break;
+        }
+    }
+    return report;
+}
+
 void startRobotProcess()
 {
     reset_robot_buffer();
@@ -436,6 +511,12 @@ void startRobotProcess()
         robotSwSer.enableIntTx(true);
 
         // stop any program that might be running in the robot
+
+        struct errorReport testResult = testRobotComms(100);
+
+        if(testResult.errors !=0 || testResult.timeouts != 0){
+            displayMessage(" Robot comms test errors:%d timeouts:%d\n", testResult.errors,testResult.timeouts);
+        }
 
         sendMessageToRobot("*rh");
 

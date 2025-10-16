@@ -14,7 +14,8 @@
         "text_encoding": "cpp",
         "regex": "cpp",
         "bitset": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "system_error": "cpp"
     },
     "cSpell.words": [
         "adafruit",

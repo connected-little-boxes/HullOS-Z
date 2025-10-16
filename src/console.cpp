@@ -126,11 +126,9 @@ void doDumpStatus(char *commandLine)
 	}
 	else
 	{
-		DumpAllSettings();
+		dumpSensorStatus();
+		dumpProcessStatus();
 	}
-	displayMessage(F("\nDump complete\n"));
-	dumpSensorStatus();
-	dumpProcessStatus();
 
 #if defined(ARDUINO_ARCH_ESP8266)
 

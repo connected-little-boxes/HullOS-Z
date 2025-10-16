@@ -4,7 +4,7 @@ Soon to be a major motion picture.
 
 # Version 4.0.1.5
 
-Refined the communication for ESP8266 based devices with an Arduino based motor controller. 
+## Refined the communication for ESP8266 based devices with an Arduino based motor controller. 
 
 * Added a cache for motor states which records the intention of a motor command
 * Added a message timestamping so that status replies from the motor controller are ignored if the request was sent after a motor command has been issued. 
@@ -13,10 +13,28 @@ Refined the communication for ESP8266 based devices with an Arduino based motor 
 
 # Version 4.0.1.6
 
-Improving MQTT reload behaviour:
+## Improving MQTT reload behaviour:
 
 * changed timeouts and reset behaviour to improve the response
 
-Performing system commands in PythonIsh programs
+## Performing system commands in PythonIsh programs
 
 * system commands (prefixed by the '!' character) can now be stored in PythonIsh programs. They can also be issued in immediate mode at the console. 
+
+# Version 4.0.1.7
+
+## Excess status information
+
+* removed setting display from the status command. This was added by in error when filters were added to the status command.
+
+## Serial comms issues for ESP8266 based robots
+* changed default external robot controller baud rate to 19200
+* added a remote controller data test during startup - surfaces a message but doesn't raise an error
+
+## Move 0 bug
+
+* fixed move 0 bug on PICO and ESP32. The move 0 command will now stop the motors. A move of 0 length on either motor will stop that motor rather than leave it running at the previous speed. 
+
+## Tidied up PICO motor control
+
+* removed the motor code that used the second core as a motor driver. This is no longer needed as the PICO timer routines now work correctly. 
