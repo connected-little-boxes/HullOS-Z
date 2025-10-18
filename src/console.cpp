@@ -642,6 +642,8 @@ void doStartHullOS(char *commandLine)
 
 #endif
 
+
+
 struct consoleCommand userCommands[] =
 	{
 #ifdef PROCESS_HULLOS

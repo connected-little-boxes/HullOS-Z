@@ -49,4 +49,10 @@ Soon to be a major motion picture.
 
 * added the display of settings when clearing to defaults
 
+# Version 4.0.1.9
+
+## Distance command
+
+* fixed display of distance for *ID command using remote robot connection
+
 

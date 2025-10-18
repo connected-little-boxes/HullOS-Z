@@ -1472,7 +1472,6 @@ int compileEnd()
 
 int compileDirectCommand()
 {
-	// Not allowed to indent after a sound
 	previousStatementStartedBlock = false;
 
 	while (*bufferPos)

@@ -8,7 +8,7 @@
 #include "controller.h"
 #include "pixels.h"
 
-#ifdef PROCESS_REMOTE_ROBOT
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
 #include "remoteRobotProcess.h"
 #endif
 
@@ -206,7 +206,7 @@ void updateDistanceSensor()
 
 int getDistanceValueInt()
 {
-#ifdef PROCESS_REMOTE_ROBOT
+#ifdef PROCESS_REMOTE_ROBOT_DRIVE
 	return getDistanceFromRobot();
 #else
 	return (int)(pulseWidth / 5.8) + distanceSensorState;
