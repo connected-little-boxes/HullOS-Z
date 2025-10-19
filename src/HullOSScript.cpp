@@ -378,11 +378,16 @@ int decodeCommandName(const char *commandNames)
 
 	// it is a system command - just return this immediately
 
-	if (*bufferPos == '*')
+
+	if (*bufferPos == '*' || *bufferPos == '!' )
 	{
 		// skip past the *
 		bufferPos++;
 		// return the command type
+		return COMMAND_SYSTEM_COMMAND;
+	}
+
+	if (*bufferPos == '{'){
 		return COMMAND_SYSTEM_COMMAND;
 	}
 
@@ -541,11 +546,15 @@ int decodeCommandName(char *bufferPos, const char *commandNames)
 
 	// it is a system command - just return this immediately
 
-	if (*bufferPos == '*')
+	if (*bufferPos == '*' || *bufferPos == '!' )
 	{
 		// skip past the *
 		bufferPos++;
 		// return the command type
+		return COMMAND_SYSTEM_COMMAND;
+	}
+
+	if (*bufferPos == '{'){
 		return COMMAND_SYSTEM_COMMAND;
 	}
 

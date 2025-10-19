@@ -55,4 +55,10 @@ Soon to be a major motion picture.
 
 * fixed display of distance for *ID command using remote robot connection
 
+# Version 4.0.1.10
+
+## Connected Little Boxes
+
+* added a build option for a Connected Little Box with pixels but no robot control
+* fixed a bug which prevented JSON and system commands from being indented in PythonIsh programs. 
 

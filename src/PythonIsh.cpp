@@ -20,15 +20,16 @@ struct LanguageHandler PythonIshLanguage = {
 	pythonIshDecoderStart,
 	pythonIshdecodeScriptLine,
 	pythonIshShowPrompt,
-	'#'
-};
+	'#'};
 
 void pythonIshShowPrompt()
 {
-	if (storingProgram()){
+	if (storingProgram())
+	{
 		displayMessage(F("P*>"));
 	}
-	else {
+	else
+	{
 		displayMessage(F("P>"));
 	}
 }
@@ -65,7 +66,7 @@ const char pythonishcommandNames[] =
 	"cyan#"		  // COMMAND_CYAN       28
 	"white#"	  // COMMAND_WHITE      29
 	"black#"	  // COMMAND_BLACK      30
-	"wait#"       // COMMAND_WAIT       31
+	"wait#"		  // COMMAND_WAIT       31
 	"stop#"		  // COMMAND_STOP       32
 	"begin#"	  // COMMAND_BEGIN      33
 	"end#"		  // COMMAND_END        34
@@ -79,18 +80,17 @@ const char pythonishcommandNames[] =
 	"load#"		  // COMMAND_LOAD       42
 	"dump#"		  // COMMAND_DUMP       43
 	"chain#"	  // COMMAND_CHAIN      44
-	"send#"	      // COMMAND_SEND       45
-	"nowait#"     // COMMAND_NO_WAIT    46
-	"files#"      // COMMAND_FILES      47
+	"send#"		  // COMMAND_SEND       45
+	"nowait#"	  // COMMAND_NO_WAIT    46
+	"files#"	  // COMMAND_FILES      47
 	"delete#"	  // COMMAND_DELETE     48
 	;
-
 
 const char completeAwaitCommand[] = "CA";
 
 int handleInTime()
 {
-	bool wantWait=true;
+	bool wantWait = true;
 
 	while (*bufferPos != 0)
 	{
@@ -100,12 +100,15 @@ int handleInTime()
 		// Spin further down the commands looking for an intime command
 		int command = decodeCommandName(pythonishcommandNames);
 
-		if (command == COMMAND_NO_WAIT){
-			if(*bufferPos){
+		if (command == COMMAND_NO_WAIT)
+		{
+			if (*bufferPos)
+			{
 				return ERROR_NO_WAIT_SHOULD_BE_THE_LAST_THING_ON_A_LINE;
 			}
-			else {
-				wantWait=false;
+			else
+			{
+				wantWait = false;
 			}
 			break;
 		}
@@ -130,7 +133,8 @@ int handleInTime()
 		}
 	}
 
-	if(wantWait){
+	if (wantWait)
+	{
 		endCommand(); // end the movement command
 		sendCommand(completeAwaitCommand);
 	}
@@ -578,7 +582,7 @@ int processCommand(byte commandNo)
 
 	case COMMAND_YELLOW:
 		return compileSimpleColor('Y');
-		
+
 	case COMMAND_WHITE:
 		return compileSimpleColor('W');
 
@@ -793,7 +797,7 @@ int indentOutToNewIndentLevel(byte indent, int commandNo)
 	return result;
 }
 
-//#define DEBUG_PYTHONISH
+// #define DEBUG_PYTHONISH
 
 int pythonIshdecodeScriptLine(char *input)
 {
@@ -801,19 +805,9 @@ int pythonIshdecodeScriptLine(char *input)
 	displayMessage(F("PythonIsh got line to decode: %s %d\n"), input, strlen(input));
 #endif
 
-	if (*input == '#'){
+	if (*input == '#')
+	{
 		// lines starting with # are comments - ignore them
-		return ERROR_OK;
-	}
-	
-	if (*input == '{' || *input == '!'){
-		// send json and console commands straight into the code
-		while (*input != 0)
-		{
-			HullOSProgramoutputFunction(*input);
-			input++;
-		}
-		endCommand();
 		return ERROR_OK;
 	}
 
